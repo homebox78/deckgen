@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+  --color-app-bg: #f7f7f5;
+  --color-app-surface: #ffffff;
+  --color-app-border: #e4e4e0;
+  --color-app-text: #1a1a1a;
+  --color-app-muted: #6b6b66;
+  --color-app-accent: #6d4aff;
+  --color-app-danger: #e5484d;
+  --color-app-canvas: #ededea;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-app-bg);
+  color: var(--color-app-text);
+}
