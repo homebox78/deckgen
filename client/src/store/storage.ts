@@ -6,6 +6,7 @@ const DECK_PREFIX = "deckgen:deck:";
 export interface DeckSummary {
   id: string;
   title: string;
+  themeId: string;
   updatedAt: number;
   slideCount: number;
   thumbnail?: string;
@@ -56,6 +57,7 @@ export function listDecks(): DeckSummary[] {
       out.push({
         id: deck.id,
         title: deck.title,
+        themeId: deck.themeId,
         updatedAt: deck.updatedAt,
         slideCount: deck.slides.length,
         thumbnail: localStorage.getItem(thumbKey(deck.id)) ?? undefined,

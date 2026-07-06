@@ -2,14 +2,35 @@
 
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+  /* §6.1 앱 UI 팔레트 + 디자인 시안(1a) 확장 토큰 */
   --color-app-bg: #f7f7f5;
   --color-app-surface: #ffffff;
   --color-app-border: #e4e4e0;
+  --color-app-border-soft: #f0f0ee;
   --color-app-text: #1a1a1a;
   --color-app-muted: #6b6b66;
+  --color-app-faint: #8a8a84;
   --color-app-accent: #6d4aff;
+  --color-app-accent-soft: #f0ebff;
+  --color-app-accent-border: #ddd2ff;
   --color-app-danger: #e5484d;
+  --color-app-danger-soft: #fff0f0;
+  --color-app-danger-border: #f5c6c8;
+  --color-app-success: #1e7f4f;
+  --color-app-success-soft: #eaf7f0;
+  --color-app-success-border: #c9ebd9;
   --color-app-canvas: #ededea;
+
+  --animate-dg-pulse: dgPulse 1.2s ease-in-out infinite;
+  @keyframes dgPulse {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
 
 html,
@@ -20,6 +41,20 @@ body,
 
 body {
   font-family: var(--font-sans);
+  font-size: 13.5px;
   background: var(--color-app-bg);
   color: var(--color-app-text);
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  outline: 2px solid #6d4aff33;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }

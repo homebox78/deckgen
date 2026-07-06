@@ -7,6 +7,7 @@ import { SLIDE_H, SLIDE_W, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
 import { useUiStore } from "../../store/uiStore";
+import { registerCanvasApi } from "./canvasApi";
 
 const FIT_PADDING = 120;
 const MIN_ZOOM = 0.05;
@@ -40,6 +41,7 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
     }
 
     // --- 줌 핏 & 리사이즈 ---
+    const reportZoom = () => useUiStore.getState().setZoom(fc.getZoom());
     const fit = () => {
       const cw = host.clientWidth;
       const ch = host.clientHeight;
@@ -55,10 +57,19 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
         (ch - SLIDE_H * s) / 2,
       ]);
       fc.requestRenderAll();
+      reportZoom();
     };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(host);
+
+    // 줌 툴바(에디터 하단 필)에서 사용하는 제어 API
+    const zoomBy = (factor: number) => {
+      const z = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, fc.getZoom() * factor));
+      fc.zoomToPoint(new Point(fc.getWidth() / 2, fc.getHeight() / 2), z);
+      reportZoom();
+    };
+    registerCanvasApi({ zoomIn: () => zoomBy(1.2), zoomOut: () => zoomBy(1 / 1.2), fit });
 
     // --- Ctrl+휠 줌 ---
     fc.on("mouse:wheel", (opt) => {
@@ -70,6 +81,7 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
         Math.max(MIN_ZOOM, fc.getZoom() * 0.999 ** opt.e.deltaY),
       );
       fc.zoomToPoint(new Point(opt.e.offsetX, opt.e.offsetY), zoom);
+      reportZoom();
     });
 
     // --- Space+드래그 팬 ---
@@ -182,6 +194,7 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
     window.addEventListener("keyup", onKeyUp);
 
     return () => {
+      registerCanvasApi(null);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       detachSync();
