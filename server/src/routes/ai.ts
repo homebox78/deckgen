@@ -6,6 +6,7 @@ import {
   getModel,
   hasApiKey,
 } from "../ai/anthropic.js";
+import { completeValidatedJsonWith, fallbackChain, listModels } from "../ai/providers.js";
 import {
   CAROUSEL_RULES,
   EDIT_SYSTEM,
@@ -17,6 +18,11 @@ import { outlineSlideSchema, slideSchema, slideSpecSchema } from "../ai/validate
 import { endSSE, initSSE, sendEvent, sendSSEError } from "../sse.js";
 
 export const aiRouter = Router();
+
+// ===== GET /api/models — 사용 가능한 LLM 목록 (rate limit 제외, 재생성 레이어 셀렉트용) =====
+aiRouter.get("/models", (_req: Request, res: Response) => {
+  res.json({ models: listModels() });
+});
 
 // ===== rate limit: IP당 분당 10회 (§8.3) =====
 const WINDOW_MS = 60_000;
@@ -209,15 +215,16 @@ async function streamSlides(res: Response, outline: OutlineSlide[], carousel: bo
   endSSE(res);
 }
 
-// ===== ③ POST /api/edit (Magic Edit) =====
+// ===== ③ POST /api/edit (Magic Edit / 슬라이드 재생성) =====
 interface EditBody {
   instruction?: unknown;
   slide?: unknown;
   theme?: unknown;
+  model?: unknown; // 선택 모델 (미지정 시 주력 → 폴백 체인)
 }
 
 aiRouter.post("/edit", async (req: Request, res: Response) => {
-  const { instruction, slide, theme } = (req.body ?? {}) as EditBody;
+  const { instruction, slide, theme, model } = (req.body ?? {}) as EditBody;
   if (typeof instruction !== "string" || !instruction.trim()) {
     res.status(400).json({ error: "instruction이 필요합니다." });
     return;
@@ -230,28 +237,34 @@ aiRouter.post("/edit", async (req: Request, res: Response) => {
     return;
   }
 
-  if (!hasApiKey()) {
-    res.json({ slide: mockEdit(parsedSlide, instruction.trim()) });
+  const chain = fallbackChain(typeof model === "string" ? model : undefined);
+  if (chain.length === 0) {
+    res.json({ slide: mockEdit(parsedSlide, instruction.trim()), model: "mock" });
     return;
   }
 
-  try {
-    const edited = await completeValidatedJson(
-      {
-        system: EDIT_SYSTEM,
-        maxTokens: 2000,
-        user: `테마 요약: ${JSON.stringify(theme ?? {})}\n\n현재 슬라이드:\n${JSON.stringify(parsedSlide)}\n\n사용자 지시: ${instruction.trim()}`,
-      },
-      (raw) => slideSchema.parse(raw),
-    );
-    // id는 원본 유지 (교체 대상 식별)
-    res.json({ slide: { ...edited, id: parsedSlide.id } });
-  } catch (e) {
-    console.warn("[edit] 실패:", e);
-    res
-      .status(502)
-      .json({ error: "AI 수정에 실패했습니다. 다시 시도해주세요." });
+  const opts = {
+    system: EDIT_SYSTEM,
+    maxTokens: 2000,
+    user: `테마 요약: ${JSON.stringify(theme ?? {})}\n\n현재 슬라이드:\n${JSON.stringify(parsedSlide)}\n\n사용자 지시: ${instruction.trim()}`,
+  };
+  // 선택 모델 → 실패 시 폴백 (anthropic 주력 → openai_chat → gemini_text)
+  let lastError: unknown = null;
+  for (const m of chain) {
+    try {
+      const edited = await completeValidatedJsonWith(m, opts, (raw) =>
+        slideSchema.parse(raw),
+      );
+      // id는 원본 유지 (교체 대상 식별)
+      res.json({ slide: { ...edited, id: parsedSlide.id }, model: m });
+      return;
+    } catch (e) {
+      lastError = e;
+      console.warn(`[edit] ${m} 실패 — 다음 모델로 폴백:`, e instanceof Error ? e.message : e);
+    }
   }
+  console.warn("[edit] 전 모델 실패:", lastError);
+  res.status(502).json({ error: "AI 수정에 실패했습니다. 다시 시도해주세요." });
 });
 
 /** 모의 편집: 대표 지시 3종(제목 임팩트/차트 파이 전환/불릿 추가) 휴리스틱 처리 */

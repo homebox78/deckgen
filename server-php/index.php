@@ -44,6 +44,7 @@ try {
     }
 
     // ── AI ──
+    if ($method === 'GET' && $path === '/models') { Ai::models(); exit; }
     if ($method === 'POST' && $path === '/outline') { Ai::outline(); exit; }
     if ($method === 'POST' && $path === '/slides') { Ai::slides(); exit; }
     if ($method === 'POST' && $path === '/edit') { Ai::edit(); exit; }

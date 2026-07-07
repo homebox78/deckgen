@@ -83,11 +83,12 @@ export interface OutlineStreamHandlers {
   signal?: AbortSignal;
 }
 
-/** §8.2 ③ AI 수정 (Magic Edit) — 수정된 전체 슬라이드 반환 */
+/** §8.2 ③ AI 수정 (Magic Edit / 재생성) — 수정된 전체 슬라이드 반환. model 미지정 시 주력→폴백 체인 */
 export async function postEdit(
   instruction: string,
   slide: Slide,
   theme: Theme,
+  model?: string,
 ): Promise<Slide> {
   const themeSummary = {
     id: theme.id,
@@ -101,13 +102,36 @@ export async function postEdit(
   const res = await fetch(apiUrl("/api/edit"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ instruction, slide, theme: themeSummary }),
+    body: JSON.stringify({ instruction, slide, theme: themeSummary, model }),
   });
   const json = (await res.json()) as { slide?: Slide; error?: string };
   if (!res.ok || !json.slide) {
     throw new Error(json.error ?? `수정 요청 실패 (${res.status})`);
   }
   return json.slide;
+}
+
+// ===== 사용 가능한 LLM 모델 목록 (config.php 키 기반) =====
+export interface ModelInfo {
+  id: string;
+  provider: "anthropic" | "openai" | "gemini";
+  label: string;
+  role: string;
+  default?: boolean;
+}
+
+let modelsCache: ModelInfo[] | null = null;
+
+export async function fetchModels(): Promise<ModelInfo[]> {
+  if (modelsCache) return modelsCache;
+  try {
+    const res = await fetch(apiUrl("/api/models"));
+    const json = (await res.json()) as { models?: ModelInfo[] };
+    modelsCache = json.models ?? [];
+  } catch {
+    modelsCache = [];
+  }
+  return modelsCache;
 }
 
 export interface SlideSpec {

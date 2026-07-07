@@ -25,6 +25,7 @@ import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
 import { PropertiesPanel } from "./PropertiesPanel";
+import { RegenerateLayer } from "./RegenerateLayer";
 import { ShareDialog } from "./ShareDialog";
 import { SlideCanvas } from "./SlideCanvas";
 import { SlideThumbnail } from "./SlideThumbnail";
@@ -274,6 +275,7 @@ export function EditorPage() {
 
   const [tab, setTab] = useState<RightTab>("chat");
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
+  const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -511,6 +513,18 @@ export function EditorPage() {
           <ExportPopover onClose={() => setExportOpen(false)} onExport={runExport} />
         )}
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
+        {regen &&
+          (() => {
+            const target = deck.slides.find((s) => s.id === regen.slideId);
+            return target ? (
+              <RegenerateLayer
+                slide={target}
+                theme={theme}
+                anchor={{ x: regen.x, y: regen.y }}
+                onClose={() => setRegen(null)}
+              />
+            ) : null;
+          })()}
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -577,7 +591,7 @@ export function EditorPage() {
                       e.preventDefault();
                       setMenu({ x: e.clientX, y: e.clientY, slideId: s.id });
                     }}
-                    className={`relative block w-full overflow-hidden rounded-[7px] border-2 transition-colors ${
+                    className={`group relative block w-full overflow-hidden rounded-[7px] border-2 transition-colors ${
                       isCur
                         ? "border-app-accent shadow-[0_2px_8px_rgba(109,74,255,.18)]"
                         : "border-transparent hover:border-app-border"
@@ -589,6 +603,24 @@ export function EditorPage() {
                         <StatusBadge status={badge.status} size="sm">
                           {badge.label}
                         </StatusBadge>
+                      </span>
+                    )}
+                    {/* 호버 시 재생성 버튼 (스냅덱) — 클릭하면 AI 재생성 레이어 */}
+                    {!readOnly && !badge && (
+                      <span
+                        role="button"
+                        title="AI로 이 슬라이드 재생성"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const r = e.currentTarget
+                            .closest("button")!
+                            .getBoundingClientRect();
+                          setCurrentSlideIndex(i);
+                          setRegen({ slideId: s.id, x: r.right + 10, y: r.top - 4 });
+                        }}
+                        className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-[12.5px] text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
+                      >
+                        ↻
                       </span>
                     )}
                   </button>

@@ -33,34 +33,79 @@ final class Ai
         return trim((string) Db::cfg('anthropic_model', 'claude-sonnet-4-6'));
     }
 
-    /** Anthropic 단건 호출 → 텍스트 (스트리밍 없음 — 배포판 단순화) */
-    private static function complete(string $system, string $user, int $maxTokens): string
+    private static function httpJson(string $url, array $headers, array $body): array
     {
-        $ch = curl_init('https://api.anthropic.com/v1/messages');
+        $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 120,
             CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'x-api-key: ' . self::key(),
-                'anthropic-version: 2023-06-01',
-            ],
-            CURLOPT_POSTFIELDS => json_encode([
-                'model' => self::model(),
-                'max_tokens' => $maxTokens,
-                'system' => $system,
-                'messages' => [['role' => 'user', 'content' => $user]],
-            ], JSON_UNESCAPED_UNICODE),
+            CURLOPT_HTTPHEADER => array_merge(['Content-Type: application/json'], $headers),
+            CURLOPT_POSTFIELDS => json_encode($body, JSON_UNESCAPED_UNICODE),
         ]);
         $res = curl_exec($ch);
-        if ($res === false) throw new RuntimeException('Anthropic 호출 실패: ' . curl_error($ch));
+        if ($res === false) throw new RuntimeException('LLM 호출 실패: ' . curl_error($ch));
         $j = json_decode($res, true);
-        $text = '';
-        foreach (($j['content'] ?? []) as $blk) {
-            if (($blk['type'] ?? '') === 'text') $text .= $blk['text'];
+        if (!is_array($j)) throw new RuntimeException('LLM 응답 파싱 실패: ' . substr((string) $res, 0, 200));
+        return $j;
+    }
+
+    /** 사용 가능한 모델 목록 — config.php LLM 설계 반영 (GET /models) */
+    public static function models(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        $models = [];
+        if (self::key() !== '') {
+            $models[] = ['id' => self::model(), 'provider' => 'anthropic', 'label' => 'Claude ' . self::pretty(preg_replace('/^claude-/', '', self::model())), 'role' => '주력 — 분석·설계·수정', 'default' => true];
         }
-        if ($text === '') throw new RuntimeException('빈 응답: ' . substr($res, 0, 200));
+        $ok = trim((string) Db::cfg('openai_api_key', ''));
+        $om = trim((string) Db::cfg('openai_chat_model', ''));
+        if ($ok !== '' && $om !== '') {
+            $models[] = ['id' => $om, 'provider' => 'openai', 'label' => 'GPT ' . self::pretty(preg_replace('/^gpt-/', '', $om)), 'role' => '폴백 텍스트'];
+        }
+        $gk = trim((string) Db::cfg('gemini_api_key', ''));
+        $gm = trim((string) Db::cfg('gemini_text_model', ''));
+        if ($gk !== '' && $gm !== '') {
+            $models[] = ['id' => $gm, 'provider' => 'gemini', 'label' => 'Gemini ' . self::pretty(preg_replace('/^gemini-/', '', $gm)), 'role' => '저비용 보조'];
+        }
+        echo json_encode(['models' => $models], JSON_UNESCAPED_UNICODE);
+    }
+
+    private static function pretty(string $slug): string
+    {
+        $slug = preg_replace('/-preview$/', '', $slug);
+        $words = array_map(fn ($t) => ctype_digit($t) ? $t : ucfirst($t), explode('-', $slug));
+        return preg_replace('/(\d) (\d)/', '$1.$2', implode(' ', $words));
+    }
+
+    /** 공급자 디스패치 단건 호출 → 텍스트 (Node providers.ts와 동일 계약) */
+    private static function complete(string $system, string $user, int $maxTokens, ?string $model = null): string
+    {
+        $model = $model !== null && $model !== '' ? $model : self::model();
+        if (str_starts_with($model, 'gpt') || str_starts_with($model, 'o')) {
+            $j = self::httpJson('https://api.openai.com/v1/chat/completions',
+                ['Authorization: Bearer ' . trim((string) Db::cfg('openai_api_key', ''))],
+                ['model' => $model, 'max_completion_tokens' => $maxTokens,
+                 'messages' => [['role' => 'system', 'content' => $system], ['role' => 'user', 'content' => $user]]]);
+            $text = $j['choices'][0]['message']['content'] ?? '';
+        } elseif (str_starts_with($model, 'gemini')) {
+            $j = self::httpJson('https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . trim((string) Db::cfg('gemini_api_key', '')), [],
+                ['systemInstruction' => ['parts' => [['text' => $system]]],
+                 'contents' => [['role' => 'user', 'parts' => [['text' => $user]]]],
+                 'generationConfig' => ['maxOutputTokens' => $maxTokens]]);
+            $text = '';
+            foreach (($j['candidates'][0]['content']['parts'] ?? []) as $p) $text .= $p['text'] ?? '';
+        } else {
+            $j = self::httpJson('https://api.anthropic.com/v1/messages',
+                ['x-api-key: ' . self::key(), 'anthropic-version: 2023-06-01'],
+                ['model' => $model, 'max_tokens' => $maxTokens, 'system' => $system,
+                 'messages' => [['role' => 'user', 'content' => $user]]]);
+            $text = '';
+            foreach (($j['content'] ?? []) as $blk) {
+                if (($blk['type'] ?? '') === 'text') $text .= $blk['text'];
+            }
+        }
+        if ($text === '') throw new RuntimeException('빈 응답 (' . $model . ')');
         return preg_replace('/^\s*```(?:json)?\s*|\s*```\s*$/', '', $text);
     }
 
@@ -212,26 +257,36 @@ final class Ai
             echo json_encode(['error' => '유효한 요청이 아닙니다.'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        if (self::key() === '') {
-            echo json_encode(['slide' => self::mockEdit($slide, $instruction)], JSON_UNESCAPED_UNICODE);
+        // 폴백 체인: 선택 모델 → anthropic 주력 → openai_chat → gemini_text (키 있는 것만)
+        $chain = [];
+        $sel = trim((string) ($b['model'] ?? ''));
+        if ($sel !== '') $chain[] = $sel;
+        if (self::key() !== '') $chain[] = self::model();
+        if (trim((string) Db::cfg('openai_api_key', '')) !== '' && trim((string) Db::cfg('openai_chat_model', '')) !== '') $chain[] = trim((string) Db::cfg('openai_chat_model', ''));
+        if (trim((string) Db::cfg('gemini_api_key', '')) !== '' && trim((string) Db::cfg('gemini_text_model', '')) !== '') $chain[] = trim((string) Db::cfg('gemini_text_model', ''));
+        $chain = array_values(array_unique($chain));
+
+        if (count($chain) === 0) {
+            echo json_encode(['slide' => self::mockEdit($slide, $instruction), 'model' => 'mock'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        try {
-            $text = self::complete(
-                Prompts::EDIT,
-                '테마 요약: ' . json_encode($b['theme'] ?? [], JSON_UNESCAPED_UNICODE)
-                . "\n\n현재 슬라이드:\n" . json_encode($slide, JSON_UNESCAPED_UNICODE)
-                . "\n\n사용자 지시: {$instruction}",
-                2000
-            );
-            $edited = json_decode($text, true);
-            if (!is_array($edited) || !isset($edited['elements'])) throw new RuntimeException('스키마 불일치');
-            $edited['id'] = $slide['id'];
-            echo json_encode(['slide' => $edited], JSON_UNESCAPED_UNICODE);
-        } catch (Throwable $e) {
-            http_response_code(502);
-            echo json_encode(['error' => 'AI 수정에 실패했습니다. 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
+        $user = '테마 요약: ' . json_encode($b['theme'] ?? [], JSON_UNESCAPED_UNICODE)
+            . "\n\n현재 슬라이드:\n" . json_encode($slide, JSON_UNESCAPED_UNICODE)
+            . "\n\n사용자 지시: {$instruction}";
+        foreach ($chain as $model) {
+            try {
+                $text = self::complete(Prompts::EDIT, $user, 2000, $model);
+                $edited = json_decode($text, true);
+                if (!is_array($edited) || !isset($edited['elements'])) throw new RuntimeException('스키마 불일치');
+                $edited['id'] = $slide['id'];
+                echo json_encode(['slide' => $edited, 'model' => $model], JSON_UNESCAPED_UNICODE);
+                return;
+            } catch (Throwable $e) {
+                // 다음 모델로 폴백
+            }
         }
+        http_response_code(502);
+        echo json_encode(['error' => 'AI 수정에 실패했습니다. 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
     }
 
     private static function mockEdit(array $slide, string $instruction): array
