@@ -129,7 +129,7 @@ export function RegenerateLayer({ slide, theme, anchor, onClose }: Props) {
               title="재생성 실행"
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-app-text text-[14px] text-white hover:opacity-85 disabled:opacity-50"
             >
-              {busy ? <span className="animate-pulse">…</span> : "↵"}
+              {busy ? <span className="animate-pulse">…</span> : <span className="mi text-[17px]">keyboard_return</span>}
             </button>
           </div>
         </div>

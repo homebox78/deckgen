@@ -285,7 +285,7 @@ export function ChatPanel({
             className="flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-app-accent text-[12px] text-white disabled:opacity-40"
             title="전송"
           >
-            ↑
+            <span className="mi text-[16px]">arrow_upward</span>
           </button>
         </div>
       </div>

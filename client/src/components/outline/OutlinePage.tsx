@@ -41,7 +41,7 @@ function VizPreview({ type }: { type: VizType }) {
               className="flex-1 rounded-t-[3px]"
               style={{
                 height: `${h}%`,
-                background: ["#D4CBEF", "#B9A8E8", "#8F73DE", "#1A1A1A"][i],
+                background: ["#E4E4E0", "#C9C9C4", "#8A8A84", "#1A1A1A"][i],
               }}
             />
           ))}
@@ -87,14 +87,14 @@ function VizPreview({ type }: { type: VizType }) {
           className="h-15 w-15 rounded-full"
           style={{
             background:
-              "conic-gradient(#1A1A1A 0 150deg,#9B82FF 150deg 250deg,#C4B5FF 250deg 320deg,#E4E4E0 320deg 360deg)",
+              "conic-gradient(#1A1A1A 0 150deg,#8A8A84 150deg 250deg,#C9C9C4 250deg 320deg,#E4E4E0 320deg 360deg)",
           }}
         />
         <div className="flex flex-col gap-1">
           {[
             ["#1A1A1A", "항목 A"],
-            ["#9B82FF", "항목 B"],
-            ["#C4B5FF", "항목 C"],
+            ["#8A8A84", "항목 B"],
+            ["#C9C9C4", "항목 C"],
           ].map(([c, l]) => (
             <div key={l} className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-[2px]" style={{ background: c }} />
@@ -114,7 +114,7 @@ function VizPreview({ type }: { type: VizType }) {
           ["95%", "METRIC C"],
         ].map(([v, l]) => (
           <div key={l} className="flex-1 rounded-lg border border-app-border bg-white px-3 py-2">
-            <div className="mb-1.5 h-[3px] w-2/5 rounded-sm bg-[#D4CBEF]" />
+            <div className="mb-1.5 h-[3px] w-2/5 rounded-sm bg-[#E4E4E0]" />
             <div className="text-[15px] font-extrabold">{v}</div>
             <div className="text-[9.5px] tracking-wider text-app-faint">{l}</div>
           </div>
@@ -155,7 +155,7 @@ function VizPreview({ type }: { type: VizType }) {
   // process
   return (
     <div className="flex items-center gap-1.5 px-0.5 py-1.5">
-      {["#1A1A1A", "#9B82FF", "#C4B5FF", "#E0D8F9"].map((c, i) => (
+      {["#1A1A1A", "#8A8A84", "#C9C9C4", "#E4E4E0"].map((c, i) => (
         <div
           key={i}
           className="flex h-9 flex-1 items-center justify-center"
@@ -257,9 +257,9 @@ function OutlineCard({ slide }: { slide: OutlineSlide }) {
             }`}
           >
             <span
-              className={`text-[12px] font-medium ${viz ? "text-app-accent" : "text-app-text"}`}
+              className={`flex items-center gap-1 text-[12px] font-medium ${viz ? "text-app-accent" : "text-app-text"}`}
             >
-              {viz ? "◈ " : ""}
+              {viz && <span className="mi text-[14px]">bar_chart</span>}
               {VIZ_LABELS[viz]}
             </span>
             <span className="mi text-[14px] text-app-faint">expand_more</span>

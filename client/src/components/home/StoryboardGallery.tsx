@@ -187,7 +187,13 @@ export function StoryboardGallery({
                   : "border-app-border bg-app-surface text-app-muted hover:bg-app-bg"
               }`}
             >
-              {t}
+              {t === "★ 즐겨찾기" ? (
+                <span className="inline-flex items-center gap-1">
+                  <span className="mi text-[14px]">star</span>즐겨찾기
+                </span>
+              ) : (
+                t
+              )}
               <span className={`text-[10.5px] ${active ? "text-white/70" : "text-app-faint"}`}>
                 {n}
               </span>

@@ -732,9 +732,9 @@ export function HomePage() {
                 <button
                   onClick={importAsDeck}
                   title="양식 그대로 열어서 편집"
-                  className="shrink-0 rounded-lg bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-85"
+                  className="flex shrink-0 items-center gap-1 rounded-lg bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-85"
                 >
-                  ⬆ Import
+                  <span className="mi text-[14px]">upload</span>Import
                 </button>
               </div>
             </div>
@@ -746,7 +746,7 @@ export function HomePage() {
                 [
                   ["16:9", "16:9"],
                   ["4:3", "4:3"],
-                  ["4:5", "▯ 4:5"],
+                  ["4:5", "4:5"],
                 ] as const
               ).map(([a, label], i) => (
                 <button

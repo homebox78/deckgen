@@ -14,8 +14,9 @@ const STYLES: Record<BadgeStatus, { cls: string; dot: string; pulse: boolean }> 
     pulse: true,
   },
   done: {
-    cls: "text-app-success bg-app-success-soft border-app-success-border",
-    dot: "#1E7F4F",
+    // 모노크롬 v2 — 완료는 유채색 대신 중립색
+    cls: "text-app-text bg-app-accent-soft border-app-border",
+    dot: "#1A1A1A",
     pulse: false,
   },
   error: {

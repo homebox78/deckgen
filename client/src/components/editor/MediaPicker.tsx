@@ -375,9 +375,9 @@ export function MediaPicker({
               <button
                 onClick={() => void genAi()}
                 disabled={aiBusy}
-                className="self-start rounded-lg bg-app-text px-4 py-2 text-[12.5px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-1 self-start rounded-lg bg-app-text px-4 py-2 text-[12.5px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
               >
-                {aiBusy ? "생성 중…" : "↵ 생성 후 삽입"}
+                {aiBusy ? "생성 중…" : <><span className="mi text-[15px]">auto_awesome</span>생성 후 삽입</>}
               </button>
             </div>
           )}

@@ -443,9 +443,9 @@ export function PropertiesPanel({
               useDeckStore.getState().explodeElement(slideId, element.id, parts);
               showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
             }}
-            className="mt-2.5 w-full rounded-lg border border-app-border bg-white py-2 text-[12px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+            className="mt-2.5 flex w-full items-center justify-center gap-1 rounded-lg border border-app-border bg-white py-2 text-[12px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
           >
-            ⛶ 개별 요소로 분해
+            <span className="mi text-[15px]">dashboard</span>개별 요소로 분해
           </button>
         </div>
       )}
