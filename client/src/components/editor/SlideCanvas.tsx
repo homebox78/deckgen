@@ -198,7 +198,7 @@ export function SlideCanvas({
     };
     const guideLine = (pts: [number, number, number, number]) =>
       new Line(pts, {
-        stroke: "#E5484D",
+        stroke: "#1A1A1A",
         strokeWidth: 1.5,
         strokeDashArray: [6, 5],
         selectable: false,

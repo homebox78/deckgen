@@ -795,6 +795,12 @@ export function EditorPage() {
                 {p.name.slice(0, 1)}
               </button>
             ))}
+            {!followId && peers.length > 0 && (
+              <span className="ml-1.5 inline-flex items-center gap-1 text-[11px] text-app-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-app-success" />
+                {peers.length + 1}명 접속
+              </span>
+            )}
             {followId && (
               <button
                 onClick={() => setFollowId(null)}
@@ -914,17 +920,13 @@ export function EditorPage() {
             <div className="flex gap-1.5">
               <Dropdown
                 items={[
-                  { key: "blank", name: "+ 빈 슬라이드" },
-                  { key: "dup", name: "⧉ 현재 슬라이드 복제" },
-                  { key: "ai", name: "AI로 생성" },
-                  { key: "regen", name: "≡ 덱 다시 생성" },
+                  { key: "blank", name: "빈 슬라이드", icon: <span className="mi text-[16px]">add</span> },
+                  { key: "ai", name: "AI로 생성", icon: <span className="mi text-[16px]">auto_awesome</span> },
+                  { key: "regen", name: "덱 다시 생성", icon: <span className="mi text-[16px]">refresh</span> },
                 ]}
                 onSelect={(key) => {
                   if (key === "blank") {
                     addSlide(slideIndex);
-                    setCurrentSlideIndex(slideIndex + 1);
-                  } else if (key === "dup") {
-                    duplicateSlide(slide.id);
                     setCurrentSlideIndex(slideIndex + 1);
                   } else if (key === "ai") {
                     // 빈 슬라이드 추가 후 재생성 레이어 열기
@@ -1011,16 +1013,29 @@ export function EditorPage() {
               <div key={s.id}>
               {showSection && (
                 <div className="mt-2 mb-1 flex items-center gap-1.5 px-0.5">
-                  <span className="mi text-[12px] text-app-faint">label</span>
-                  <span className="flex-1 truncate text-[10.5px] font-bold tracking-wide text-app-muted uppercase">
-                    {s.section}
-                  </span>
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-[2px] bg-app-text" />
+                  {readOnly ? (
+                    <span className="flex-1 truncate text-[10.5px] font-bold tracking-wide text-app-muted uppercase">
+                      {s.section}
+                    </span>
+                  ) : (
+                    <input
+                      value={s.section ?? ""}
+                      onChange={(e) => {
+                        const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
+                        if (cur) useDeckStore.getState().replaceSlide(s.id, { ...cur, section: e.target.value });
+                      }}
+                      title="섹션 이름 (클릭해서 수정)"
+                      className="min-w-0 flex-1 border-b border-dashed border-transparent bg-transparent text-[10.5px] font-bold tracking-wide text-app-muted uppercase hover:border-app-border focus:border-app-accent focus:outline-none"
+                    />
+                  )}
                   {!readOnly && (
                     <button
                       onClick={() => {
                         const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
                         if (cur) useDeckStore.getState().replaceSlide(s.id, { ...cur, section: undefined });
                       }}
+                      title="섹션 제거"
                       className="text-app-faint hover:text-app-danger"
                     >
                       <span className="mi text-[13px]">close</span>
@@ -1081,6 +1096,12 @@ export function EditorPage() {
                     <span className="truncate">
                       {i + 1} · {s.layout}
                     </span>
+                    {s.elements.length > 0 && s.elements.every((e) => e.locked) && (
+                      <span className="mi text-[12px]" title="잠김">lock</span>
+                    )}
+                    {s.notes && s.notes.trim() && (
+                      <span className="mi text-[12px]" title="발표자 노트 있음">sticky_note_2</span>
+                    )}
                     {!readOnly && isCur && (
                       <button
                         onClick={() => {
@@ -1153,6 +1174,17 @@ export function EditorPage() {
               </div>
             );
           })}
+          {!readOnly && !slideQuery.trim() && (
+            <button
+              onClick={() => {
+                addSlide(deck.slides.length - 1);
+                setCurrentSlideIndex(deck.slides.length);
+              }}
+              className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-app-border py-2.5 text-[11.5px] font-semibold text-app-faint hover:border-app-accent hover:text-app-accent"
+            >
+              <span className="mi text-[15px]">add</span>슬라이드 추가
+            </button>
+          )}
         </aside>
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
