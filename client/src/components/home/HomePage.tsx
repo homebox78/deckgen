@@ -12,11 +12,27 @@ import {
   createStoryboardDeck,
 } from "../../engine/wireframes";
 import { clearHistory, useDeckStore } from "../../store/deckStore";
+import {
+  addFolder,
+  deckFolderMap,
+  emptyTrash as emptyTrashStore,
+  listFavs,
+  listFolders,
+  listTrash,
+  purgeDeck,
+  removeFolder,
+  restoreDeck,
+  setDeckFolder,
+  toggleFav as toggleFavStore,
+  trashDeck,
+  type Folder,
+  type TrashedDeck,
+} from "../../store/deckMeta";
 import { getShareTokens } from "../../store/collabStore";
 import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
-import { deleteDeck, listDecks, saveDeck } from "../../store/storage";
+import { listDecks, loadDeck, saveDeck } from "../../store/storage";
 import { getSettings } from "../../store/settingsStore";
 import { Dropdown } from "../ui/Dropdown";
 import { StatusBadge } from "../ui/StatusBadge";
@@ -228,16 +244,63 @@ function relTime(ts: number): string {
   return `${Math.floor(h / 24)}일 전`;
 }
 
-function DeckCard({ deck, onDelete }: { deck: DeckSummary; onDelete: () => void }) {
+function DeckCard({
+  deck,
+  onDelete,
+  fav,
+  onToggleFav,
+  folders,
+  onMoveFolder,
+  onDragStart,
+  onDragEnd,
+  onContext,
+}: {
+  deck: DeckSummary;
+  onDelete: () => void;
+  fav: boolean;
+  onToggleFav: () => void;
+  folders: Folder[];
+  onMoveFolder: (folderId: string | null) => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onContext: (x: number, y: number) => void;
+}) {
   const theme = getTheme(deck.themeId);
   const gen = useGenerationStore();
   const generating = gen.deckId === deck.id && gen.active;
+  const [folderMenu, setFolderMenu] = useState(false);
 
   return (
     <Link
       to={`/deck/${deck.id}/edit`}
-      className="group overflow-hidden rounded-xl border border-app-border bg-app-surface shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.15)]"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        onDragStart();
+      }}
+      onDragEnd={onDragEnd}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onContext(e.clientX, e.clientY);
+      }}
+      className="group relative overflow-hidden rounded-xl border border-app-border bg-app-surface shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.15)]"
     >
+      {/* 즐겨찾기 별 */}
+      <button
+        title={fav ? "즐겨찾기 해제" : "즐겨찾기"}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleFav();
+        }}
+        className={`absolute top-1.5 right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-md text-[13px] shadow-sm transition-opacity ${
+          fav
+            ? "bg-white/95 text-app-accent opacity-100"
+            : "bg-white/90 text-app-faint opacity-0 group-hover:opacity-100 hover:text-app-accent"
+        }`}
+      >
+        {fav ? "★" : "☆"}
+      </button>
       <div
         className="aspect-video w-full border-b border-app-border-soft"
         style={{ background: theme.bg }}
@@ -268,6 +331,64 @@ function DeckCard({ deck, onDelete }: { deck: DeckSummary; onDelete: () => void 
             생성 중
           </StatusBadge>
         )}
+        {/* 폴더로 이동 */}
+        <span className="relative shrink-0">
+          <button
+            title="폴더로 이동"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setFolderMenu((v) => !v);
+            }}
+            className="rounded-[7px] border border-app-border bg-white px-1.5 py-1 text-[12px] text-app-faint opacity-0 transition-opacity group-hover:opacity-100 hover:border-app-accent"
+          >
+            📁
+          </button>
+          {folderMenu && (
+            <>
+              <span
+                className="fixed inset-0 z-20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setFolderMenu(false);
+                }}
+              />
+              <span className="absolute right-0 bottom-full z-30 mb-1 block w-40 rounded-lg border border-app-border bg-white py-1 shadow-lg">
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onMoveFolder(null);
+                    setFolderMenu(false);
+                  }}
+                  className="block cursor-pointer px-3 py-1.5 text-[12px] hover:bg-app-bg"
+                >
+                  📄 미분류
+                </span>
+                {folders.map((f) => (
+                  <span
+                    key={f.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onMoveFolder(f.id);
+                      setFolderMenu(false);
+                    }}
+                    className="block cursor-pointer truncate px-3 py-1.5 text-[12px] hover:bg-app-bg"
+                  >
+                    📁 {f.name}
+                  </span>
+                ))}
+                {folders.length === 0 && (
+                  <span className="block px-3 py-1.5 text-[11.5px] text-app-faint">
+                    폴더 없음
+                  </span>
+                )}
+              </span>
+            </>
+          )}
+        </span>
         <button
           title="덱 삭제"
           onClick={(e) => {
@@ -300,9 +421,24 @@ export function HomePage() {
   // 첫 실행 시 온보딩 노출
   const [onboarding, setOnboarding] = useState(() => !getSettings().onboardingDone);
   const [query, setQuery] = useState("");
-  const [deckFilter, setDeckFilter] = useState<"all" | "recent" | "shared">("all");
+  const [deckFilter, setDeckFilter] = useState<"all" | "recent" | "shared" | "fav">("all");
   const [deckView, setDeckView] = useState<"grid" | "list">("grid");
   const [decks, setDecks] = useState<DeckSummary[]>(() => listDecks());
+  // 폴더 · 즐겨찾기 · 휴지통
+  const [folders, setFolders] = useState<Folder[]>(() => listFolders());
+  const [folderSel, setFolderSel] = useState<string>("all"); // all | uncat | <folderId> | trash
+  const [folderMap, setFolderMap] = useState<Record<string, string>>(() => deckFolderMap());
+  const [favs, setFavs] = useState<string[]>(() => listFavs());
+  const [trash, setTrash] = useState<TrashedDeck[]>(() => listTrash());
+  const [dragDeckId, setDragDeckId] = useState<string | null>(null);
+  const [deckCtx, setDeckCtx] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  const refreshMeta = () => {
+    setFolders(listFolders());
+    setFolderMap(deckFolderMap());
+    setFavs(listFavs());
+    setTrash(listTrash());
+  };
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState<ImportedPptx | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -389,22 +525,79 @@ export function HomePage() {
     showToast("추출한 아웃라인을 확인·수정한 뒤 슬라이드를 생성하세요");
   };
 
+  // 삭제 = 휴지통으로 이동(복원 가능)
   const removeDeck = (d: DeckSummary) => {
-    if (!window.confirm(`'${d.title}' 덱을 삭제할까요? 되돌릴 수 없어요.`)) return;
-    deleteDeck(d.id);
+    trashDeck(d);
     setDecks(listDecks());
-    showToast(`'${d.title}' 삭제됨`);
+    refreshMeta();
+    showToast(`'${d.title}' 휴지통으로 이동`);
+  };
+  const toggleFav = (id: string) => {
+    toggleFavStore(id);
+    setFavs(listFavs());
+  };
+  const moveDeckToFolder = (deckId: string, folderId: string | null) => {
+    setDeckFolder(deckId, folderId);
+    setFolderMap(deckFolderMap());
+    const fname = folderId ? folders.find((f) => f.id === folderId)?.name : "미분류";
+    showToast(`'${fname}'(으)로 이동`);
+  };
+  const createFolder = () => {
+    const name = window.prompt("새 폴더 이름", "새 폴더");
+    if (name === null) return;
+    const f = addFolder(name);
+    setFolders(listFolders());
+    setFolderSel(f.id);
+  };
+  const deleteFolder = (id: string) => {
+    removeFolder(id);
+    refreshMeta();
+    if (folderSel === id) setFolderSel("all");
+  };
+  const renameDeck = (id: string) => {
+    const d = decks.find((x) => x.id === id);
+    const next = window.prompt("덱 이름", d?.title ?? "");
+    if (next === null || !next.trim()) return;
+    const deck = loadDeck(id);
+    if (!deck) return;
+    saveDeck({ ...deck, title: next.trim(), updatedAt: Date.now() });
+    setDecks(listDecks());
+    showToast("이름을 바꿨어요");
+  };
+  const duplicateDeck = (id: string) => {
+    const deck = loadDeck(id);
+    if (!deck) return;
+    const now = Date.now();
+    const copy = { ...deck, id: uid(), title: `${deck.title} 사본`, createdAt: now, updatedAt: now };
+    saveDeck(copy);
+    setDecks(listDecks());
+    showToast("덱을 복제했어요");
   };
 
   const q = query.trim().toLowerCase();
   const RECENT_MS = 72 * 3600 * 1000;
-  const filtered = decks.filter(
-    (d) =>
-      (!q || d.title.toLowerCase().includes(q)) &&
-      (deckFilter === "all" ||
-        (deckFilter === "recent" && Date.now() - d.updatedAt < RECENT_MS) ||
-        (deckFilter === "shared" && !!getShareTokens(d.id))),
-  );
+  const inTrash = folderSel === "trash";
+  const filtered = decks
+    .filter((d) => {
+      if (q && !d.title.toLowerCase().includes(q)) return false;
+      // 폴더 칩
+      if (folderSel === "uncat" && folderMap[d.id]) return false;
+      if (folderSel !== "all" && folderSel !== "uncat" && folderSel !== "trash" && folderMap[d.id] !== folderSel)
+        return false;
+      // 상단 필터 탭
+      if (deckFilter === "recent" && Date.now() - d.updatedAt >= RECENT_MS) return false;
+      if (deckFilter === "shared" && !getShareTokens(d.id)) return false;
+      if (deckFilter === "fav" && !favs.includes(d.id)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // 즐겨찾기 상단 정렬
+      const fa = favs.includes(a.id) ? 1 : 0;
+      const fb = favs.includes(b.id) ? 1 : 0;
+      if (fa !== fb) return fb - fa;
+      return b.updatedAt - a.updatedAt;
+    });
+  const trashFiltered = trash.filter((t) => !q || t.title.toLowerCase().includes(q));
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
@@ -747,12 +940,85 @@ export function HomePage() {
             슬라이드 파일을 열고 정렬하고 관리하세요.
           </p>
         </div>
-        <div className="mb-3.5 flex items-center gap-2 pt-2">
+        {/* 폴더 칩바 — 전체 / 미분류 / 사용자 폴더 / 휴지통 (덱 드래그→드롭 이동) */}
+        <div className="mb-2.5 flex flex-wrap items-center gap-1.5 pt-2">
+          {(() => {
+            const uncatN = decks.filter((d) => !folderMap[d.id]).length;
+            const chips: { key: string; label: string; n: number }[] = [
+              { key: "all", label: "전체", n: decks.length },
+              { key: "uncat", label: "미분류", n: uncatN },
+              ...folders.map((f) => ({
+                key: f.id,
+                label: f.name,
+                n: decks.filter((d) => folderMap[d.id] === f.id).length,
+              })),
+            ];
+            return chips.map((c) => {
+              const active = folderSel === c.key;
+              const droppable = c.key !== "all" && c.key !== "trash";
+              return (
+                <span
+                  key={c.key}
+                  onClick={() => setFolderSel(c.key)}
+                  onDragOver={(e) => {
+                    if (dragDeckId && droppable) e.preventDefault();
+                  }}
+                  onDrop={() => {
+                    if (dragDeckId && droppable)
+                      moveDeckToFolder(dragDeckId, c.key === "uncat" ? null : c.key);
+                    setDragDeckId(null);
+                  }}
+                  className={`group/chip inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                    active
+                      ? "border-app-accent bg-app-accent text-white"
+                      : "border-app-border bg-app-surface text-app-muted hover:bg-app-bg"
+                  } ${dragDeckId && droppable ? "ring-1 ring-app-accent ring-offset-1" : ""}`}
+                >
+                  {c.key === "uncat" ? "📄" : c.key === "all" ? "" : "📁"} {c.label}
+                  <span className={`text-[10.5px] ${active ? "text-white/70" : "text-app-faint"}`}>
+                    {c.n}
+                  </span>
+                  {c.key !== "all" && c.key !== "uncat" && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm(`'${c.label}' 폴더를 삭제할까요? (덱은 미분류로)`))
+                          deleteFolder(c.key);
+                      }}
+                      className={`ml-0.5 hidden text-[11px] group-hover/chip:inline ${active ? "text-white/80" : "text-app-faint hover:text-app-danger"}`}
+                    >
+                      ✕
+                    </span>
+                  )}
+                </span>
+              );
+            });
+          })()}
+          <span
+            onClick={() => setFolderSel("trash")}
+            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              folderSel === "trash"
+                ? "border-app-danger bg-app-danger-soft text-app-danger"
+                : "border-app-border bg-app-surface text-app-muted hover:bg-app-bg"
+            }`}
+          >
+            🗑 휴지통
+            {trash.length > 0 && <span className="text-[10.5px] text-app-faint">{trash.length}</span>}
+          </span>
+          <button
+            onClick={createFolder}
+            className="inline-flex items-center gap-1 rounded-full border border-dashed border-app-border-soft bg-transparent px-3 py-1.5 text-[11.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+          >
+            + 새 폴더
+          </button>
+        </div>
+        <div className={`mb-3.5 flex items-center gap-2 ${inTrash ? "hidden" : ""}`}>
           {(
             [
               ["all", "전체"],
               ["recent", "최근"],
               ["shared", "공유됨"],
+              ["fav", "★ 즐겨찾기"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -814,12 +1080,102 @@ export function HomePage() {
           </div>
         </div>
 
-        {deckView === "grid" ? (
+        {inTrash ? (
+          <div>
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex-1 text-[12px] text-app-faint">
+                휴지통의 덱은 30일 후 영구 삭제됩니다
+              </span>
+              {trash.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("휴지통을 완전히 비울까요? 되돌릴 수 없어요.")) {
+                      emptyTrashStore();
+                      setTrash(listTrash());
+                      showToast("휴지통을 비웠어요");
+                    }
+                  }}
+                  className="rounded-lg border border-app-danger-border bg-app-danger-soft px-3 py-1.5 text-[11.5px] font-semibold text-app-danger"
+                >
+                  휴지통 비우기
+                </button>
+              )}
+            </div>
+            {trashFiltered.length === 0 ? (
+              <div className="rounded-[14px] border-[1.5px] border-dashed border-[#D4D4CE] bg-app-surface px-6 py-10 text-center text-[13px] text-app-faint">
+                휴지통이 비어 있어요
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-app-border bg-app-surface">
+                {trashFiltered.map((tc) => {
+                  const th = getTheme(tc.themeId);
+                  return (
+                    <div
+                      key={tc.id}
+                      className="flex items-center gap-3 border-b border-app-border-soft px-3.5 py-2.5 last:border-b-0"
+                    >
+                      <div
+                        className="h-9 w-14 shrink-0 overflow-hidden rounded-md border border-app-border"
+                        style={{ background: th.bg }}
+                      >
+                        {tc.thumbnail && (
+                          <img src={tc.thumbnail} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[13px] font-semibold text-app-text">
+                          {tc.title}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-app-faint">
+                          삭제됨 · {relTime(tc.delAt)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          restoreDeck(tc.id);
+                          setDecks(listDecks());
+                          refreshMeta();
+                          showToast(`'${tc.title}' 복원됨`);
+                        }}
+                        className="shrink-0 rounded-[7px] border border-app-border bg-white px-2.5 py-1.5 text-[11px] font-semibold hover:border-app-accent"
+                      >
+                        복원
+                      </button>
+                      <button
+                        title="영구 삭제"
+                        onClick={() => {
+                          if (window.confirm(`'${tc.title}'을(를) 완전히 삭제할까요?`)) {
+                            purgeDeck(tc.id);
+                            setTrash(listTrash());
+                          }
+                        }}
+                        className="shrink-0 rounded-[7px] border border-app-danger-border bg-app-danger-soft px-2 py-1.5 text-[13px] text-app-danger"
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : deckView === "grid" ? (
           <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
             {filtered.map((d) => (
-              <DeckCard key={d.id} deck={d} onDelete={() => removeDeck(d)} />
+              <DeckCard
+                key={d.id}
+                deck={d}
+                onDelete={() => removeDeck(d)}
+                fav={favs.includes(d.id)}
+                onToggleFav={() => toggleFav(d.id)}
+                folders={folders}
+                onMoveFolder={(fid) => moveDeckToFolder(d.id, fid)}
+                onDragStart={() => setDragDeckId(d.id)}
+                onDragEnd={() => setDragDeckId(null)}
+                onContext={(x, y) => setDeckCtx({ id: d.id, x, y })}
+              />
             ))}
-            {!q && deckFilter === "all" && (
+            {!q && deckFilter === "all" && folderSel === "all" && (
               <button
                 onClick={() => promptRef.current?.focus()}
                 className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-[#D4D4CE] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
@@ -912,6 +1268,44 @@ export function HomePage() {
           </p>
         )}
       </div>
+      {/* 덱 우클릭 컨텍스트 메뉴 */}
+      {deckCtx &&
+        (() => {
+          const d = decks.find((x) => x.id === deckCtx.id);
+          if (!d) return null;
+          const item = (label: string, fn: () => void, danger = false) => (
+            <span
+              onClick={() => {
+                setDeckCtx(null);
+                fn();
+              }}
+              className={`block cursor-pointer px-3.5 py-1.5 text-[12.5px] hover:bg-app-bg ${
+                danger ? "text-app-danger" : ""
+              }`}
+            >
+              {label}
+            </span>
+          );
+          return (
+            <>
+              <div className="fixed inset-0 z-[60]" onClick={() => setDeckCtx(null)} />
+              <div
+                className="fixed z-[61] w-44 rounded-lg border border-app-border bg-white py-1 shadow-xl"
+                style={{
+                  left: Math.min(deckCtx.x, window.innerWidth - 190),
+                  top: Math.min(deckCtx.y, window.innerHeight - 240),
+                }}
+              >
+                {item("열기", () => navigate(`/deck/${d.id}/edit`))}
+                {item(favs.includes(d.id) ? "즐겨찾기 해제" : "즐겨찾기", () => toggleFav(d.id))}
+                {item("이름 변경", () => renameDeck(d.id))}
+                {item("복제", () => duplicateDeck(d.id))}
+                <div className="my-1 border-t border-app-border-soft" />
+                {item("삭제", () => removeDeck(d), true)}
+              </div>
+            </>
+          );
+        })()}
       {settingsOpen && (
         <SettingsModal
           onClose={() => setSettingsOpen(false)}
