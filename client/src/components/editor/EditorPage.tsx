@@ -690,13 +690,13 @@ export function EditorPage() {
   return (
     <div className="flex h-full min-w-[1080px] flex-col">
       {/* 상단 바 (시안 1f) */}
-      <header className="relative z-20 flex shrink-0 items-center gap-3 border-b border-app-border bg-app-surface px-4 py-2">
+      <header className="relative z-20 flex shrink-0 items-center gap-3 border-b border-app-border bg-app-surface px-4 py-[9px]">
         <button
           onClick={() => navigate("/")}
           title="홈으로"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-app-border text-[13px] text-app-muted hover:bg-app-bg"
+          className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg border border-app-border text-[13px] text-app-muted hover:bg-app-bg"
         >
-          <span className="mi text-[16px]">arrow_back</span>
+          <span className="mi text-[15px]">arrow_back</span>
         </button>
         {/* DeckGen 로고 (시안 1f) */}
         <Logo size={20} />
@@ -718,7 +718,7 @@ export function EditorPage() {
             onClick={() => useDeckStore.temporal.getState().undo()}
             disabled={temporal.pastStates.length === 0}
             title="실행 취소 (Ctrl+Z)"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border bg-white text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
           >
             <span className="mi text-[16px]">undo</span>
           </button>
@@ -732,41 +732,41 @@ export function EditorPage() {
           title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
           className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
         >
-          <span className="mi align-middle text-[15px] mr-1">grid_view</span>개요
+          <span className="mi align-middle text-[14px] mr-1">grid_view</span>개요
         </button>
         {!readOnly && (
           <button
             onClick={() => setMotionOpen((v) => !v)}
             title="모션 타임라인 — 요소 등장 애니"
-            className={`rounded-[9px] border px-3 py-2 text-[13px] font-semibold hover:border-app-accent ${
+            className={`rounded-lg border px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent ${
               motionOpen ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
             }`}
           >
-            <span className="mi align-middle text-[15px] mr-1">movie</span>모션
+            <span className="mi align-middle text-[14px] mr-1">movie</span>모션
           </button>
         )}
         {!readOnly && (
           <button
             onClick={() => setVersionsOpen(true)}
             title="버전 히스토리 — 스냅샷 저장/복원"
-            className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
+            className="rounded-lg border border-app-border bg-white px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent"
           >
-            <span className="mi align-middle text-[15px] mr-1">history</span>버전
+            <span className="mi align-middle text-[14px] mr-1">history</span>버전
           </button>
         )}
         <button
           onClick={() => setPresenting(true)}
           title="발표 모드 — 클릭/→ 진행 · N 노트 · Esc 종료"
-          className="rounded-[9px] bg-app-text px-3 py-2 text-[13px] font-semibold text-white hover:opacity-90"
+          className="rounded-lg bg-app-text px-[11px] py-[7px] text-[12px] font-semibold text-white hover:opacity-90"
         >
-          <span className="mi align-middle text-[15px] mr-1">play_arrow</span>발표
+          <span className="mi align-middle text-[14px] mr-1">play_arrow</span>발표
         </button>
         {!collab.isGuest && (
           <button
             onClick={() => setShareOpen(true)}
-            className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
+            className="rounded-lg border border-app-border bg-white px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent"
           >
-            <span className="mi align-middle text-[15px] mr-1">share</span>공유
+            <span className="mi align-middle text-[14px] mr-1">share</span>공유
           </button>
         )}
         {/* 프레즌스 아바타 (§12) */}
@@ -815,7 +815,7 @@ export function EditorPage() {
         <button
           onClick={() => setShortcutsOpen(true)}
           title="키보드 단축키 (?)"
-          className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent"
+          className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-text hover:border-app-accent"
         >
           <span className="mi text-[17px]">keyboard</span>
         </button>
@@ -830,19 +830,19 @@ export function EditorPage() {
             activeKey={deck.themeId}
             onSelect={setThemeId}
             align="right"
-            triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
+            triggerClassName="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-2.5 py-[7px] hover:border-app-accent data-open:border-app-accent"
             title="슬라이드 테마"
           >
-            <span className="mi text-[14px] text-app-muted">palette</span>
-            <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
-            <span className="text-[12.5px] font-medium">{theme.name}</span>
-            <span className="mi text-[14px] text-app-faint">expand_more</span>
+            <span className="mi text-[14px] text-[#55554F]">palette</span>
+            <span className="h-[10px] w-[10px] rounded-[3px]" style={{ background: theme.accent }} />
+            <span className="text-[12px] font-medium">{theme.name}</span>
+            <span className="mi text-[13px] text-app-faint">keyboard_arrow_down</span>
           </Dropdown>
         )}
         <button
           onClick={() => setExportOpen((o) => !o)}
           disabled={exporting}
-          className="rounded-[9px] bg-app-accent px-4 py-2 text-[13px] font-semibold text-white shadow-[0_2px_6px_rgba(26,26,26,.25)] hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-app-accent px-[13px] py-[7px] text-[12px] font-semibold text-white shadow-[0_2px_6px_rgba(26,26,26,.25)] hover:opacity-90 disabled:opacity-50"
         >
           {exporting ? "내보내는 중…" : <><span className="mi align-middle text-[14px] mr-1">download</span>내보내기<span className="mi align-middle text-[13px] ml-0.5">keyboard_arrow_down</span></>}
         </button>

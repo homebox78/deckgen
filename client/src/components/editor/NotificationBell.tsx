@@ -41,13 +41,13 @@ export function NotificationBell({ deckId, onJump }: Props) {
           setToast(null);
         }}
         title="알림"
-        className={`relative flex h-9 items-center rounded-[9px] border px-3 text-[14px] hover:border-app-accent ${
+        className={`relative flex h-8 w-8 items-center justify-center rounded-[9px] border text-[14px] text-app-text hover:border-app-accent ${
           open ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
         }`}
       >
-        <span className="mi text-[18px]">notifications</span>
+        <span className="mi text-[17px]">notifications</span>
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full border-[1.5px] border-white bg-app-danger px-1 text-[9px] font-bold text-white">
             {unread}
           </span>
         )}
