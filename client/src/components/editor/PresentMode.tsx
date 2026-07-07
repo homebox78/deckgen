@@ -4,6 +4,7 @@ import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import type { Deck, SlideDims } from "../../engine/schema";
 import { aspectDims } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
+import { getMotion } from "../../store/motionStore";
 
 interface Props {
   deck: Deck;
@@ -15,9 +16,9 @@ interface Props {
 const TRANSITIONS = ["none", "slide", "fade", "zoom"] as const;
 type Transition = (typeof TRANSITIONS)[number];
 
-function readTransition(): Transition {
+function readTransition(fallback: Transition): Transition {
   const t = localStorage.getItem("deckgen:transition");
-  return (TRANSITIONS as readonly string[]).includes(t ?? "") ? (t as Transition) : "fade";
+  return (TRANSITIONS as readonly string[]).includes(t ?? "") ? (t as Transition) : fallback;
 }
 
 export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
@@ -27,7 +28,11 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
   const [anim, setAnim] = useState("");
   const dims: SlideDims = aspectDims(deck.aspect);
   const rootRef = useRef<HTMLDivElement>(null);
-  const transition = readTransition();
+  // 덱 모션 효과를 발표 진입 기본 전환으로 사용 (페이드→fade · 떠오름→slide · 팝→zoom)
+  const motionEffect = getMotion(deck.id).effect;
+  const motionAsTransition: Transition =
+    motionEffect === "fade" ? "fade" : motionEffect === "pop" ? "zoom" : "slide";
+  const transition = readTransition(motionAsTransition);
 
   const slide = deck.slides[index];
 

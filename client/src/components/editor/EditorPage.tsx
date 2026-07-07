@@ -31,6 +31,8 @@ import { CommentsPanel } from "./CommentsPanel";
 import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
+import { MotionTimeline } from "./MotionTimeline";
+import { getMotion } from "../../store/motionStore";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { RegenerateLayer } from "./RegenerateLayer";
 import { ShareDialog } from "./ShareDialog";
@@ -315,6 +317,8 @@ export function EditorPage() {
   const [gridOpen, setGridOpen] = useState(false);
   const [slideQuery, setSlideQuery] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
+  const [motionOpen, setMotionOpen] = useState(false);
+  const [motionAnim, setMotionAnim] = useState(""); // 캔버스 재생 애니 클래스(키 리셋)
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const collab = useCollabStore();
@@ -571,6 +575,17 @@ export function EditorPage() {
             className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
           >
             버전
+          </button>
+        )}
+        {!readOnly && (
+          <button
+            onClick={() => setMotionOpen((v) => !v)}
+            title="모션 타임라인 — 요소 등장 애니"
+            className={`rounded-[9px] border px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent ${
+              motionOpen ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
+            }`}
+          >
+            ▷ 모션
           </button>
         )}
         <button
@@ -843,6 +858,7 @@ export function EditorPage() {
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
+          <div key={motionAnim} className={motionAnim ? `dg-motion-${getMotion(deck.id).effect}` : ""}>
           <SlideCanvas
             slide={slide}
             theme={theme}
@@ -867,6 +883,14 @@ export function EditorPage() {
                 : undefined
             }
           />
+          </div>
+          {motionOpen && !readOnly && (
+            <MotionTimeline
+              deckId={deck.id}
+              onPlay={() => setMotionAnim(`m${Date.now()}`)}
+              onClose={() => setMotionOpen(false)}
+            />
+          )}
           {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 */}
           <div className="absolute bottom-3.5 left-3.5 z-10 flex items-center gap-1.5 rounded-[11px] border border-app-border bg-white px-2.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             <span className="text-[11px] text-app-muted">🗺</span>

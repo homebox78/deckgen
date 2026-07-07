@@ -93,6 +93,40 @@
   animation: dgSlideR 0.34s ease;
 }
 
+/* 모션 타임라인 요소 등장 효과 (재생 / 발표 진입) */
+@keyframes tlRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes tlPop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.dg-motion-fade {
+  animation: dgFade 0.5s ease both;
+}
+.dg-motion-rise {
+  animation: tlRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.dg-motion-pop {
+  animation: tlPop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
 html,
 body,
 #root {
