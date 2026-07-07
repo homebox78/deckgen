@@ -46,6 +46,16 @@ import { SettingsModal } from "./SettingsModal";
 const MIN_SLIDES = 3;
 const MAX_SLIDES = 12;
 
+// 생성 모델 (프로토타입 — 자동 + 5종, 유료는 Plus 배지)
+const GEN_MODELS: { key: string; name: string; icon: string; plus?: boolean }[] = [
+  { key: "auto", name: "자동", icon: "tune" },
+  { key: "deckgen-1.1", name: "DeckGen 1.1", icon: "bolt" },
+  { key: "deckgen-1.0-pro", name: "DeckGen 1.0 Pro", icon: "bolt", plus: true },
+  { key: "claude-fable-5", name: "Claude Fable 5", icon: "psychology", plus: true },
+  { key: "gemini-3.1-pro", name: "Gemini 3.1 Pro", icon: "auto_awesome", plus: true },
+  { key: "gpt-5.5", name: "GPT-5.5", icon: "smart_toy", plus: true },
+];
+
 // 4:5 카드뉴스 제안 칩 — 처음부터 SNS 결과물을 상상하게
 const SUGGESTIONS_CAROUSEL = [
   {
@@ -808,24 +818,19 @@ export function HomePage() {
               </button>
             </div>
             <Dropdown
-              items={[
-                { key: "deckgen-1.1", name: "DeckGen 1.1" },
-                { key: "deckgen-1.0-pro", name: "DeckGen 1.0 Pro" },
-                { key: "claude-fable-5", name: "Claude Fable 5" },
-                { key: "gemini-3.1-pro", name: "Gemini 3.1 Pro" },
-              ]}
+              items={GEN_MODELS.map((m) => ({
+                key: m.key,
+                name: m.name,
+                icon: <span className="mi text-[15px]">{m.icon}</span>,
+                badge: m.plus ? "Plus" : undefined,
+              }))}
               activeKey={genModel}
               onSelect={setGenModel}
               triggerClassName="inline-flex items-center gap-1.5 rounded-full border border-app-border bg-app-text px-3 py-1.5 text-white hover:opacity-90 data-open:opacity-90"
             >
-              <span className="mi text-[14px]">auto_awesome</span>
+              <span className="mi text-[14px]">{GEN_MODELS.find((m) => m.key === genModel)?.icon ?? "bolt"}</span>
               <span className="text-[12px] font-semibold">
-                {[
-                  ["deckgen-1.1", "DeckGen 1.1"],
-                  ["deckgen-1.0-pro", "DeckGen 1.0 Pro"],
-                  ["claude-fable-5", "Claude Fable 5"],
-                  ["gemini-3.1-pro", "Gemini 3.1 Pro"],
-                ].find(([k]) => k === genModel)?.[1] ?? "DeckGen 1.1"}
+                {GEN_MODELS.find((m) => m.key === genModel)?.name ?? "DeckGen 1.1"}
               </span>
               <span className="mi text-[14px] text-white/70">expand_more</span>
             </Dropdown>
