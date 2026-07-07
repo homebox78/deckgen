@@ -9,15 +9,16 @@ const GROUPS: { label: string; items: [string, string][] }[] = [
     items: [
       ["← / →", "이전 / 다음 슬라이드"],
       ["F", "슬라이드 검색"],
-      ["?", "이 도움말 열기"],
+      ["?", "이 단축키 목록"],
     ],
   },
   {
     label: "요소 편집",
     items: [
-      ["더블클릭", "텍스트 편집"],
-      ["드래그", "이동 (스냅 가이드)"],
-      ["Ctrl+C / V", "복사 / 붙여넣기"],
+      ["더블클릭", "제목·텍스트 즉석 편집"],
+      ["드래그", "요소 이동 (스냅 가이드)"],
+      ["⌘/Ctrl C", "선택 요소 복사"],
+      ["⌘/Ctrl V", "붙여넣기"],
       ["Ctrl+D", "복제"],
       ["Ctrl+G", "그룹화 / 해제"],
       ["[ / ]", "z-순서 뒤/앞으로"],
@@ -73,6 +74,9 @@ export function ShortcutsModal({ onClose }: Props) {
             </div>
           ))}
         </div>
+        <p className="mt-5 border-t border-app-border-soft pt-3 text-center text-[11.5px] text-app-faint">
+          어디서든 <kbd className="rounded border border-app-border bg-app-bg px-1 font-mono text-[10.5px]">?</kbd> 키로 이 창을 열 수 있어요
+        </p>
       </div>
     </div>
   );

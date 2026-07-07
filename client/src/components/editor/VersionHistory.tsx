@@ -6,13 +6,20 @@ import { listVersions, saveVersion } from "../../store/versionStore";
 import type { DeckVersion } from "../../store/versionStore";
 import { showToast } from "../ui/toast";
 
-function rel(ts: number): string {
-  const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60) return "방금";
-  if (s < 3600) return `${Math.floor(s / 60)}분 전`;
-  if (s < 86400) return `${Math.floor(s / 3600)}시간 전`;
-  return `${Math.floor(s / 86400)}일 전`;
+function absTime(ts: number): string {
+  const d = new Date(ts);
+  const h = d.getHours();
+  const ap = h < 12 ? "오전" : "오후";
+  const h12 = h % 12 || 12;
+  return `${ap} ${String(h12).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
+const THEME_NAMES: Record<string, string> = {
+  "clean-light": "Clean Light",
+  "ink-dark": "Ink Dark",
+  "warm-craft": "Warm Craft",
+  "violet-bold": "Violet Bold",
+};
+const themeName = (id: string) => THEME_NAMES[id] ?? id;
 
 // 슬라이드 제목/구성 diff (버전 ↔ 현재)
 function slideTitle(slide: { elements: { type: string; text?: string; role?: string }[] }): string {
@@ -130,6 +137,9 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
           <span className="text-[15px] font-bold">버전 히스토리</span>
           <button onClick={onClose} className="text-[15px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
         </div>
+        <p className="px-5 pt-3 text-[11.5px] leading-relaxed text-app-faint">
+          생성·AI 수정 시 자동 저장됩니다. 복원해도 이후 버전은 사라지지 않아요.
+        </p>
         <div className="p-4">
           <button
             onClick={() => {
@@ -150,12 +160,18 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
               </p>
             ) : (
               <div className="flex flex-col gap-1.5">
-                {versions.map((v) => (
-                  <div key={v.id} className="flex items-center gap-2 rounded-lg border border-app-border-soft px-3 py-2.5">
+                {versions.map((v, vi) => (
+                  <div key={v.id} className="flex items-center gap-2.5 rounded-lg border border-app-border-soft px-3 py-2.5">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${vi === 0 ? "bg-app-accent" : "bg-app-border"}`} />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[12.5px] font-semibold">{v.label}</div>
-                      <div className="text-[11px] text-app-faint">{rel(v.createdAt)}</div>
+                      <div className="text-[11px] text-app-faint">
+                        {absTime(v.createdAt)} · {v.slides.length}장 · {themeName(deck.themeId)}
+                      </div>
                     </div>
+                    {vi === 0 && (
+                      <span className="flex-none rounded-full bg-app-bg px-2 py-0.5 text-[10px] font-semibold text-app-muted">현재</span>
+                    )}
                     <button
                       onClick={() => setCompareId(v.id)}
                       className="flex-none rounded-md border border-app-border bg-white px-2.5 py-1 text-[11px] font-semibold hover:border-app-accent"

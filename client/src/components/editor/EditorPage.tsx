@@ -196,21 +196,23 @@ function NotesPanel({
 
 type ExportFormat = "pptx" | "figma" | "png";
 
-const EXPORT_FORMATS: { id: ExportFormat; name: string; desc: string }[] = [
+const EXPORT_FORMATS: { id: ExportFormat; name: string; desc: string; lock?: boolean }[] = [
+  {
+    id: "png",
+    name: "이미지 (.png)",
+    desc: "슬라이드마다 PNG 이미지로 저장",
+  },
   {
     id: "pptx",
     name: "PowerPoint (.pptx)",
     desc: "텍스트·차트 편집 가능한 네이티브 슬라이드",
-  },
-  {
-    id: "png",
-    name: "이미지 (.png)",
-    desc: "슬라이드별 PNG (여러 장은 zip)",
+    lock: true,
   },
   {
     id: "figma",
-    name: "Figma (SVG 벡터, .zip)",
-    desc: "Figma에 드래그하면 슬라이드가 편집 가능한 레이어·텍스트로 열림",
+    name: "Figma (.fig)",
+    desc: "Figma로 import — 텍스트·도형은 native layer로 유지",
+    lock: true,
   },
 ];
 
@@ -228,7 +230,10 @@ function ExportPopover({
       <div className="fixed inset-0 z-30" onClick={onClose} />
       <div className="absolute top-[52px] right-4 z-40 w-80 rounded-[14px] border border-app-border bg-white p-4 shadow-[0_12px_32px_rgba(0,0,0,.14)]">
         <p className="text-[14px] font-bold">덱 내보내기</p>
-        <p className="mt-1 mb-3 text-[12px] text-app-muted">다운로드할 형식을 선택하세요.</p>
+        <p className="mt-1 mb-2.5 text-[12px] text-app-muted">다운로드할 형식을 선택하세요.</p>
+        <div className="mb-3 rounded-lg bg-app-bg px-3 py-2 text-[11px] text-app-muted">
+          현재 플랜: <b className="text-app-text">Free</b> — PPTX·FIG 내보내기는 Plus부터
+        </div>
         <div className="flex flex-col gap-2">
           {EXPORT_FORMATS.map((f) => (
             <button
@@ -247,8 +252,15 @@ function ExportPopover({
                     : "border-[1.5px] border-[#C9C9C4]"
                 }`}
               />
-              <span>
-                <span className="block text-[13px] font-semibold">{f.name}</span>
+              <span className="flex-1">
+                <span className="flex items-center gap-1.5 text-[13px] font-semibold">
+                  {f.name}
+                  {f.lock && (
+                    <span className="inline-flex items-center gap-0.5 rounded-[5px] bg-app-border-soft px-1.5 py-0.5 text-[10px] font-semibold text-app-faint">
+                      <span className="mi text-[11px]">lock</span>Plus·Pro
+                    </span>
+                  )}
+                </span>
                 <span className="block text-[11.5px] text-app-muted">{f.desc}</span>
               </span>
             </button>
@@ -262,7 +274,7 @@ function ExportPopover({
                   2차
                 </span>
               </p>
-              <p className="text-[11.5px] text-app-muted">공유·인쇄용 고정 레이아웃</p>
+              <p className="text-[11.5px] text-app-muted">공유나 인쇄에 적합한 고정 레이아웃</p>
             </div>
           </div>
         </div>
