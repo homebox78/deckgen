@@ -44,8 +44,10 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
     // eslint 규칙: deck 전체가 아닌 최초 1회만 발행
   }, [deck.id]);
 
+  // 서브경로 배포(/deckGen/) 대응 — BASE_URL을 포함해 링크 조립
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   const url = tokens
-    ? `${window.location.origin}/s/${mode === "edit" ? tokens.editToken : tokens.viewToken}`
+    ? `${window.location.origin}${base}/s/${mode === "edit" ? tokens.editToken : tokens.viewToken}`
     : "";
 
   const copy = () => {

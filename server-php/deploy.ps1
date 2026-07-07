@@ -1,4 +1,4 @@
-# DeckGen → hom2box.com/deckGen 배포 (repo 루트에서 실행: .\server-php\deploy.ps1)
+﻿# DeckGen → hom2box.com/deckGen 배포 (repo 루트에서 실행: .\server-php\deploy.ps1)
 # 필요: server/config/google_key.pem, server/config/config.php (git 제외 시크릿)
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
@@ -43,6 +43,7 @@ $dbName = [regex]::Match($cfg, "'db'\s*=>\s*'([^']*)'").Groups[1].Value
 ssh -i $key $remote "MYSQL_PWD='$dbPass' mysql -u$dbUser -e 'CREATE DATABASE IF NOT EXISTS $dbName CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'"
 
 Write-Host "[6/6] 헬스 체크" -ForegroundColor Cyan
+icacls $key /grant "$($env:USERNAME):F" | Out-Null  # 읽기 전용으로 잠갔던 임시 키 삭제 권한 복구
 Remove-Item $key -Force
 Start-Sleep -Seconds 1
 $health = Invoke-WebRequest -UseBasicParsing "https://hom2box.com/deckGen/api/health"
