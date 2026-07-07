@@ -432,6 +432,7 @@ export function HomePage() {
   const [trash, setTrash] = useState<TrashedDeck[]>(() => listTrash());
   const [dragDeckId, setDragDeckId] = useState<string | null>(null);
   const [deckCtx, setDeckCtx] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [genModel, setGenModel] = useState("deckgen-1.1");
 
   const refreshMeta = () => {
     setFolders(listFolders());
@@ -604,16 +605,27 @@ export function HomePage() {
       {/* 상단 바 */}
       <header className="flex shrink-0 items-center justify-between border-b border-app-border bg-app-surface px-7 py-3.5">
         <div className="flex items-center gap-2.5">
-          <span className="h-[22px] w-[22px] rounded-md bg-app-accent" />
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-app-accent">
+            <span className="mi text-[14px] text-white">slideshow</span>
+          </span>
           <span className="text-[15px] font-bold tracking-tight">DeckGen</span>
+          <span className="rounded-[5px] bg-app-border-soft px-1.5 py-0.5 text-[10px] font-bold text-app-faint">
+            Prototype
+          </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[12px] text-app-faint">로컬에 자동 저장됨</span>
           <button
             onClick={() => setSettingsOpen(true)}
             className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
           >
             설정
+          </button>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            title="계정"
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white"
+          >
+            우
           </button>
         </div>
       </header>
@@ -720,25 +732,41 @@ export function HomePage() {
           />
           {/* 하단 컨트롤 바 — 모델 · 장수 · 테마 · 첨부 · 전송 (스냅덱 배치) */}
           <div className="flex items-center gap-2 border-t border-app-border-soft pt-3">
-            <span
-              title="현재 텍스트 모델 (환경변수 ANTHROPIC_MODEL로 변경)"
-              className="inline-flex items-center gap-1.5 rounded-full border border-app-border bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white"
+            <Dropdown
+              items={[
+                { key: "deckgen-1.1", name: "DeckGen 1.1" },
+                { key: "deckgen-1.0-pro", name: "DeckGen 1.0 Pro" },
+                { key: "claude-fable-5", name: "Claude Fable 5" },
+                { key: "gemini-3.1-pro", name: "Gemini 3.1 Pro" },
+              ]}
+              activeKey={genModel}
+              onSelect={setGenModel}
+              triggerClassName="inline-flex items-center gap-1.5 rounded-full border border-app-border bg-app-text px-3 py-1.5 text-white hover:opacity-90 data-open:opacity-90"
             >
-              <span className="mi align-middle text-[14px] mr-1">auto_awesome</span>Claude Sonnet 4.6
-            </span>
+              <span className="mi text-[14px]">auto_awesome</span>
+              <span className="text-[12px] font-semibold">
+                {[
+                  ["deckgen-1.1", "DeckGen 1.1"],
+                  ["deckgen-1.0-pro", "DeckGen 1.0 Pro"],
+                  ["claude-fable-5", "Claude Fable 5"],
+                  ["gemini-3.1-pro", "Gemini 3.1 Pro"],
+                ].find(([k]) => k === genModel)?.[1] ?? "DeckGen 1.1"}
+              </span>
+              <span className="mi text-[14px] text-white/70">expand_more</span>
+            </Dropdown>
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => setSlideCount((n) => Math.max(MIN_SLIDES, n - 1))}
                 className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
               ><span className="mi text-[16px]">remove</span></button>
-              <span className="min-w-5 text-center text-[13px] font-semibold">
-                {slideCount}
+              <span className="min-w-8 text-center text-[13px] font-semibold">
+                {slideCount}장
               </span>
               <button
                 onClick={() => setSlideCount((n) => Math.min(MAX_SLIDES, n + 1))}
-                className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
+                className="rounded-md px-2 py-1 text-app-faint hover:bg-app-bg"
               >
-                +
+                <span className="mi text-[16px]">add</span>
               </button>
             </div>
             <Dropdown
@@ -777,9 +805,10 @@ export function HomePage() {
               onClick={create}
               disabled={!prompt.trim()}
               title="아웃라인 생성 (Ctrl+Enter)"
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-app-accent text-[15px] text-white shadow-[0_2px_8px_rgba(26,26,26,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
+              className="flex h-9 items-center gap-1.5 rounded-[10px] bg-app-accent px-4 text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(26,26,26,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
             >
-              ↵
+              <span className="mi text-[15px]">auto_awesome</span>
+              아웃라인 생성
             </button>
           </div>
         </div>
@@ -813,7 +842,7 @@ export function HomePage() {
           {[
             { key: "research", label: "Web Research", icon: "search", soon: false },
             { key: "scrap", label: "Web Scrap", icon: "language", soon: false },
-            { key: "pptx", label: "Import PPTX", icon: "upload_file", soon: false },
+            { key: "pptx", label: "PPTX 가져오기", icon: "upload_file", soon: false },
             { key: "agent", label: "Auto Agent", icon: "smart_toy", soon: true },
           ].map((m) => {
             const active = (m.key === "research" && webResearch) || (m.key === "scrap" && scrapUrls.length > 0);

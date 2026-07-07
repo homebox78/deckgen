@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AdminPage } from "../components/admin/AdminPage";
+import { LoginPage } from "../components/auth/LoginPage";
 import { HomePage } from "../components/home/HomePage";
 import { EditorPage } from "../components/editor/EditorPage";
 import { OutlinePage } from "../components/outline/OutlinePage";
@@ -20,6 +21,7 @@ function withBanner(el: React.ReactNode) {
 const router = createBrowserRouter(
   [
     { path: "/", element: withBanner(<HomePage />) },
+    { path: "/login", element: <LoginPage /> },
     { path: "/deck/:id/setup", element: withBanner(<SetupPage />) },
     { path: "/deck/:id/outline", element: withBanner(<OutlinePage />) },
     { path: "/deck/:id/edit", element: withBanner(<EditorPage />) },
