@@ -39,20 +39,24 @@ type PageId =
   | "flags"
   | "policies"
   | "refunds"
-  | "roles";
+  | "roles"
+  | "sbtpl"
+  | "funnel";
 
 const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
-  { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실데이터", icon: "dashboard" },
-  { id: "users", name: "사용자 관리", desc: "협업 참여자 · 차단 · 플랜", icon: "group" },
-  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크 · 멤버 · 강제 잠금", icon: "folder_shared" },
+  { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실시간", icon: "dashboard" },
+  { id: "users", name: "사용자 관리", desc: "검색·플랜 필터·차단", icon: "group" },
+  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크·멤버 권한·강제 잠금", icon: "folder_shared" },
   { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션", icon: "forum" },
   { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정", icon: "palette" },
-  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 이벤트", icon: "manage_history" },
+  { id: "sbtpl", name: "스토리보드 템플릿", desc: "와이어프레임 라이브러리 노출·순서", icon: "view_carousel" },
+  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 잡 모니터링", icon: "manage_history" },
   { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용", icon: "smart_toy" },
   { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그", icon: "toll" },
   { id: "flags", name: "기능 플래그", desc: "롤아웃 % · 타겟 · ON/OFF", icon: "flag" },
   { id: "abtest", name: "A/B 테스트", desc: "실험 · 변형 전환율 · 승자 적용", icon: "science" },
-  { id: "plans", name: "플랜 · 결제", desc: "플랜 정의 (결제 연동 2차)", icon: "credit_card" },
+  { id: "funnel", name: "온보딩 퍼널", desc: "가입→첫 덱 단계별 전환·이탈", icon: "filter_alt" },
+  { id: "plans", name: "플랜 · 결제", desc: "구독 현황과 매출", icon: "sell" },
   { id: "refunds", name: "환불 · 청구", desc: "결제 내역 · 환불 · 재청구", icon: "receipt_long" },
   { id: "policies", name: "약관 · 정책", desc: "버전 · 재동의 · 게시", icon: "gavel" },
   { id: "banners", name: "공지 / 배너", desc: "사용자 화면 상단 안내 관리", icon: "campaign" },
@@ -69,12 +73,19 @@ const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
 // 그룹형 아코디언 내비 (6그룹)
 const NAV_GROUPS: { label: string; ids: PageId[] }[] = [
   { label: "개요", ids: ["dash"] },
-  { label: "사용자·콘텐츠", ids: ["users", "decks", "collab", "templates"] },
-  { label: "생성·AI", ids: ["jobs", "models", "credits", "flags", "abtest"] },
+  { label: "사용자·콘텐츠", ids: ["users", "decks", "collab", "templates", "sbtpl"] },
+  { label: "생성·AI", ids: ["jobs", "models", "credits", "flags", "abtest", "funnel"] },
   { label: "매출·정책", ids: ["plans", "refunds", "policies"] },
   { label: "커뮤니케이션", ids: ["banners", "emails"] },
   { label: "시스템·운영", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
 ];
+
+// 그룹별 주의 배지(미해결 잡·공지·오류 등)
+const GROUP_BADGES: Record<string, number> = {
+  "생성·AI": 2,
+  커뮤니케이션: 1,
+  "시스템·운영": 3,
+};
 
 const fmtTime = (ts: number) => {
   const d = new Date(ts);
@@ -1594,6 +1605,110 @@ function RolesPage() {
   );
 }
 
+// ===== 스토리보드 템플릿 (sbtpl) =====
+function SbtplPage() {
+  const items = [...WIREFRAME_LIBRARIES, ...CAROUSEL_LIBRARIES].map((l, i) => ({
+    id: l.id,
+    name: l.name,
+    uses: 862 - i * 121,
+    on: i !== 3,
+  }));
+  const [rows, setRows] = useState(items);
+  const move = (i: number, dir: number) => {
+    setRows((p) => {
+      const n = [...p];
+      const j = i + dir;
+      if (j < 0 || j >= n.length) return p;
+      [n[i], n[j]] = [n[j], n[i]];
+      return n;
+    });
+  };
+  const onCount = rows.filter((r) => r.on).length;
+  return (
+    <>
+      <div className="mb-3.5 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">
+          홈 "스토리보드로 시작" 라이브러리에 노출되는 와이어프레임을 관리합니다. 순서는 노출 순.
+        </span>
+        <span className="rounded-full border border-app-border bg-white px-2.5 py-1 text-[11.5px] font-semibold">
+          활성 {onCount} / {rows.length}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3.5">
+        {rows.map((r, i) => (
+          <Card key={r.id} className="p-4">
+            <div className="mb-2.5 flex h-24 flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] px-4">
+              <span className="h-1.5 w-2/5 rounded bg-[#D4D4CE]" />
+              <span className="h-1 w-4/5 rounded bg-[#E4E4E0]" />
+              <span className="h-1 w-3/5 rounded bg-[#E4E4E0]" />
+              <span className="mt-1 h-6 w-full rounded bg-[#EFEFEC]" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[12.5px] font-semibold">{r.name}</div>
+                <div className="text-[10.5px] text-app-faint">사용 {r.uses.toLocaleString()}회</div>
+              </div>
+              <button onClick={() => move(i, -1)} className="rounded-md border border-app-border bg-white px-1.5 py-1 text-app-muted"><span className="mi text-[14px]">arrow_back</span></button>
+              <button onClick={() => move(i, 1)} className="rounded-md border border-app-border bg-white px-1.5 py-1 text-app-muted"><span className="mi text-[14px]">arrow_forward</span></button>
+              <span className="text-[10.5px] text-app-faint">{r.on ? "노출 중" : "숨김"}</span>
+              <Toggle on={r.on} onClick={() => setRows((p) => p.map((x) => x.id === r.id ? { ...x, on: !x.on } : x))} />
+            </div>
+          </Card>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ===== 온보딩 퍼널 (funnel) =====
+function FunnelPage() {
+  const [period, setPeriod] = useState("30일");
+  const stages = [
+    { name: "가입 완료", n: 3880, pct: 100 },
+    { name: "온보딩 시작", n: 3337, pct: 86 },
+    { name: "용도 선택", n: 2794, pct: 72 },
+    { name: "첫 프롬프트/템플릿", n: 1901, pct: 49 },
+    { name: "아웃라인 생성", n: 1707, pct: 44 },
+    { name: "첫 덱 완성", n: 1474, pct: 38 },
+  ];
+  return (
+    <>
+      <div className="mb-4 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">가입부터 첫 덱 생성까지 단계별 전환율과 이탈을 추적합니다.</span>
+        <div className="flex overflow-hidden rounded-lg border border-app-border">
+          {["7일", "30일", "90일"].map((p) => (
+            <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 text-[12px] font-semibold ${period === p ? "bg-app-text text-white" : "bg-white text-app-muted"}`}>{p}</button>
+          ))}
+        </div>
+      </div>
+      <Card className="px-5 py-4">
+        {stages.map((s, i) => {
+          const drop = i < stages.length - 1 ? s.n - stages[i + 1].n : 0;
+          const dropPct = i < stages.length - 1 ? Math.round((drop / s.n) * 100) : 0;
+          return (
+            <div key={s.name}>
+              <div className="flex items-center gap-3 py-2">
+                <span className="w-40 flex-none text-[12.5px] font-medium">{s.name}</span>
+                <div className="h-6 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+                  <div className="flex h-full items-center rounded bg-app-text pl-2 text-[10.5px] font-bold text-white" style={{ width: `${s.pct}%` }}>
+                    {s.n.toLocaleString()}
+                  </div>
+                </div>
+                <span className="w-12 flex-none text-right text-[12.5px] font-bold">{s.pct}%</span>
+              </div>
+              {i < stages.length - 1 && (
+                <div className="py-0.5 pl-40 text-[10.5px] font-semibold text-app-danger">
+                  ↓ {drop.toLocaleString()} 이탈 ({dropPct}%)
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+    </>
+  );
+}
+
 // ===== 콘솔 셸 =====
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getAdminToken());
@@ -1608,6 +1723,8 @@ export function AdminPage() {
       return !v;
     });
   };
+  const d = new Date();
+  const nowKst = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} KST`;
 
   if (!authed) return <AdminLogin onAuthed={() => setAuthed(true)} />;
   const cur = PAGES.find((p) => p.id === page)!;
@@ -1640,22 +1757,48 @@ export function AdminPage() {
 
         <div className="flex-1 overflow-y-auto">
           {collapsed
-            ? // 레일 모드 — 아이콘만
-              PAGES.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPage(p.id)}
-                  title={p.name}
-                  className="mb-0.5 flex w-full items-center justify-center rounded-[9px] py-2.5"
-                  style={{ background: page === p.id ? "rgba(139,107,255,.16)" : "transparent" }}
-                >
-                  <span className="mi text-[19px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.6)" }}>{p.icon}</span>
-                </button>
-              ))
+            ? // 레일 모드 — 그룹 아이콘 + hover 플라이아웃 (시안 26·27)
+              NAV_GROUPS.map((g) => {
+                const items = g.ids.map((id) => PAGES.find((p) => p.id === id)!).filter(Boolean);
+                const rep = items.find((p) => p.id === page) ?? items[0];
+                const badge = GROUP_BADGES[g.label] ?? 0;
+                const active = items.some((p) => p.id === page);
+                return (
+                  <div key={g.label} className="group/rail relative mb-0.5">
+                    <button
+                      onClick={() => setPage(rep.id)}
+                      title={g.label}
+                      className="relative flex w-full items-center justify-center rounded-[9px] py-2.5"
+                      style={{ background: active ? "rgba(139,107,255,.16)" : "transparent" }}
+                    >
+                      <span className="mi text-[19px]" style={{ color: active ? "#fff" : "rgba(255,255,255,.6)" }}>{rep.icon}</span>
+                      {badge > 0 && (
+                        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-app-danger" />
+                      )}
+                    </button>
+                    {/* 플라이아웃 서브메뉴 */}
+                    <div className="pointer-events-none absolute left-full top-0 z-50 ml-2 hidden w-52 rounded-xl border border-[rgba(255,255,255,.12)] bg-[#1F1D28] p-1.5 shadow-2xl group-hover/rail:pointer-events-auto group-hover/rail:block">
+                      <div className="px-2.5 py-1 text-[10px] font-bold tracking-wide text-[rgba(255,255,255,.4)] uppercase">{g.label}</div>
+                      {items.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => setPage(p.id)}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left"
+                          style={{ background: page === p.id ? "rgba(139,107,255,.2)" : "transparent" }}
+                        >
+                          <span className="mi text-[16px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.6)" }}>{p.icon}</span>
+                          <span className="text-[12px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.7)" }}>{p.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
             : // 그룹 아코디언
               NAV_GROUPS.map((g) => {
                 const items = g.ids.map((id) => PAGES.find((p) => p.id === id)!).filter(Boolean);
                 const open = openGroups[g.label];
+                const badge = GROUP_BADGES[g.label] ?? 0;
                 return (
                   <div key={g.label} className="mb-1">
                     <button
@@ -1663,7 +1806,12 @@ export function AdminPage() {
                       className="flex w-full items-center gap-1.5 px-2.5 py-1.5 text-[10.5px] font-bold tracking-wide text-[rgba(255,255,255,.4)] uppercase"
                     >
                       <span className={`mi text-[14px] transition-transform ${open ? "rotate-90" : ""}`}>chevron_right</span>
-                      {g.label}
+                      <span className="flex-1 text-left">{g.label}</span>
+                      {badge > 0 && (
+                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
+                          {badge}
+                        </span>
+                      )}
                     </button>
                     {open &&
                       items.map((p) => (
@@ -1698,6 +1846,7 @@ export function AdminPage() {
             <>
               <div className="min-w-0 flex-1">
                 <div className="text-[12px] font-semibold text-white">관리자</div>
+                <div className="truncate text-[10px] text-[rgba(255,255,255,.45)]">admin@deckgen.app</div>
               </div>
               <button
                 onClick={() => {
@@ -1721,8 +1870,9 @@ export function AdminPage() {
           <span className="flex-1" />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C9EBD9] bg-[#EAF7F0] px-2.5 py-1 text-[11.5px] font-semibold text-[#1E7F4F]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F4F]" />
-            API 연결됨
+            API 정상 · p95 1.2s
           </span>
+          <span className="font-mono text-[11px] text-app-faint">{nowKst}</span>
         </div>
         <div className="flex-1 overflow-auto p-6">
           {page === "dash" && <DashPage />}
@@ -1747,6 +1897,8 @@ export function AdminPage() {
           {page === "policies" && <PoliciesPage />}
           {page === "refunds" && <RefundsPage />}
           {page === "roles" && <RolesPage />}
+          {page === "sbtpl" && <SbtplPage />}
+          {page === "funnel" && <FunnelPage />}
         </div>
       </div>
     </div>
