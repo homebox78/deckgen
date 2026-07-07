@@ -7,7 +7,8 @@ import {
   toggleResolve,
   useComments,
 } from "../../store/commentStore";
-import { getGuestName } from "../../store/collabStore";
+import { getGuestName, useCollabStore } from "../../store/collabStore";
+import { pushNotif } from "../../store/notifStore";
 
 function rel(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -15,6 +16,11 @@ function rel(ts: number): string {
   if (s < 3600) return `${Math.floor(s / 60)}분 전`;
   if (s < 86400) return `${Math.floor(s / 3600)}시간 전`;
   return `${Math.floor(s / 86400)}일 전`;
+}
+
+// @멘션 파싱 — 텍스트에서 후보 이름과 일치하는 @이름 추출
+function extractMentions(text: string, names: string[]): string[] {
+  return names.filter((n) => new RegExp(`@${n}(\\s|$|[^\\w가-힣])`).test(text + " "));
 }
 
 export function CommentsPanel({
@@ -33,7 +39,56 @@ export function CommentsPanel({
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
+  const [mentionOpen, setMentionOpen] = useState<"draft" | "reply" | null>(null);
   const me = getGuestName() || "나";
+  const collab = useCollabStore();
+  // 멘션 후보 = 협업자(나 제외) + 데모 기본 후보
+  const candidates = Array.from(
+    new Set(
+      [...(collab.deckId === deckId ? collab.peers.map((p) => p.name) : []), "우진", "지현", "민수"].filter(
+        (n) => n && n !== me,
+      ),
+    ),
+  );
+
+  // 멘션 알림 발송 + 텍스트 감지
+  const notifyMentions = (text: string) => {
+    const hits = extractMentions(text, candidates);
+    hits.forEach(() => {
+      pushNotif(deckId, {
+        who: me,
+        color: "#1A1A1A",
+        text: `${me}님이 회원님을 멘션했어요: "${text.slice(0, 40)}"`,
+        slideIndex,
+      });
+    });
+    return hits;
+  };
+  const pickMention = (name: string, which: "draft" | "reply") => {
+    if (which === "draft") setDraft((d) => d.replace(/@[^@\s]*$/, `@${name} `));
+    else setReplyDraft((d) => d.replace(/@[^@\s]*$/, `@${name} `));
+    setMentionOpen(null);
+  };
+  const mentionMenu = (which: "draft" | "reply") =>
+    mentionOpen === which && candidates.length > 0 ? (
+      <div className="absolute bottom-full left-0 z-30 mb-1 w-44 overflow-hidden rounded-lg border border-app-border bg-white py-1 shadow-lg">
+        {candidates.map((n) => (
+          <button
+            key={n}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              pickMention(n, which);
+            }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] hover:bg-app-bg"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-app-text text-[9px] font-semibold text-white">
+              {n.slice(0, 1)}
+            </span>
+            @{n}
+          </button>
+        ))}
+      </div>
+    ) : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -83,18 +138,23 @@ export function CommentsPanel({
                   </div>
                 )}
                 {replyTo === c.id && (
-                  <div className="mt-1.5 flex gap-1.5">
+                  <div className="relative mt-1.5 flex gap-1.5">
+                    {mentionMenu("reply")}
                     <input
                       value={replyDraft}
-                      onChange={(e) => setReplyDraft(e.target.value)}
+                      onChange={(e) => {
+                        setReplyDraft(e.target.value);
+                        setMentionOpen(/@[^@\s]*$/.test(e.target.value) ? "reply" : null);
+                      }}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && replyDraft.trim()) {
+                        if (e.key === "Enter" && replyDraft.trim() && !mentionOpen) {
+                          notifyMentions(replyDraft.trim());
                           addReply(deckId, c.id, me, replyDraft.trim());
                           setReplyDraft("");
                           setReplyTo(null);
                         }
                       }}
-                      placeholder="답글…"
+                      placeholder="답글 달기… (@로 멘션)"
                       autoFocus
                       className="min-w-0 flex-1 rounded-md border border-app-border px-2 py-1 text-[11px] focus:border-app-accent focus:outline-none"
                     />
@@ -108,22 +168,28 @@ export function CommentsPanel({
 
       {!readOnly && (
         <div className="border-t border-app-border-soft p-3">
-          <div className="flex gap-1.5">
+          <div className="relative flex gap-1.5">
+            {mentionMenu("draft")}
             <input
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setMentionOpen(/@[^@\s]*$/.test(e.target.value) ? "draft" : null);
+              }}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && draft.trim()) {
+                if (e.key === "Enter" && draft.trim() && !mentionOpen) {
+                  notifyMentions(draft.trim());
                   addComment(deckId, slideId, me, draft.trim());
                   setDraft("");
                 }
               }}
-              placeholder="댓글 입력 후 Enter"
+              placeholder="댓글 입력 후 Enter (@로 멘션)"
               className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12px] focus:border-app-accent focus:outline-none"
             />
             <button
               onClick={() => {
                 if (draft.trim()) {
+                  notifyMentions(draft.trim());
                   addComment(deckId, slideId, me, draft.trim());
                   setDraft("");
                 }

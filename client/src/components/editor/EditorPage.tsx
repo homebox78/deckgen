@@ -33,6 +33,8 @@ import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
 import { MotionTimeline } from "./MotionTimeline";
 import { getMotion } from "../../store/motionStore";
+import { NotificationBell } from "./NotificationBell";
+import { ShortcutsModal } from "./ShortcutsModal";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { RegenerateLayer } from "./RegenerateLayer";
 import { ShareDialog } from "./ShareDialog";
@@ -319,6 +321,8 @@ export function EditorPage() {
   const [exportOpen, setExportOpen] = useState(false);
   const [motionOpen, setMotionOpen] = useState(false);
   const [motionAnim, setMotionAnim] = useState(""); // 캔버스 재생 애니 클래스(키 리셋)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [followId, setFollowId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const collab = useCollabStore();
@@ -383,12 +387,30 @@ export function EditorPage() {
     return () => window.clearTimeout(saveTimer.current);
   }, [deck]);
 
-  // Ctrl+Z / Ctrl+Shift+Z
+  // 협업 팔로우 — 팔로우 대상의 슬라이드로 자동 이동
+  useEffect(() => {
+    if (!followId) return;
+    const target = peers.find((p) => p.clientId === followId);
+    if (!target) {
+      setFollowId(null);
+      return;
+    }
+    if (target.slideIndex !== slideIndex) setCurrentSlideIndex(target.slideIndex);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peers, followId]);
+
+  // Ctrl+Z / Ctrl+Shift+Z + ? (단축키 도움말)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z") return;
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      const inField = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
+      if (!inField && e.key === "?") {
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
+        return;
+      }
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z") return;
+      if (inField) return;
       e.preventDefault();
       const { undo, redo } = useDeckStore.temporal.getState();
       if (e.shiftKey) redo();
@@ -527,20 +549,35 @@ export function EditorPage() {
               {(getGuestName() || "나").slice(0, 1)}
             </span>
             {peers.map((p) => (
-              <span
+              <button
                 key={p.clientId}
-                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} 보는 중`}
-                className="-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
+                onClick={() => {
+                  setFollowId((cur) => (cur === p.clientId ? null : p.clientId));
+                  setCurrentSlideIndex(p.slideIndex);
+                }}
+                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} · 클릭 시 시점 팔로우`}
+                className={`-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-[11px] font-semibold text-white ${
+                  followId === p.clientId ? "ring-2 ring-app-accent ring-offset-1" : "border-2 border-white"
+                }`}
                 style={{ background: p.color }}
               >
                 {p.name.slice(0, 1)}
-              </span>
+              </button>
             ))}
             <span
               className={`ml-1.5 text-[11px] ${collab.connected ? "text-app-success" : "text-app-faint"}`}
             >
               {collab.connected ? `● ${peers.length + 1}명 접속` : "연결 중…"}
             </span>
+            {followId && (
+              <button
+                onClick={() => setFollowId(null)}
+                title="팔로우 해제"
+                className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-app-accent-soft px-2 py-0.5 text-[10.5px] font-semibold text-app-text"
+              >
+                👁 {peers.find((p) => p.clientId === followId)?.name ?? "?"} 팔로우 중 ✕
+              </button>
+            )}
           </div>
         )}
         {!readOnly && (
@@ -561,6 +598,14 @@ export function EditorPage() {
             <span className="text-[9px] text-app-faint">▾</span>
           </Dropdown>
         )}
+        <NotificationBell deckId={deck.id} onJump={(i) => setCurrentSlideIndex(i)} />
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          title="키보드 단축키 (?)"
+          className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent"
+        >
+          ⌨
+        </button>
         <button
           onClick={() => setGridOpen(true)}
           title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
@@ -634,6 +679,7 @@ export function EditorPage() {
           />
         )}
         {versionsOpen && <VersionHistory deck={deck} onClose={() => setVersionsOpen(false)} />}
+      {shortcutsOpen && <ShortcutsModal onClose={() => setShortcutsOpen(false)} />}
         {gridOpen && (
           <GridOverview
             deck={deck}
