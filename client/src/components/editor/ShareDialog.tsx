@@ -12,13 +12,20 @@ import { showToast } from "../ui/toast";
 type Mode = "view" | "edit";
 
 const MODES: { id: Mode; name: string; desc: string }[] = [
-  { id: "view", name: "보기 전용", desc: "열람과 PPTX 다운로드만 — 편집 불가" },
+  { id: "view", name: "보기 전용", desc: "열람만 가능 — 편집 불가" },
   {
     id: "edit",
     name: "편집 허용",
-    desc: "링크를 받은 사람도 같은 덱을 실시간으로 함께 편집",
+    desc: "링크를 받은 사람도 아웃라인·슬라이드 수정 가능",
   },
 ];
+
+interface Member {
+  name: string;
+  email: string;
+  role: "owner" | "edit" | "view";
+  online?: boolean;
+}
 
 export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void }) {
   const [tokens, setTokens] = useState(() => getShareTokens(deck.id));
@@ -27,6 +34,12 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
   const [error, setError] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
+  const me = getGuestName() || "우진";
+  const [members, setMembers] = useState<Member[]>([
+    { name: me, email: "woojin@deckgen.app", role: "owner" },
+    { name: "김대리", email: "kim@company.co.kr", role: "edit", online: true },
+    { name: "박과장", email: "park@company.co.kr", role: "edit" },
+  ]);
 
   const invite = async () => {
     const email = inviteEmail.trim();
@@ -90,7 +103,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[16px] font-bold">링크 공유</span>
+          <span className="text-[16px] font-bold">공유</span>
           <button
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-lg bg-app-bg text-[13px] text-app-muted hover:bg-app-border-soft"
@@ -99,8 +112,80 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
           </button>
         </div>
         <p className="mt-1 mb-4 text-[12.5px] text-app-muted">
-          링크가 있는 누구나 접근할 수 있어요. 권한별로 링크가 다릅니다.
+          멤버별로 편집/보기 권한을 나눠 초대하세요. 편집 권한 멤버는 같은 슬라이드를 실시간 공동 편집합니다.
         </p>
+
+        {/* 이메일 초대 (상단, 역할 드롭다운) */}
+        <div className="mb-3 flex items-center gap-2">
+          <input
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && void invite()}
+            placeholder="이메일로 초대"
+            className="min-w-0 flex-1 rounded-[10px] border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none"
+          />
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value as Mode)}
+            className="rounded-[10px] border border-app-border bg-white px-2 py-2 text-[12px] focus:border-app-accent focus:outline-none"
+          >
+            <option value="edit">편집 가능</option>
+            <option value="view">보기 전용</option>
+          </select>
+          <button
+            onClick={() => {
+              if (inviteEmail.trim() && /@/.test(inviteEmail)) {
+                setMembers((p) => [...p, { name: inviteEmail.split("@")[0], email: inviteEmail.trim(), role: mode }]);
+              }
+              void invite();
+            }}
+            disabled={inviting}
+            className="shrink-0 rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
+          >
+            초대
+          </button>
+        </div>
+
+        {/* 멤버 로스터 */}
+        <div className="mb-4 flex flex-col gap-1">
+          {members.map((mem, i) => (
+            <div key={mem.email} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
+              <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white">
+                {mem.name.slice(0, 1)}
+                {mem.online && <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-app-success" />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[12.5px] font-semibold">
+                  {mem.name}
+                  {mem.role === "owner" && <span className="ml-1 text-[11px] text-app-faint">(나)</span>}
+                </div>
+                <div className="truncate text-[11px] text-app-faint">{mem.email}</div>
+              </div>
+              {mem.role === "owner" ? (
+                <span className="text-[11.5px] text-app-muted">소유자</span>
+              ) : (
+                <>
+                  <select
+                    value={mem.role}
+                    onChange={(e) => setMembers((p) => p.map((x, xi) => xi === i ? { ...x, role: e.target.value as Member["role"] } : x))}
+                    className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]"
+                  >
+                    <option value="edit">편집 가능</option>
+                    <option value="view">보기 전용</option>
+                  </select>
+                  <button
+                    onClick={() => setMembers((p) => p.filter((_, xi) => xi !== i))}
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-app-faint hover:text-app-danger"
+                  >
+                    <span className="mi text-[15px]">close</span>
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <p className="mb-2 text-[11px] font-bold tracking-[.06em] text-app-faint">링크 공유</p>
 
         {error && (
           <div className="mb-3 rounded-lg border border-app-danger-border bg-app-danger-soft p-3 text-[12.5px] text-app-danger">
@@ -152,31 +237,6 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             >
               {copied ? "복사됨" : "복사"}
             </button>
-          </div>
-        )}
-
-        {/* 이메일 초대 — Invite Email 템플릿으로 발송, 선택된 권한 적용 */}
-        {tokens && (
-          <div className="mt-3">
-            <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">
-              이메일로 초대 · {mode === "edit" ? "편집 가능" : "보기 전용"}
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && void invite()}
-                placeholder="name@company.com"
-                className="min-w-0 flex-1 rounded-[10px] border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none"
-              />
-              <button
-                onClick={() => void invite()}
-                disabled={inviting}
-                className="shrink-0 rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12.5px] font-semibold hover:border-app-accent disabled:opacity-50"
-              >
-                {inviting ? "발송 중…" : "초대"}
-              </button>
-            </div>
           </div>
         )}
 

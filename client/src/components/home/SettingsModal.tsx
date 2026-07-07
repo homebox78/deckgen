@@ -14,20 +14,19 @@ interface Plan {
   popular?: boolean;
 }
 const PLANS: Plan[] = [
-  { id: "Free", price: "₩0", desc: "기본 생성 · 워터마크", feats: ["일 5회 생성", "PNG 내보내기", "1인 작업"] },
-  { id: "Beginner", price: "₩5,000/월", desc: "가볍게 시작", feats: ["일 30회 생성", "PDF 내보내기", "협업 2명"] },
-  { id: "Plus", price: "₩10,000/월", desc: "가장 인기 있는 플랜", feats: ["무제한 생성", "PPTX·Figma 내보내기", "AI 이미지", "협업 5명"], popular: true },
-  { id: "Pro", price: "₩29,000/월", desc: "팀·조직용", feats: ["무제한 + 우선 처리", "브랜드 킷", "SSO·관리자", "협업 무제한"] },
+  { id: "Free", price: "$0", desc: "바로 시작할 수 있는 간단한 슬라이드 제작", feats: ["50 크레딧 · 워터마크 · PNG/PDF"] },
+  { id: "Beginner", price: "$5/월", desc: "한 달에 1개 정도의 덱", feats: ["80 크레딧 · 워터마크 없음"] },
+  { id: "Plus", price: "$10/월", desc: "한 달에 3개 정도의 덱", feats: ["300 크레딧 · PPTX·FIG export · 모든 AI 모델"], popular: true },
+  { id: "Pro", price: "$100/월", desc: "엔터프라이즈 수준", feats: ["3,000 크레딧 · 최우선 처리"] },
 ];
 
 const COMPARE = [
-  ["월간 생성", "5/일", "30/일", "무제한", "무제한"],
-  ["덱당 슬라이드", "12", "20", "40", "무제한"],
-  ["AI 이미지", "—", "—", "supported", "supported"],
+  ["월간 크레딧", "50", "80", "300", "3,000"],
+  ["덱당 최대 슬라이드 수", "10", "20", "300", "300"],
+  ["이미지 생성 / 편집", "Image Lite", "Lite + Image 2", "전체 이미지 모델", "전체 이미지 모델"],
   ["워터마크", "있음", "없음", "없음", "없음"],
-  ["PPTX 내보내기", "—", "supported", "supported", "supported"],
-  ["Figma 내보내기", "—", "—", "supported", "supported"],
-  ["처리 속도", "표준", "표준", "빠름", "우선"],
+  ["PPTX export", "—", "—", "supported", "supported"],
+  ["Figma export", "—", "—", "supported", "supported"],
 ];
 
 export function UpgradeModal({ onClose }: { onClose: () => void }) {
@@ -43,20 +42,22 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
         </div>
         <div className="grid grid-cols-4 gap-3">
-          {PLANS.map((p) => (
+          {PLANS.map((p) => {
+            const dark = p.popular;
+            return (
             <div
               key={p.id}
-              className={`rounded-xl border p-4 ${p.popular ? "border-[1.5px] border-app-accent" : "border-app-border"}`}
+              className={`rounded-xl border p-4 ${dark ? "border-app-text bg-app-text text-white" : "border-app-border"}`}
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-[14px] font-bold">{p.id}</span>
-                {p.popular && <span className="rounded bg-app-accent-soft px-1.5 py-0.5 text-[9.5px] font-bold text-app-accent">인기</span>}
+                {p.popular && <span className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold ${dark ? "bg-white/20 text-white" : "bg-app-accent-soft text-app-accent"}`}>인기</span>}
               </div>
               <div className="mt-1.5 text-[18px] font-extrabold">{p.price}</div>
-              <div className="mb-2.5 text-[11px] text-app-faint">{p.desc}</div>
+              <div className={`mb-2.5 text-[11px] ${dark ? "text-white/60" : "text-app-faint"}`}>{p.desc}</div>
               <ul className="mb-3 flex flex-col gap-1">
                 {p.feats.map((f) => (
-                  <li key={f} className="text-[11.5px] text-app-muted">· {f}</li>
+                  <li key={f} className={`text-[11.5px] ${dark ? "text-white/80" : "text-app-muted"}`}>· {f}</li>
                 ))}
               </ul>
               <button
@@ -68,13 +69,16 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
                 className={`w-full rounded-lg py-2 text-[12px] font-semibold ${
                   s.plan === p.id
                     ? "cursor-default bg-app-bg text-app-faint"
-                    : "bg-app-text text-white hover:opacity-90"
+                    : dark
+                      ? "bg-white text-app-text hover:opacity-90"
+                      : "bg-app-text text-white hover:opacity-90"
                 }`}
               >
                 {s.plan === p.id ? "현재 플랜" : "플랜 선택"}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
         <div className="mt-5 overflow-hidden rounded-xl border border-app-border">
           <div className="grid grid-cols-5 border-b border-app-border bg-[#FBFBFA] px-3 py-2 text-[11px] font-bold text-app-faint">
@@ -151,8 +155,11 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
               <div className="text-[13px] font-semibold">우진</div>
               <div className="text-[11.5px] text-app-faint">woojin@example.com · {s.plan} 플랜</div>
             </div>
-            <button onClick={() => setUpgradeOpen(true)} className="rounded-lg bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90">
+            <button onClick={() => setUpgradeOpen(true)} className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12px] font-semibold hover:border-app-accent">
               업그레이드
+            </button>
+            <button onClick={() => showToast("로그아웃되었어요 (데모)")} className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12px] font-semibold text-app-muted hover:border-app-accent">
+              로그아웃
             </button>
           </div>
 
@@ -165,9 +172,9 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
               className="w-40 rounded-lg border border-app-border px-2.5 py-1.5 text-[12px] focus:border-app-accent focus:outline-none"
             />
           </Row>
-          <Row label="브랜드 색" sub="모노크롬 v2 — 그레이 스케일">
+          <Row label="브랜드 색" sub="모든 테마의 액센트를 대체합니다">
             <div className="flex gap-1.5">
-              {["", "#1A1A1A", "#55554F", "#8A8A84", "#C9C9C4"].map((c) => (
+              {["", "#7C6BFF", "#2563EB", "#1E9C5B", "#D6336C"].map((c) => (
                 <button
                   key={c || "def"}
                   onClick={() => patchSettings({ brandAccent: c })}
