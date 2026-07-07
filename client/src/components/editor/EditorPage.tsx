@@ -534,6 +534,16 @@ export function EditorPage() {
           </StatusBadge>
         )}
         {readOnly && <StatusBadge status="queued">보기 전용</StatusBadge>}
+        {!readOnly && (
+          <button
+            onClick={() => useDeckStore.temporal.getState().undo()}
+            disabled={temporal.pastStates.length === 0}
+            title="실행 취소 (Ctrl+Z)"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+          >
+            <span className="mi text-[16px]">undo</span>
+          </button>
+        )}
         {!collab.isGuest && !readOnly && (
           <span className="flex items-center gap-1 text-[11px] text-app-faint"><span className="mi text-[13px]">cloud_done</span>자동 저장됨</span>
         )}
@@ -751,7 +761,7 @@ export function EditorPage() {
                 triggerClassName="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"
                 title="새 슬라이드"
               >
-                New slide <span className="mi text-[14px] text-app-faint">expand_more</span>
+                새 슬라이드 <span className="mi text-[14px] text-app-faint">expand_more</span>
               </Dropdown>
               <button
                 onClick={() => {
@@ -812,8 +822,29 @@ export function EditorPage() {
                 .toLowerCase();
               if (!hay.includes(q)) return null;
             }
+            const showSection = s.section && s.section !== deck.slides[i - 1]?.section;
             return (
-              <div key={s.id} className="flex gap-2">
+              <div key={s.id}>
+              {showSection && (
+                <div className="mt-2 mb-1 flex items-center gap-1.5 px-0.5">
+                  <span className="mi text-[12px] text-app-faint">label</span>
+                  <span className="flex-1 truncate text-[10.5px] font-bold tracking-wide text-app-muted uppercase">
+                    {s.section}
+                  </span>
+                  {!readOnly && (
+                    <button
+                      onClick={() => {
+                        const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
+                        if (cur) useDeckStore.getState().replaceSlide(s.id, { ...cur, section: undefined });
+                      }}
+                      className="text-app-faint hover:text-app-danger"
+                    >
+                      <span className="mi text-[13px]">close</span>
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2">
                 <span
                   className={`w-3.5 pt-1 text-right text-[11px] font-bold ${
                     isCur ? "text-app-accent" : "text-app-faint"
@@ -878,25 +909,50 @@ export function EditorPage() {
                       ))}
                   </div>
                   {isCur && !readOnly && (
-                    <div className="mt-1 flex gap-1.5">
+                    <div className="mt-1 grid grid-cols-2 gap-1.5">
                       <button
                         onClick={() => {
                           duplicateSlide(s.id);
                           setCurrentSlideIndex(i + 1);
                         }}
-                        className="flex-1 rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
                       >
                         복제
                       </button>
                       <button
+                        onClick={() => {
+                          const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
+                          const locked = cur?.elements.every((e) => e.locked);
+                          cur?.elements.forEach((e) =>
+                            useDeckStore.getState().updateElement(s.id, e.id, { locked: !locked }),
+                          );
+                          showToast(locked ? "슬라이드 잠금 해제" : "슬라이드를 잠갔어요");
+                        }}
+                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                      >
+                        {s.elements.length > 0 && s.elements.every((e) => e.locked) ? "해제" : "잠금"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          const name = window.prompt("섹션 이름", s.section ?? "");
+                          if (name === null) return;
+                          const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
+                          if (cur) useDeckStore.getState().replaceSlide(s.id, { ...cur, section: name.trim() || undefined });
+                        }}
+                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                      >
+                        + 섹션
+                      </button>
+                      <button
                         onClick={() => removeSlide(s.id)}
-                        className="flex-1 rounded-md border border-app-danger-border bg-app-danger-soft py-1 text-[10.5px] font-semibold text-app-danger hover:opacity-80"
+                        className="rounded-md border border-app-danger-border bg-app-danger-soft py-1 text-[10.5px] font-semibold text-app-danger hover:opacity-80"
                       >
                         삭제
                       </button>
                     </div>
                   )}
                 </div>
+              </div>
               </div>
             );
           })}
@@ -930,6 +986,16 @@ export function EditorPage() {
             }
           />
           </div>
+          {/* AI 편집 affordance (스냅덱 — 마퀴→AI 수정) */}
+          {!readOnly && !motionOpen && (
+            <button
+              onClick={() => setTab("chat")}
+              className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-app-border bg-white/95 px-3.5 py-1.5 text-[11.5px] font-semibold text-app-muted shadow-[0_2px_10px_rgba(0,0,0,.08)] backdrop-blur hover:border-app-accent hover:text-app-text"
+            >
+              <span className="mi text-[14px]">auto_awesome</span>
+              영역을 드래그해 AI로 수정
+            </button>
+          )}
           {motionOpen && !readOnly && (
             <MotionTimeline
               deckId={deck.id}
