@@ -252,10 +252,11 @@ export function HomePage() {
               }}
               className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
             >
-              {/* 와이어프레임 미니 프리뷰 — 호버 시 뒤 슬라이드 레이어들이 스르륵 내려옴 */}
+              {/* 와이어프레임 미니 프리뷰 — 호버 시 뒤 슬라이드 레이어들이 라벨 위로 스르륵 펼쳐짐 */}
               <div className="relative">
-                <div className="pointer-events-none absolute inset-x-2.5 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_2px_6px_rgba(0,0,0,.07)] transition-transform duration-300 ease-out group-hover:translate-y-[26px] group-hover:scale-x-[.86] group-hover:scale-y-[.97] motion-safe:delay-75" />
-                <div className="pointer-events-none absolute inset-x-1 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_2px_6px_rgba(0,0,0,.07)] transition-transform duration-300 ease-out group-hover:translate-y-[13px] group-hover:scale-x-[.93]" />
+                <div className="pointer-events-none absolute inset-x-4 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[42px] group-hover:scale-x-[.82] group-hover:scale-y-[.96] delay-150" />
+                <div className="pointer-events-none absolute inset-x-2.5 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[28px] group-hover:scale-x-[.88] group-hover:scale-y-[.98] delay-75" />
+                <div className="pointer-events-none absolute inset-x-1 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[14px] group-hover:scale-x-[.94]" />
                 <div className="relative z-10 flex aspect-[16/10] flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
                   <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
                   <div className="mt-1 flex flex-1 gap-1.5">
@@ -270,10 +271,11 @@ export function HomePage() {
                   </div>
                 </div>
               </div>
-              <p className="relative z-20 mt-2.5 text-[12.5px] font-semibold group-hover:text-app-accent">
+              {/* 라벨은 시트 아래로 — 펼쳐질 때 가려지고, 남는 부분은 페이드아웃 */}
+              <p className="mt-2.5 text-[12.5px] font-semibold transition-opacity duration-200 group-hover:opacity-0">
                 {lib.name}
               </p>
-              <p className="relative z-20 mt-0.5 text-[11px] leading-snug text-app-faint">
+              <p className="mt-0.5 text-[11px] leading-snug text-app-faint transition-opacity duration-200 group-hover:opacity-0">
                 {lib.frames.length}프레임 · {lib.desc}
               </p>
             </button>
