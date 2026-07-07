@@ -26,6 +26,7 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
+import { CommentsPanel } from "./CommentsPanel";
 import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
@@ -37,7 +38,7 @@ import { SlideThumbnail } from "./SlideThumbnail";
 import { VersionHistory } from "./VersionHistory";
 import { useCollabSync } from "./useCollabSync";
 
-type RightTab = "chat" | "props" | "notes";
+type RightTab = "chat" | "props" | "notes" | "comments";
 
 interface ContextMenuState {
   x: number;
@@ -959,6 +960,7 @@ export function EditorPage() {
                 ["chat", "AI 채팅"],
                 ["props", "속성"],
                 ["notes", "노트"],
+                ["comments", "댓글"],
               ] as const
             ).map(([key, label]) => (
               <button
@@ -1005,6 +1007,14 @@ export function EditorPage() {
                 readOnly={readOnly}
                 slides={deck.slides}
                 onJump={setCurrentSlideIndex}
+              />
+            )}
+            {tab === "comments" && (
+              <CommentsPanel
+                deckId={deck.id}
+                slideId={slide.id}
+                slideIndex={slideIndex}
+                readOnly={readOnly}
               />
             )}
           </div>
