@@ -4,6 +4,7 @@ import { trackEvent } from "../../api/client";
 import { fetchShared } from "../../api/collab";
 import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
+import { exportDeckToPng } from "../../engine/pngExporter";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
 import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
@@ -98,10 +99,14 @@ function NotesPanel({
   slide,
   slideIndex,
   readOnly = false,
+  slides,
+  onJump,
 }: {
   slide: Slide;
   slideIndex: number;
   readOnly?: boolean;
+  slides?: Slide[];
+  onJump?: (i: number) => void;
 }) {
   const [val, setVal] = useState(slide.notes ?? "");
   useEffect(() => {
@@ -135,18 +140,49 @@ function NotesPanel({
           노트는 덱과 함께 저장되고, PPTX 내보내기 시{" "}
           <b className="text-app-text">발표자 노트</b>로 포함됩니다.
         </div>
+        {/* 전체 노트 개요 (Demo Act 6) */}
+        {slides && onJump && (
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">전체 노트</p>
+            {slides.filter((s) => s.notes?.trim()).length === 0 ? (
+              <p className="text-[11.5px] text-app-faint">아직 작성된 노트가 없어요.</p>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {slides.map((s, i) =>
+                  s.notes?.trim() ? (
+                    <button
+                      key={s.id}
+                      onClick={() => onJump(i)}
+                      className={`rounded-lg border px-2.5 py-2 text-left ${
+                        i === slideIndex ? "border-app-accent bg-app-accent-soft" : "border-app-border-soft bg-white hover:border-app-accent"
+                      }`}
+                    >
+                      <span className="text-[10.5px] font-bold text-app-faint">슬라이드 {i + 1}</span>
+                      <p className="mt-0.5 line-clamp-2 text-[11.5px] text-app-muted">{s.notes}</p>
+                    </button>
+                  ) : null,
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-type ExportFormat = "pptx" | "figma";
+type ExportFormat = "pptx" | "figma" | "png";
 
 const EXPORT_FORMATS: { id: ExportFormat; name: string; desc: string }[] = [
   {
     id: "pptx",
     name: "PowerPoint (.pptx)",
     desc: "텍스트·차트 편집 가능한 네이티브 슬라이드",
+  },
+  {
+    id: "png",
+    name: "이미지 (.png)",
+    desc: "슬라이드별 PNG (여러 장은 zip)",
   },
   {
     id: "figma",
@@ -218,7 +254,7 @@ function ExportPopover({
           onClick={() => onExport(fmt)}
           className="mt-3 w-full rounded-[10px] bg-app-accent py-2.5 text-[13px] font-semibold text-white hover:opacity-90"
         >
-          ⬇ {fmt === "pptx" ? "PPTX" : "Figma SVG"} 다운로드
+          ⬇ {fmt === "pptx" ? "PPTX" : fmt === "png" ? "PNG" : "Figma SVG"} 다운로드
         </button>
       </div>
     </>
@@ -404,9 +440,17 @@ export function EditorPage() {
         ? exportDeckToPptx(deck).then(() =>
             showToast(`'${deck.title}.pptx' 다운로드 시작`),
           )
-        : exportDeckToFigmaZip(deck).then(() =>
-            showToast("Figma용 SVG 묶음 다운로드 — 압축 풀어 Figma에 드래그하세요"),
-          );
+        : format === "png"
+          ? exportDeckToPng(deck).then(() =>
+              showToast(
+                deck.slides.length === 1
+                  ? `'${deck.title}.png' 다운로드 시작`
+                  : "슬라이드별 PNG 묶음(zip) 다운로드 시작",
+              ),
+            )
+          : exportDeckToFigmaZip(deck).then(() =>
+              showToast("Figma용 SVG 묶음 다운로드 — 압축 풀어 Figma에 드래그하세요"),
+            );
     job
       .then(() => trackEvent("export", true, Date.now() - t0, `${format} · ${deck.title.slice(0, 40)}`))
       .catch((e) => {
@@ -819,7 +863,13 @@ export function EditorPage() {
                 />
               ))}
             {tab === "notes" && (
-              <NotesPanel slide={slide} slideIndex={slideIndex} readOnly={readOnly} />
+              <NotesPanel
+                slide={slide}
+                slideIndex={slideIndex}
+                readOnly={readOnly}
+                slides={deck.slides}
+                onJump={setCurrentSlideIndex}
+              />
             )}
           </div>
         </aside>

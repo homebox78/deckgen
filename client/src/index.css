@@ -40,6 +40,58 @@
   }
 }
 
+/* 발표 모드 전환 효과 (Demo Act 7) */
+@keyframes dgFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dgZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes dgSlideL {
+  from {
+    opacity: 0.3;
+    transform: translateX(6%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes dgSlideR {
+  from {
+    opacity: 0.3;
+    transform: translateX(-6%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.dg-anim-fade {
+  animation: dgFade 0.32s ease;
+}
+.dg-anim-zoom {
+  animation: dgZoom 0.34s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.dg-anim-slide-l {
+  animation: dgSlideL 0.34s ease;
+}
+.dg-anim-slide-r {
+  animation: dgSlideR 0.34s ease;
+}
+
 html,
 body,
 #root {

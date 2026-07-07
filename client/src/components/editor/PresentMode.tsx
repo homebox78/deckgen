@@ -12,12 +12,22 @@ interface Props {
   onExit: () => void;
 }
 
+const TRANSITIONS = ["none", "slide", "fade", "zoom"] as const;
+type Transition = (typeof TRANSITIONS)[number];
+
+function readTransition(): Transition {
+  const t = localStorage.getItem("deckgen:transition");
+  return (TRANSITIONS as readonly string[]).includes(t ?? "") ? (t as Transition) : "fade";
+}
+
 export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
   const [index, setIndex] = useState(startIndex);
   const [notesOpen, setNotesOpen] = useState(false);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [anim, setAnim] = useState("");
   const dims: SlideDims = aspectDims(deck.aspect);
   const rootRef = useRef<HTMLDivElement>(null);
+  const transition = readTransition();
 
   const slide = deck.slides[index];
 
@@ -43,9 +53,24 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
 
   const go = useCallback(
     (delta: number) => {
-      setIndex((i) => Math.max(0, Math.min(deck.slides.length - 1, i + delta)));
+      setIndex((i) => {
+        const next = Math.max(0, Math.min(deck.slides.length - 1, i + delta));
+        if (next !== i && transition !== "none") {
+          const cls =
+            transition === "fade"
+              ? "dg-anim-fade"
+              : transition === "zoom"
+                ? "dg-anim-zoom"
+                : delta > 0
+                  ? "dg-anim-slide-l"
+                  : "dg-anim-slide-r";
+          setAnim("");
+          requestAnimationFrame(() => setAnim(cls));
+        }
+        return next;
+      });
     },
-    [deck.slides.length],
+    [deck.slides.length, transition],
   );
 
   useEffect(() => {
@@ -75,9 +100,10 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
       <div className="flex min-h-0 flex-1 items-center justify-center p-6">
         {urls[slide.id] ? (
           <img
+            key={slide.id}
             src={urls[slide.id]}
             alt=""
-            className="max-h-full max-w-full object-contain shadow-[0_0_80px_rgba(0,0,0,.6)]"
+            className={`max-h-full max-w-full object-contain shadow-[0_0_80px_rgba(0,0,0,.6)] ${anim}`}
             style={{ aspectRatio: `${dims.w} / ${dims.h}` }}
           />
         ) : (
@@ -112,6 +138,18 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
           ✕ 발표 종료 (Esc)
         </button>
         <span className="text-[12px]">클릭/→ 다음 · ← 이전 · N 노트</span>
+        {/* 전환 효과 선택 (Demo Act 7) */}
+        <select
+          defaultValue={transition}
+          onChange={(e) => localStorage.setItem("deckgen:transition", e.target.value)}
+          className="rounded-lg border border-white/25 bg-transparent px-2 py-1 text-[11.5px] focus:outline-none [&>option]:text-black"
+          title="전환 효과"
+        >
+          <option value="none">전환: 없음</option>
+          <option value="fade">전환: 페이드</option>
+          <option value="slide">전환: 슬라이드</option>
+          <option value="zoom">전환: 줌</option>
+        </select>
         <span className="flex-1" />
         <button
           onClick={() => go(-1)}
