@@ -99,7 +99,66 @@ export function SlideCanvas({
       fc.zoomToPoint(new Point(fc.getWidth() / 2, fc.getHeight() / 2), z);
       reportZoom();
     };
-    registerCanvasApi({ zoomIn: () => zoomBy(1.2), zoomOut: () => zoomBy(1 / 1.2), fit });
+    // 정렬·분배 — 선택 요소를 schema 좌표로 갱신 (1개=슬라이드 기준, 2+=선택 묶음 bbox 기준)
+    const selectedEls = (): SlideElement[] => {
+      const ids = fc.getActiveObjects().map((o) => getElementData(o)?.elementId);
+      return slideRef.current.elements.filter((el) => ids.includes(el.id) && !el.locked);
+    };
+    const applyAlign = (dir: import("./canvasApi").AlignDir) => {
+      const els = selectedEls();
+      if (els.length === 0) return;
+      const st = useDeckStore.getState();
+      const box =
+        els.length === 1
+          ? { x: 0, y: 0, w: dims.w, h: dims.h }
+          : {
+              x: Math.min(...els.map((e) => e.x)),
+              y: Math.min(...els.map((e) => e.y)),
+              w: Math.max(...els.map((e) => e.x + e.w)) - Math.min(...els.map((e) => e.x)),
+              h: Math.max(...els.map((e) => e.y + e.h)) - Math.min(...els.map((e) => e.y)),
+            };
+      for (const el of els) {
+        const patch: Partial<SlideElement> = {};
+        if (dir === "left") patch.x = box.x;
+        else if (dir === "hcenter") patch.x = box.x + (box.w - el.w) / 2;
+        else if (dir === "right") patch.x = box.x + box.w - el.w;
+        else if (dir === "top") patch.y = box.y;
+        else if (dir === "vcenter") patch.y = box.y + (box.h - el.h) / 2;
+        else if (dir === "bottom") patch.y = box.y + box.h - el.h;
+        st.updateElement(slideRef.current.id, el.id, patch);
+      }
+      fc.discardActiveObject();
+    };
+    const applyDistribute = (dir: import("./canvasApi").DistDir) => {
+      const els = selectedEls();
+      if (els.length < 3) {
+        showToast("3개 이상 선택해야 분배할 수 있어요");
+        return;
+      }
+      const st = useDeckStore.getState();
+      const sorted = [...els].sort((a, b) => (dir === "h" ? a.x - b.x : a.y - b.y));
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      const span =
+        dir === "h"
+          ? last.x + last.w - first.x - sorted.reduce((s, e) => s + e.w, 0)
+          : last.y + last.h - first.y - sorted.reduce((s, e) => s + e.h, 0);
+      const gap = span / (sorted.length - 1);
+      let cur = dir === "h" ? first.x : first.y;
+      for (const el of sorted) {
+        st.updateElement(slideRef.current.id, el.id, dir === "h" ? { x: Math.round(cur) } : { y: Math.round(cur) });
+        cur += (dir === "h" ? el.w : el.h) + gap;
+      }
+      fc.discardActiveObject();
+    };
+    registerCanvasApi({
+      zoomIn: () => zoomBy(1.2),
+      zoomOut: () => zoomBy(1 / 1.2),
+      fit,
+      align: applyAlign,
+      distribute: applyDistribute,
+      selectionCount: () => fc.getActiveObjects().length,
+    });
 
     // --- Ctrl+휠 줌 ---
     fc.on("mouse:wheel", (opt) => {

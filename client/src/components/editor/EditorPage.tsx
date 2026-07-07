@@ -292,6 +292,7 @@ export function EditorPage() {
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
+  const [slideQuery, setSlideQuery] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -636,10 +637,53 @@ export function EditorPage() {
               </button>
             </div>
           )}
+          {/* 슬라이드 검색 (제목·본문·노트) */}
+          <div className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-2.5 py-1.5">
+            <span className="text-[11px] text-app-faint">🔍</span>
+            <input
+              value={slideQuery}
+              onChange={(e) => setSlideQuery(e.target.value)}
+              placeholder="슬라이드 검색"
+              className="min-w-0 flex-1 bg-transparent text-[11.5px] focus:outline-none"
+            />
+            {slideQuery && (
+              <button onClick={() => setSlideQuery("")} className="text-[11px] text-app-faint hover:text-app-text">✕</button>
+            )}
+          </div>
+          {(() => {
+            const q = slideQuery.trim().toLowerCase();
+            const matches = q
+              ? deck.slides.reduce<number>((n, s) => {
+                  const hay = [
+                    s.notes ?? "",
+                    ...s.elements.filter((e) => e.type === "text").map((e) => (e as { text: string }).text),
+                  ]
+                    .join(" ")
+                    .toLowerCase();
+                  return n + (hay.includes(q) ? 1 : 0);
+                }, 0)
+              : deck.slides.length;
+            return q ? (
+              <p className="px-0.5 text-[10.5px] text-app-faint">
+                {matches > 0 ? `${matches}개 일치` : "일치하는 슬라이드가 없어요"}
+              </p>
+            ) : null;
+          })()}
           {deck.slides.map((s, i) => {
             const st = genStatuses?.[i];
             const badge = st ? THUMB_BADGE[st] : null;
             const isCur = i === slideIndex;
+            // 검색어가 있으면 미일치 슬라이드는 숨김
+            if (slideQuery.trim()) {
+              const q = slideQuery.trim().toLowerCase();
+              const hay = [
+                s.notes ?? "",
+                ...s.elements.filter((e) => e.type === "text").map((e) => (e as { text: string }).text),
+              ]
+                .join(" ")
+                .toLowerCase();
+              if (!hay.includes(q)) return null;
+            }
             return (
               <div key={s.id} className="flex gap-2">
                 <span
@@ -733,6 +777,25 @@ export function EditorPage() {
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
           <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} dims={dims} onInsertAt={insertElement} />
+          {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 */}
+          <div className="absolute bottom-3.5 left-3.5 z-10 flex items-center gap-1.5 rounded-[11px] border border-app-border bg-white px-2.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
+            <span className="text-[11px] text-app-muted">🗺</span>
+            {deck.slides.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => setCurrentSlideIndex(i)}
+                title={`슬라이드 ${i + 1}`}
+                className={`h-4 rounded-[3px] border transition-all ${
+                  i === slideIndex
+                    ? "w-6 border-[1.5px] border-app-text bg-app-accent-soft"
+                    : "w-[18px] border-app-border bg-app-bg hover:border-app-muted"
+                }`}
+              />
+            ))}
+            <span className="ml-0.5 text-[10.5px] font-semibold text-app-muted">
+              {slideIndex + 1} / {deck.slides.length}
+            </span>
+          </div>
           {/* 하단 중앙 툴바 (스냅덱 배치) — 도구 · undo/redo · 줌 */}
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             {!readOnly && (
@@ -770,6 +833,30 @@ export function EditorPage() {
                 >
                   ⊞
                 </button>
+                {/* 정렬·분배 드롭다운 (Demo Act 5.5) */}
+                <Dropdown
+                  items={[
+                    { key: "left", name: "⇤ 왼쪽 정렬" },
+                    { key: "hcenter", name: "⇹ 가로 가운데" },
+                    { key: "right", name: "⇥ 오른쪽 정렬" },
+                    { key: "top", name: "⤒ 위 정렬" },
+                    { key: "vcenter", name: "⇳ 세로 가운데" },
+                    { key: "bottom", name: "⤓ 아래 정렬" },
+                    { key: "disth", name: "↔ 가로 분배" },
+                    { key: "distv", name: "↕ 세로 분배" },
+                  ]}
+                  onSelect={(key) => {
+                    const api = canvasApi();
+                    if (!api) return;
+                    if (key === "disth") api.distribute("h");
+                    else if (key === "distv") api.distribute("v");
+                    else api.align(key as never);
+                  }}
+                  triggerClassName="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  title="정렬 · 분배"
+                >
+                  ⇹
+                </Dropdown>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
                 <button
                   onClick={() => useDeckStore.temporal.getState().undo()}
