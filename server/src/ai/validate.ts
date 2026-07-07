@@ -64,6 +64,7 @@ const elementBase = {
   opacity: z.number().min(0).max(1).optional(),
   locked: z.boolean().optional(),
   shadow: z.boolean().optional(),
+  groupId: z.string().optional(),
 };
 
 const textElementSchema = z.object({

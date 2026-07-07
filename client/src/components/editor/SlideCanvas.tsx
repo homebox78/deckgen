@@ -1,4 +1,4 @@
-import { Canvas, FabricObject, Line, Point } from "fabric";
+import { ActiveSelection, Canvas, FabricObject, Line, Point } from "fabric";
 import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
@@ -293,6 +293,30 @@ export function SlideCanvas({
       showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
     });
 
+    // --- 그룹 자동 선택 — 그룹 요소 클릭 시 같은 groupId 전체 선택 ---
+    let expandingGroup = false;
+    const expandGroup = () => {
+      if (expandingGroup || readOnly) return;
+      const active = fc.getActiveObject();
+      if (!active || active.type === "activeselection") return;
+      const el = slideRef.current.elements.find((x) => x.id === getElementData(active)?.elementId);
+      if (!el?.groupId) return;
+      const members = fc
+        .getObjects()
+        .filter((o) => {
+          const e = slideRef.current.elements.find((x) => x.id === getElementData(o)?.elementId);
+          return e?.groupId === el.groupId;
+        });
+      if (members.length < 2) return;
+      expandingGroup = true;
+      const sel = new ActiveSelection(members, { canvas: fc });
+      fc.setActiveObject(sel);
+      fc.requestRenderAll();
+      expandingGroup = false;
+    };
+    fc.on("selection:created", expandGroup);
+    fc.on("selection:updated", expandGroup);
+
     // --- 우클릭 컨텍스트 메뉴 (Demo Act 5.5) ---
     const onCtx = (ev: MouseEvent) => {
       if (readOnly) return;
@@ -371,6 +395,31 @@ export function SlideCanvas({
         const copy = { ...a.el, id: uid(), x: a.el.x + 24, y: a.el.y + 24 };
         store.addElement(slideRef.current.id, copy);
         ui.setSelectedElementId(copy.id);
+        return;
+      }
+
+      // 그룹 / 그룹 해제 (Ctrl+G / Ctrl+Shift+G)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        const objs = fc.getActiveObjects();
+        const ids = objs
+          .map((o) => getElementData(o)?.elementId)
+          .filter((id): id is string => !!id);
+        if (e.shiftKey) {
+          // 해제: 선택 요소의 groupId 제거
+          ids.forEach((id) =>
+            store.updateElement(slideRef.current.id, id, { groupId: undefined } as Partial<SlideElement>),
+          );
+          if (ids.length) showToast("그룹을 해제했어요");
+        } else if (ids.length >= 2) {
+          const gid = uid();
+          ids.forEach((id) =>
+            store.updateElement(slideRef.current.id, id, { groupId: gid } as Partial<SlideElement>),
+          );
+          showToast(`${ids.length}개 요소를 그룹으로 묶었어요 (Ctrl+Shift+G 해제)`);
+        } else {
+          showToast("2개 이상 선택하면 그룹으로 묶을 수 있어요");
+        }
         return;
       }
 

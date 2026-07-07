@@ -71,6 +71,7 @@ export interface ElementBase {
   opacity?: number; // 0~1
   locked?: boolean; // 잠금 — 캔버스 이동/크기/회전/삭제 차단 (선택·속성 패널 해제는 가능)
   shadow?: boolean; // 그림자 효과 (Appearance)
+  groupId?: string; // 그룹 — 같은 groupId 요소는 함께 선택/이동 (Ctrl+G)
 }
 
 export type TextRole =
