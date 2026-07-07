@@ -149,7 +149,7 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
         <div className="mb-[18px] flex items-center gap-[9px]">
           <span className="h-6 w-6 rounded-[7px] bg-app-accent" />
           <span className="text-[15px] font-bold text-[#1A1A1A]">DeckGen</span>
-          <span className="rounded-[5px] bg-[#F0EBFF] px-[7px] py-0.5 text-[10px] font-bold text-app-accent">
+          <span className="rounded-[5px] bg-app-accent-soft px-[7px] py-0.5 text-[10px] font-bold text-app-text">
             ADMIN
           </span>
         </div>
@@ -246,7 +246,7 @@ function Toggle({ on, onClick, danger = false }: { on: boolean; onClick: () => v
     <button
       onClick={onClick}
       className="relative h-[22px] w-[38px] flex-none rounded-full transition-colors"
-      style={{ background: on ? (danger ? "#E5484D" : "#6D4AFF") : "#D4D4CE" }}
+      style={{ background: on ? (danger ? "#E5484D" : "#1A1A1A") : "#D4D4CE" }}
     >
       <span
         className="absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow transition-all"
@@ -299,7 +299,7 @@ function DashPage() {
                   className="rounded-t-[3px]"
                   style={{
                     height: `${Math.max(2, (d.count / max) * 100)}%`,
-                    background: i === m.daily.length - 1 ? "#6D4AFF" : "#C9B8FF",
+                    background: i === m.daily.length - 1 ? "#1A1A1A" : "#D4D4CE",
                   }}
                 />
               </div>
@@ -613,9 +613,9 @@ const AUDIT_CATS: Record<string, [string, string, string]> = {
   auth: ["로그인", "#2563EB", "#EFF4FF"],
   user: ["사용자", "#E5484D", "#FFF0F0"],
   settings: ["설정", "#B45309", "#FEF3E2"],
-  data: ["데이터", "#6D4AFF", "#F0EBFF"],
+  data: ["데이터", "#1A1A1A", "#F0F0EE"],
   banner: ["공지", "#0E8345", "#EAF7F0"],
-  template: ["템플릿", "#6D4AFF", "#F0EBFF"],
+  template: ["템플릿", "#1A1A1A", "#F0F0EE"],
   payment: ["결제", "#0E8345", "#EAF7F0"],
 };
 
@@ -660,7 +660,7 @@ function AuditPage() {
             key={c}
             onClick={() => setCat(c)}
             className={`rounded-full border px-3 py-[7px] text-[11.5px] font-semibold ${
-              cat === c ? "border-app-accent bg-[#F0EBFF] text-app-accent" : "border-app-border bg-white text-app-faint"
+              cat === c ? "border-app-text bg-app-accent-soft text-app-text" : "border-app-border bg-white text-app-faint"
             }`}
           >
             {c === "all" ? "전체" : (AUDIT_CATS[c]?.[0] ?? c)}
@@ -742,7 +742,7 @@ function BannersPage() {
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`border-r border-[#F0F0EE] px-3 py-2 text-[12px] font-semibold ${type === t ? "bg-[#F0EBFF] text-app-accent" : "bg-white text-app-faint"}`}
+                className={`border-r border-[#F0F0EE] px-3 py-2 text-[12px] font-semibold ${type === t ? "bg-app-accent-soft text-app-text" : "bg-white text-app-faint"}`}
               >
                 {BANNER_TYPES[t][0]}
               </button>
@@ -878,7 +878,7 @@ function TemplatesPage() {
                   className="min-w-0 flex-1 bg-transparent text-[13px] font-bold focus:outline-none"
                 />
                 {t.pro && (
-                  <span className="rounded-[5px] bg-[#F0EBFF] px-1.5 py-0.5 text-[9.5px] font-bold text-app-accent">
+                  <span className="rounded-[5px] bg-app-accent-soft px-1.5 py-0.5 text-[9.5px] font-bold text-app-text">
                     PRO
                   </span>
                 )}
@@ -889,7 +889,7 @@ function TemplatesPage() {
                 <button onClick={() => move(i, 1)} className="rounded-[7px] border border-app-border bg-white px-2 py-1 text-[11px] text-app-muted"><span className="mi text-[14px]">arrow_forward</span></button>
                 <button
                   onClick={() => save(tpls.map((x) => (x.id === t.id ? { ...x, pro: !x.pro } : x)))}
-                  className="rounded-[7px] border border-[#DDD2FF] bg-[#F7F4FF] px-2.5 py-1 text-[10.5px] font-semibold text-app-accent"
+                  className="rounded-[7px] border border-app-border bg-[#F7F7F5] px-2.5 py-1 text-[10.5px] font-semibold text-app-text"
                 >
                   {t.pro ? "PRO 해제" : "PRO 지정"}
                 </button>
@@ -931,7 +931,7 @@ function PlansPage() {
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-bold">{p.name}</span>
               {p.popular && (
-                <span className="rounded-[5px] bg-[#F0EBFF] px-[7px] py-0.5 text-[10px] font-bold text-app-accent">인기</span>
+                <span className="rounded-[5px] bg-app-accent-soft px-[7px] py-0.5 text-[10px] font-bold text-app-text">인기</span>
               )}
             </div>
             <div className="mt-2 text-[22px] font-extrabold">{p.price}</div>
@@ -1893,7 +1893,7 @@ export function AdminPage() {
           {!collapsed && (
             <>
               <span className="text-[14px] font-bold text-white">DeckGen</span>
-              <span className="rounded-[5px] bg-[rgba(139,107,255,.15)] px-1.5 py-0.5 text-[10px] font-bold text-[#8B6BFF]">
+              <span className="rounded-[5px] bg-[rgba(255,255,255,.1)] px-1.5 py-0.5 text-[10px] font-bold text-[rgba(255,255,255,.65)]">
                 ADMIN
               </span>
             </>
@@ -1921,7 +1921,7 @@ export function AdminPage() {
                       onClick={() => setPage(rep.id)}
                       title={g.label}
                       className="relative flex w-full items-center justify-center rounded-[9px] py-2.5"
-                      style={{ background: active ? "rgba(139,107,255,.16)" : "transparent" }}
+                      style={{ background: active ? "rgba(255,255,255,.14)" : "transparent" }}
                     >
                       <span className="mi text-[19px]" style={{ color: active ? "#fff" : "rgba(255,255,255,.6)" }}>{rep.icon}</span>
                       {badge > 0 && (
@@ -1936,7 +1936,7 @@ export function AdminPage() {
                           key={p.id}
                           onClick={() => setPage(p.id)}
                           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left"
-                          style={{ background: page === p.id ? "rgba(139,107,255,.2)" : "transparent" }}
+                          style={{ background: page === p.id ? "rgba(255,255,255,.18)" : "transparent" }}
                         >
                           <span className="mi text-[16px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.6)" }}>{p.icon}</span>
                           <span className="text-[12px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.7)" }}>{p.name}</span>
@@ -1971,7 +1971,7 @@ export function AdminPage() {
                           key={p.id}
                           onClick={() => setPage(p.id)}
                           className="mb-0.5 flex w-full items-center gap-2.5 rounded-[9px] px-3 py-2 text-left"
-                          style={{ background: page === p.id ? "rgba(139,107,255,.16)" : "transparent" }}
+                          style={{ background: page === p.id ? "rgba(255,255,255,.14)" : "transparent" }}
                         >
                           <span className="mi flex-none text-[17px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.55)" }}>{p.icon}</span>
                           <span
