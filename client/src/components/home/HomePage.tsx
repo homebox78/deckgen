@@ -34,6 +34,7 @@ import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
 import { listDecks, loadDeck, saveDeck } from "../../store/storage";
 import { getSettings } from "../../store/settingsStore";
+import { removeSavedTemplate, useSavedTemplates } from "../../store/savedTemplateStore";
 import { Dropdown } from "../ui/Dropdown";
 import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
@@ -433,6 +434,7 @@ export function HomePage() {
   const [dragDeckId, setDragDeckId] = useState<string | null>(null);
   const [deckCtx, setDeckCtx] = useState<{ id: string; x: number; y: number } | null>(null);
   const [genModel, setGenModel] = useState("deckgen-1.1");
+  const savedTemplates = useSavedTemplates();
 
   const refreshMeta = () => {
     setFolders(listFolders());
@@ -890,6 +892,61 @@ export function HomePage() {
         </div>
       </div>
 
+
+      {/* 내 템플릿 — 저장한 덱 구성 재사용 */}
+      {savedTemplates.length > 0 && (
+        <div className="mx-auto w-[880px] max-w-[92vw] pb-6">
+          <div className="mb-3.5">
+            <h2 className="text-[16px] font-semibold">내 템플릿</h2>
+            <span className="text-[12px] text-app-faint">저장한 덱 구성을 다시 사용하세요</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+            {savedTemplates.map((t) => {
+              const th = getTheme(t.themeId);
+              return (
+                <div key={t.id} className="group overflow-hidden rounded-xl border border-app-border bg-app-surface shadow-[0_1px_4px_rgba(0,0,0,.04)]">
+                  <button
+                    onClick={() => {
+                      setPrompt(t.prompt);
+                      setThemeId(t.themeId);
+                      setSlideCount(t.count);
+                      promptRef.current?.focus();
+                      showToast(`'${t.name}' 템플릿을 적용했어요 — 생성하세요`);
+                    }}
+                    className="relative block aspect-[16/10] w-full border-b border-app-border-soft text-left"
+                    style={{ background: th.bg }}
+                  >
+                    <span className="absolute top-1.5 right-1.5 rounded-[5px] bg-black/55 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                      내 템플릿
+                    </span>
+                    <div className="flex h-full flex-col justify-center gap-1.5 px-3">
+                      <div className="h-[3px] w-[24%]" style={{ background: th.accent }} />
+                      <div className="line-clamp-2 text-[11px] font-bold" style={{ color: th.textPrimary }}>
+                        {t.coverTitle}
+                      </div>
+                    </div>
+                  </button>
+                  <div className="flex items-center gap-1.5 px-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[12px] font-semibold">{t.name}</p>
+                      <p className="truncate text-[10.5px] text-app-faint">{t.meta}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        removeSavedTemplate(t.id);
+                        showToast(`'${t.name}' 템플릿을 삭제했어요`);
+                      }}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-app-faint opacity-0 transition-opacity group-hover:opacity-100 hover:text-app-danger"
+                    >
+                      <span className="mi text-[15px]">delete</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 스토리보드 템플릿 (§13) — 완성 장표가 아니라 팀이 함께 채우는 와이어프레임 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-12">

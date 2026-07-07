@@ -7,9 +7,11 @@ import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
 import { exportDeckToPng } from "../../engine/pngExporter";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
-import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
+import type { Deck, Slide, SlideDims, SlideElement } from "../../engine/schema";
 import { aspectDims, uid } from "../../engine/schema";
+import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
+import { addSavedTemplate } from "../../store/savedTemplateStore";
 import {
   CLIENT_ID,
   MY_COLOR,
@@ -220,9 +222,11 @@ const EXPORT_FORMATS: { id: ExportFormat; name: string; desc: string; lock?: boo
 function ExportPopover({
   onClose,
   onExport,
+  onSaveTemplate,
 }: {
   onClose: () => void;
   onExport: (format: ExportFormat) => void;
+  onSaveTemplate: () => void;
 }) {
   const [fmt, setFmt] = useState<ExportFormat>("pptx");
   return (
@@ -291,8 +295,88 @@ function ExportPopover({
         >
           <span className="mi align-middle text-[14px] mr-1">download</span>{fmt === "pptx" ? "PPTX" : fmt === "png" ? "PNG" : "Figma SVG"} 다운로드
         </button>
+        <div className="my-2.5 border-t border-app-border-soft" />
+        <button
+          onClick={onSaveTemplate}
+          className="flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-app-border bg-white py-2.5 text-[12.5px] font-semibold hover:border-app-accent"
+        >
+          <span className="mi text-[15px]">bookmark_add</span>이 덱을 템플릿으로 저장
+        </button>
       </div>
     </>
+  );
+}
+
+function SaveTemplateModal({ deck, theme, onClose }: { deck: Deck; theme: Theme; onClose: () => void }) {
+  const first = deck.slides[0]?.elements.find(
+    (e) => e.type === "text" && (e.role === "title" || e.role === "heading"),
+  ) as { text?: string } | undefined;
+  const [name, setName] = useState(`${deck.title} 템플릿`);
+  const [scope, setScope] = useState<"me" | "ws">("me");
+  const save = () => {
+    if (!name.trim()) {
+      showToast("템플릿 이름을 입력하세요");
+      return;
+    }
+    addSavedTemplate({
+      name: name.trim(),
+      coverTitle: first?.text?.split("\n")[0] ?? deck.title,
+      meta: `${deck.slides.length}장 · ${theme.name} · ${scope === "ws" ? "워크스페이스" : "나만"}`,
+      prompt: deck.title,
+      count: deck.slides.length,
+      themeId: deck.themeId,
+      scope,
+    });
+    showToast(`'${name.trim()}' 템플릿으로 저장됐어요 — 홈 '내 템플릿'에서 사용하세요`);
+    onClose();
+  };
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.5)] p-4" onClick={onClose}>
+      <div className="w-[380px] max-w-[94vw] rounded-2xl bg-white p-5.5 shadow-[0_24px_64px_rgba(0,0,0,.3)]" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-1 flex items-center gap-2">
+          <span className="mi text-[18px]">bookmark_add</span>
+          <span className="text-[16px] font-bold">템플릿으로 저장</span>
+        </div>
+        <p className="mb-4 text-[12px] leading-relaxed text-app-muted">
+          현재 덱의 구성·테마·슬라이드 흐름을 재사용 가능한 템플릿으로 저장합니다.
+        </p>
+        <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">템플릿 이름</p>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="예: 분기 실적 보고 표준"
+          className="mb-3.5 w-full rounded-[10px] border border-app-border px-3 py-2.5 text-[13px] focus:border-app-accent focus:outline-none"
+        />
+        <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">공개 범위</p>
+        <div className="mb-4 flex gap-2">
+          {(
+            [
+              ["me", "나만", "person"],
+              ["ws", "워크스페이스", "groups"],
+            ] as const
+          ).map(([k, label, icon]) => (
+            <button
+              key={k}
+              onClick={() => setScope(k)}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border py-2.5 text-[12.5px] font-semibold ${
+                scope === k ? "border-[1.5px] border-app-text bg-[#F0F0EE]" : "border-app-border bg-white text-app-muted"
+              }`}
+            >
+              <span className="mi text-[15px]">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="rounded-[10px] border border-app-border bg-white px-4 py-2.5 text-[12.5px] font-semibold text-app-muted hover:border-app-accent">
+            취소
+          </button>
+          <button onClick={save} className="flex-[1.4] rounded-[10px] bg-app-accent py-2.5 text-[12.5px] font-semibold text-white hover:opacity-90">
+            템플릿 저장
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -334,6 +418,7 @@ export function EditorPage() {
   const [motionOpen, setMotionOpen] = useState(false);
   const [motionAnim, setMotionAnim] = useState(""); // 캔버스 재생 애니 클래스(키 리셋)
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [tplSaveOpen, setTplSaveOpen] = useState(false);
   const [followId, setFollowId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -678,7 +763,14 @@ export function EditorPage() {
           {exporting ? "내보내는 중…" : <><span className="mi align-middle text-[14px] mr-1">download</span>PPTX 내보내기</>}
         </button>
         {exportOpen && (
-          <ExportPopover onClose={() => setExportOpen(false)} onExport={runExport} />
+          <ExportPopover
+            onClose={() => setExportOpen(false)}
+            onExport={runExport}
+            onSaveTemplate={() => {
+              setExportOpen(false);
+              setTplSaveOpen(true);
+            }}
+          />
         )}
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
         {presenting && (
@@ -702,6 +794,7 @@ export function EditorPage() {
         )}
         {versionsOpen && <VersionHistory deck={deck} onClose={() => setVersionsOpen(false)} />}
       {shortcutsOpen && <ShortcutsModal onClose={() => setShortcutsOpen(false)} />}
+      {tplSaveOpen && <SaveTemplateModal deck={deck} theme={theme} onClose={() => setTplSaveOpen(false)} />}
         {gridOpen && (
           <GridOverview
             deck={deck}
