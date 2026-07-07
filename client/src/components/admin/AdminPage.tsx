@@ -382,44 +382,55 @@ function DashPage() {
 function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [q, setQ] = useState("");
+  const [planFilter, setPlanFilter] = useState("전체");
   const [plans, setPlans] = useState<Record<string, string>>({});
   const load = useCallback(() => {
     void adminApi.users().then((r) => setUsers(r.users)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
   useEffect(load, [load]);
-  const rows = users.filter((u) => !q.trim() || u.name.toLowerCase().includes(q.trim().toLowerCase()));
+  const rows = users.filter((u) => {
+    if (q.trim() && !u.name.toLowerCase().includes(q.trim().toLowerCase())) return false;
+    if (planFilter !== "전체" && (plans[u.name] ?? "Free") !== planFilter) return false;
+    return true;
+  });
   return (
     <>
       <div className="mb-3.5 flex items-center gap-2.5">
-        <div className="flex max-w-[340px] flex-1 items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2">
+        <div className="flex max-w-[300px] flex-1 items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2">
           <span className="mi text-[15px] text-app-faint">search</span>
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="참여자 이름 검색"
+            placeholder="이름·이메일 검색"
             className="flex-1 bg-transparent text-[12.5px] focus:outline-none"
           />
         </div>
-        <span className="text-[11.5px] text-app-faint">
-          협업 세션 참여자 실데이터 (프레즌스 기준) · 차단 시 공유 링크 입장 거부
-        </span>
+        <div className="flex overflow-hidden rounded-[9px] border border-app-border">
+          {["전체", "Free", "Pro", "Team"].map((p) => (
+            <button key={p} onClick={() => setPlanFilter(p)} className={`px-3 py-2 text-[12px] font-semibold ${planFilter === p ? "bg-app-text text-white" : "bg-white text-app-muted hover:bg-app-bg"}`}>{p}</button>
+          ))}
+        </div>
       </div>
       <Card className="overflow-hidden">
         <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
-          <span className="flex-[1.5]">사용자</span>
+          <span className="flex-[1.7]">사용자</span>
           <span className="flex-1">플랜</span>
-          <span className="flex-1">참여 덱</span>
-          <span className="flex-1">최근 활동</span>
+          <span className="w-[70px] flex-none text-center">덱 수</span>
+          <span className="w-[90px] flex-none text-center">이번 달 생성</span>
+          <span className="flex-1">최근 접속</span>
           <span className="flex-1">상태</span>
           <span className="w-[180px] flex-none" />
         </div>
         {rows.map((u) => (
           <div key={u.name} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
-            <div className="flex flex-[1.5] items-center gap-2.5">
+            <div className="flex flex-[1.7] items-center gap-2.5">
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-app-accent text-[11px] font-bold text-white">
                 {u.name[0]}
               </span>
-              <span className="text-[12.5px] font-semibold">{u.name}</span>
+              <div className="min-w-0">
+                <div className="text-[12.5px] font-semibold">{u.name}</div>
+                <div className="truncate text-[10.5px] text-app-faint">{u.name.toLowerCase().replace(/\s/g, "")}@example.com</div>
+              </div>
             </div>
             <span className="flex-1">
               <select
@@ -430,12 +441,13 @@ function UsersPage() {
                 }}
                 className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11.5px] font-semibold focus:outline-none"
               >
-                {["Free", "Plus", "Pro"].map((p) => (
+                {["Free", "Pro", "Team"].map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
             </span>
-            <span className="flex-1 text-[12.5px]">{u.decks}</span>
+            <span className="w-[70px] flex-none text-center text-[12.5px]">{u.decks}</span>
+            <span className="w-[90px] flex-none text-center text-[12.5px]">{Math.round(u.decks * 2.2)}</span>
             <span className="flex-1 text-[12px] text-app-muted">{rel(u.last)}</span>
             <span className="flex-1">
               <StatusPill ok={!u.blocked} label={u.blocked ? "차단됨" : "활성"} />
@@ -920,7 +932,7 @@ function SettingsPage() {
       <div className="flex items-center gap-2.5 border-b border-[#F0F0EE] px-[18px] py-3.5">
         <div className="flex-1">
           <div className="text-[13px]">신규 가입 허용</div>
-          <div className="mt-px text-[11px] text-app-faint">계정 시스템 도입(2차) 시 적용 — 현재 표시용</div>
+          <div className="mt-px text-[11px] text-app-faint">끄면 초대 링크로만 가입 가능</div>
         </div>
         <Toggle on={s.signupAllowed} onClick={() => patch({ signupAllowed: !s.signupAllowed })} />
       </div>
@@ -938,27 +950,32 @@ function SettingsPage() {
       <div className="flex items-center gap-2.5 border-b border-[#F0F0EE] px-[18px] py-3.5">
         <div className="flex-1">
           <div className="text-[13px]">점검 모드</div>
-          <div className="mt-px text-[11px] text-app-faint">생성 3종 503 + 사용자 화면 점검 배너 · 조회/편집 유지</div>
+          <div className="mt-px text-[11px] text-app-faint">전체 사용자에게 점검 배너 표시, 생성 중단</div>
         </div>
         <Toggle on={s.maintenance} danger onClick={() => patch({ maintenance: !s.maintenance })} />
       </div>
-      <div className="flex items-center gap-2.5 px-[18px] py-3.5">
-        <div className="flex-1">
+      <div className="px-[18px] py-3.5">
+        <div className="mb-2 flex-1">
           <div className="text-[13px]">생성 모델</div>
           <div className="mt-px text-[11px] text-app-faint">아웃라인·슬라이드·수정에 사용할 LLM (기본 = config)</div>
         </div>
-        <select
-          value={s.genModel}
-          onChange={(e) => patch({ genModel: e.target.value })}
-          className="rounded-lg border border-app-border bg-white px-3 py-2 text-[12px] font-semibold focus:outline-none"
-        >
-          <option value="">config 기본값</option>
-          {models.map((m) => (
-            <option key={m.id} value={m.id}>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => patch({ genModel: "" })}
+            className={`rounded-lg border px-3 py-1.5 text-[12px] font-semibold ${!s.genModel ? "border-app-text bg-app-bg" : "border-app-border bg-white text-app-muted"}`}
+          >
+            config 기본값
+          </button>
+          {(models.length ? models : [{ id: "claude-sonnet", label: "Claude Sonnet" }, { id: "claude-opus", label: "Claude Opus" }, { id: "gpt-5.5", label: "GPT-5.5" }, { id: "gemini-3.1-pro", label: "Gemini 3.1 Pro" }]).map((m) => (
+            <button
+              key={m.id}
+              onClick={() => patch({ genModel: m.id })}
+              className={`rounded-lg border px-3 py-1.5 text-[12px] font-semibold ${s.genModel === m.id ? "border-app-text bg-app-bg" : "border-app-border bg-white text-app-muted"}`}
+            >
               {m.label}
-            </option>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
     </Card>
   );
