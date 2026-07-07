@@ -17,9 +17,12 @@ import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
 import { deleteDeck, listDecks, saveDeck } from "../../store/storage";
+import { getSettings } from "../../store/settingsStore";
 import { Dropdown } from "../ui/Dropdown";
 import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
+import { OnboardingWizard } from "./OnboardingWizard";
+import { SettingsModal } from "./SettingsModal";
 
 const MIN_SLIDES = 3;
 const MAX_SLIDES = 12;
@@ -288,6 +291,9 @@ export function HomePage() {
   const [slideCount, setSlideCount] = useState(5);
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
   const [aspect, setAspect] = useState<DeckAspect>("16:9");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // 첫 실행 시 온보딩 노출
+  const [onboarding, setOnboarding] = useState(() => !getSettings().onboardingDone);
   const [query, setQuery] = useState("");
   const [deckFilter, setDeckFilter] = useState<"all" | "recent" | "shared">("all");
   const [deckView, setDeckView] = useState<"grid" | "list">("grid");
@@ -398,7 +404,15 @@ export function HomePage() {
           <span className="h-[22px] w-[22px] rounded-md bg-app-accent" />
           <span className="text-[15px] font-bold tracking-tight">DeckGen</span>
         </div>
-        <span className="text-[12px] text-app-faint">로컬에 자동 저장됨</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[12px] text-app-faint">로컬에 자동 저장됨</span>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
+          >
+            설정
+          </button>
+        </div>
       </header>
 
       {/* 히어로 + 프롬프트 카드 */}
@@ -856,6 +870,13 @@ export function HomePage() {
           </p>
         )}
       </div>
+      {settingsOpen && (
+        <SettingsModal
+          onClose={() => setSettingsOpen(false)}
+          onRerunOnboarding={() => setOnboarding(true)}
+        />
+      )}
+      {onboarding && <OnboardingWizard onDone={() => setOnboarding(false)} />}
     </div>
   );
 }
