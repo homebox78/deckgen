@@ -16,6 +16,7 @@ interface Props {
   children: ReactNode; // 트리거 버튼 내용
   triggerClassName: string;
   align?: "left" | "right";
+  direction?: "down" | "up"; // 하단 도구는 위로 열림
   title?: string;
 }
 
@@ -27,6 +28,7 @@ export function Dropdown({
   children,
   triggerClassName,
   align = "left",
+  direction = "down",
   title,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -56,9 +58,9 @@ export function Dropdown({
       </button>
       {open && (
         <div
-          className={`absolute top-[calc(100%+6px)] z-50 min-w-44 rounded-xl border border-app-border bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,.16)] ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
+          className={`absolute z-50 min-w-44 rounded-xl border border-app-border bg-white p-1.5 shadow-[0_12px_32px_rgba(0,0,0,.16)] ${
+            direction === "up" ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"
+          } ${align === "right" ? "right-0" : "left-0"}`}
         >
           {items.map((it) => (
             <button

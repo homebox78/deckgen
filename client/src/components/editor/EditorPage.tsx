@@ -1065,7 +1065,7 @@ export function EditorPage() {
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
-          <div key={motionAnim} className={motionAnim ? `dg-motion-${getMotion(deck.id).effect}` : ""}>
+          <div key={motionAnim} className={`h-full w-full ${motionAnim ? `dg-motion-${getMotion(deck.id).effect}` : ""}`}>
           <SlideCanvas
             slide={slide}
             theme={theme}
@@ -1127,52 +1127,76 @@ export function EditorPage() {
               {slideIndex + 1} / {deck.slides.length}
             </span>
           </div>
-          {/* 하단 중앙 툴바 (스냅덱 배치) — 도구 · undo/redo · 줌 */}
+          {/* 하단 중앙 툴바 (시안 도구 스트립) — 선택·손·댓글 / T·도형·미디어·정렬·AI / undo·redo / 줌 */}
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             {!readOnly && (
               <>
                 <button
+                  onClick={() => useUiStore.getState().setSelectedElementId(null)}
+                  title="선택 도구"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-app-bg px-1.5 text-app-text"
+                >
+                  <span className="mi text-[17px]">near_me</span>
+                </button>
+                <button
+                  onClick={() => showToast("Space를 누른 채 드래그하면 화면을 이동할 수 있어요")}
+                  title="손 도구 — Space+드래그로 팬"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">pan_tool</span>
+                </button>
+                <button
+                  onClick={() => setTab("comments")}
+                  title="댓글"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">chat_bubble</span>
+                </button>
+                <span className="mx-0.5 h-4 w-px bg-app-border" />
+                <button
                   onClick={() => insertElement("text")}
                   title="텍스트 상자"
-                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
                 >
-                  T
+                  <span className="mi text-[17px]">title</span>
                 </button>
-                {/* 도형 드롭다운 (Demo Act 5.5) */}
+                {/* 도형 드롭다운 (위로 열림) */}
                 <Dropdown
+                  direction="up"
                   items={[
                     { key: "rect", name: "사각형" },
                     { key: "ellipse", name: "원" },
                     { key: "triangle", name: "삼각형" },
                     { key: "diamond", name: "다이아몬드" },
                     { key: "star", name: "별" },
-                    { key: "pill", name: "▢ 알약" },
-                    { key: "line", name: "— 선" },
+                    { key: "pill", name: "알약" },
+                    { key: "line", name: "선" },
                     { key: "arrow", name: "화살표" },
-                    { key: "table", name: "▦ 표" },
+                    { key: "table", name: "표" },
                   ]}
                   onSelect={(key) => insertElement(key)}
-                  triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"
                   title="도형"
                 >
-                  <span className="mi text-[16px]">category</span><span className="mi text-[13px]">expand_more</span>
+                  <span className="mi text-[17px]">category</span><span className="mi text-[13px]">expand_more</span>
                 </Dropdown>
                 {/* 미디어 삽입 (YouTube/이미지/Pexels/GIPHY/아이콘/AI) */}
                 <button
                   onClick={() => setMediaPicker(true)}
                   title="미디어 삽입 — 이미지·YouTube·Pexels·GIPHY·아이콘·AI"
-                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
                 >
-                  ⊞
+                  <span className="mi text-[17px]">image</span>
                 </button>
-                {/* 정렬·분배 드롭다운 (Demo Act 5.5) */}
+                {/* 정렬·분배 드롭다운 (위로 열림) */}
                 <Dropdown
+                  direction="up"
                   items={[
                     { key: "left", name: "왼쪽 정렬" },
                     { key: "hcenter", name: "가로 가운데" },
                     { key: "right", name: "오른쪽 정렬" },
                     { key: "top", name: "위 정렬" },
-                    { key: "vcenter", name: "⇳ 세로 가운데" },
+                    { key: "vcenter", name: "세로 가운데" },
                     { key: "bottom", name: "아래 정렬" },
                     { key: "disth", name: "가로 분배" },
                     { key: "distv", name: "세로 분배" },
@@ -1184,11 +1208,18 @@ export function EditorPage() {
                     else if (key === "distv") api.distribute("v");
                     else api.align(key as never);
                   }}
-                  triggerClassName="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  triggerClassName="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"
                   title="정렬 · 분배"
                 >
-                  <span className="mi text-[16px]">format_align_center</span>
+                  <span className="mi text-[17px]">format_align_center</span>
                 </Dropdown>
+                <button
+                  onClick={() => setTab("chat")}
+                  title="AI로 수정"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">auto_awesome</span>
+                </button>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
                 <button
                   onClick={() => useDeckStore.temporal.getState().undo()}
