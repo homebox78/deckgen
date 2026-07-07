@@ -506,6 +506,16 @@ export function EditorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedElementId]);
 
+  // 오브젝트 선택 시 우측 패널을 속성 탭으로 자동 전환
+  // (읽기 전용·핀 찍기 모드는 제외 — 댓글 핀 배치 흐름을 방해하지 않게)
+  useEffect(() => {
+    if (readOnly) return;
+    if (!selectedElementId) return;
+    if (useUiStore.getState().pinPicking) return;
+    setTab("props");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedElementId, readOnly]);
+
   // 협업 팔로우 — 팔로우 대상의 슬라이드로 자동 이동
   useEffect(() => {
     if (!followId) return;
