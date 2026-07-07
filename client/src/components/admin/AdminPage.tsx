@@ -1265,40 +1265,66 @@ function CreditsPage() {
   useEffect(() => {
     void adminApi.jobs().then((r) => setJobs(r.jobs)).catch(() => {});
   }, []);
-  const byKind = ["outline", "slides", "edit", "regen", "export"].map((k) => ({
-    k,
-    n: jobs.filter((j) => j.kind === k).length,
-  }));
-  const maxN = Math.max(1, ...byKind.map((b) => b.n));
-  const KIND_KR: Record<string, string> = { outline: "아웃라인", slides: "슬라이드 생성", edit: "AI 수정", regen: "AI 이미지", export: "내보내기" };
+  const byModel = [
+    { name: "Claude Fable 5", n: 14200 },
+    { name: "GPT-5.5", n: 9800 },
+    { name: "Gemini 3.1 Pro", n: 7400 },
+    { name: "DeckGen 1.1", n: 4600 },
+    { name: "이미지 모델", n: 2600 },
+  ];
+  const maxN = Math.max(1, ...byModel.map((b) => b.n));
+  const log = [
+    { t: "09:52", user: "mina@studio.kr", mk: "Claude Fable 5 / 슬라이드 생성 ×8", c: -24 },
+    { t: "09:41", user: "woojin@deckgen.app", mk: "GPT-5.5 / AI 수정 ×3", c: -9 },
+    { t: "09:33", user: "kim@company.co.kr", mk: "이미지 모델 / AI 이미지 ×2", c: -12 },
+    { t: "09:20", user: "lee@company.co.kr", mk: "DeckGen 1.1 / 아웃라인", c: -2 },
+    { t: "09:05", user: "guest_9f2", mk: "Gemini 3.1 Pro / 슬라이드 생성 ×5", c: -15 },
+  ];
   return (
     <>
       <div className="mb-5 grid grid-cols-4 gap-3.5">
         {[
-          { name: "오늘 소모", value: String(jobs.filter((j) => new Date(j.ts).toDateString() === new Date().toDateString()).length * 4), sub: "이벤트 × 평균 단가" },
-          { name: "이번 달 누적", value: `${jobs.length * 4}`, sub: "생성 이벤트 기준" },
+          { name: "오늘 소모", value: "1,284", sub: "어제 1,102 · +16%" },
+          { name: "이번 달 누적", value: "38.6K", sub: "한도 50K의 77%" },
           { name: "생성당 평균", value: "4.2", sub: "크레딧 / 덱 생성" },
-          { name: "총 이벤트", value: String(jobs.length), sub: "최근 60건" },
+          { name: "최대 사용자", value: "mina", sub: "이번 주 2,140 크레딧" },
         ].map((k) => (
           <Card key={k.name} className="px-[18px] py-4">
             <div className="text-[12px] text-app-muted">{k.name}</div>
-            <div className="mt-1.5 text-[24px] font-extrabold">{k.value}</div>
+            <div className="mt-1.5 text-[24px] font-extrabold tracking-tight">{k.value}</div>
             <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
           </Card>
         ))}
       </div>
-      <Card className="px-5 py-[18px]">
-        <div className="mb-3.5 text-[13.5px] font-bold">종류별 소모</div>
-        {byKind.map((b) => (
-          <div key={b.k} className="flex items-center gap-3 py-[7px]">
-            <span className="w-[110px] flex-none text-[12px] text-[#4A4A45]">{KIND_KR[b.k]}</span>
-            <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
-              <div className="h-full rounded bg-app-accent" style={{ width: `${(b.n / maxN) * 100}%`, opacity: 0.8 }} />
+      <div className="grid grid-cols-[1fr_1.2fr] gap-3.5">
+        <Card className="px-5 py-[18px]">
+          <div className="mb-3.5 text-[13.5px] font-bold">모델별 크레딧 소모</div>
+          {byModel.map((b) => (
+            <div key={b.name} className="flex items-center gap-3 py-[7px]">
+              <span className="w-[110px] flex-none text-[12px] text-[#4A4A45]">{b.name}</span>
+              <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+                <div className="h-full rounded bg-app-text" style={{ width: `${(b.n / maxN) * 100}%` }} />
+              </div>
+              <span className="w-12 flex-none text-right text-[11.5px] font-bold">{b.n.toLocaleString()}</span>
             </div>
-            <span className="w-10 flex-none text-right text-[11.5px] font-bold">{b.n * 4}</span>
+          ))}
+        </Card>
+        <Card className="overflow-hidden">
+          <div className="border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[12.5px] font-bold">최근 크레딧 로그</div>
+          <div className="flex border-b border-[#F0F0EE] bg-[#FBFBFA] px-[18px] py-2 text-[10.5px] font-bold text-app-faint">
+            <span className="w-12 flex-none">시각</span><span className="flex-1">사용자</span><span className="flex-[1.5]">모델 / 작업</span><span className="w-12 flex-none text-right">크레딧</span>
           </div>
-        ))}
-      </Card>
+          {log.map((l, i) => (
+            <div key={i} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-2 text-[11.5px] last:border-b-0">
+              <span className="w-12 flex-none text-app-muted">{l.t}</span>
+              <span className="flex-1 truncate">{l.user}</span>
+              <span className="flex-[1.5] truncate text-app-muted">{l.mk}</span>
+              <span className="w-12 flex-none text-right font-semibold text-app-danger">{l.c}</span>
+            </div>
+          ))}
+        </Card>
+      </div>
+      <p className="mt-2 text-[10.5px] text-app-faint">* jobs 이벤트 {jobs.length}건 집계 · 값은 데모 표시</p>
     </>
   );
 }
@@ -1583,22 +1609,28 @@ function FlagsPage() {
 // ===== 약관 · 정책 (policies) =====
 function PoliciesPage() {
   const [rows, setRows] = useState([
-    { id: 1, name: "이용약관", version: "v3.2", reconsent: false, draft: false },
-    { id: 2, name: "개인정보 처리방침", version: "v4.0", reconsent: true, draft: false },
-    { id: 3, name: "환불 정책", version: "v1.1", reconsent: false, draft: false },
-    { id: 4, name: "마케팅 수신 동의", version: "v2.0 (초안)", reconsent: false, draft: true },
+    { id: 1, name: "서비스 이용약관", version: "v2.3", updated: "2026-06-20", reconsent: true, draft: false },
+    { id: 2, name: "개인정보 처리방침", version: "v3.1", updated: "2026-05-14", reconsent: false, draft: false },
+    { id: 3, name: "환불 정책", version: "v1.4", updated: "2026-04-02", reconsent: false, draft: false },
+    { id: 4, name: "마케팅 정보 수신 동의", version: "v1.1", updated: "2026-06-28", reconsent: false, draft: true },
   ]);
   const pub = rows.filter((r) => !r.draft).length;
   return (
     <>
-      <div className="mb-3.5 text-[12.5px] text-app-muted">게시됨 {pub} / {rows.length}개</div>
+      <div className="mb-3.5 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">버전 관리 · 게시 · 재동의 요청</span>
+        <span className="rounded-full border border-app-border bg-white px-2.5 py-1 text-[11.5px] font-semibold">게시됨 {pub} / {rows.length}</span>
+      </div>
       <Card className="overflow-hidden">
         <div className={thCls}><span className="flex-[1.8]">문서</span><span className="flex-1">버전</span><span className="flex-1">상태</span><span className="w-[220px] flex-none">조치</span></div>
         {rows.map((r) => (
           <div key={r.id} className={rowCls}>
             <div className="flex-[1.8]">
-              <span className="text-[12.5px] font-semibold">{r.name}</span>
-              {r.reconsent && <span className="ml-2 rounded-full border border-[#F5C6C8] bg-[#FFF0F0] px-1.5 py-[1px] text-[10px] font-semibold text-app-danger">재동의 필요</span>}
+              <div className="flex items-center">
+                <span className="text-[12.5px] font-semibold">{r.name}</span>
+                {r.reconsent && <span className="ml-2 rounded-full border border-[#F5C6C8] bg-[#FFF0F0] px-1.5 py-[1px] text-[10px] font-semibold text-app-danger">재동의 필요</span>}
+              </div>
+              <div className="text-[10.5px] text-app-faint">최종 수정 {r.updated}</div>
             </div>
             <span className="flex-1 font-mono text-[11.5px]">{r.version}</span>
             <span className="flex-1"><StatusPill ok={!r.draft} label={r.draft ? "초안" : "게시됨"} /></span>
@@ -1612,6 +1644,9 @@ function PoliciesPage() {
           </div>
         ))}
       </Card>
+      <p className="mt-3 text-[11px] leading-relaxed text-app-faint">
+        게시 시 이전 버전은 자동 보관(archive)되고 게시 일자가 기록됩니다 · 재동의 요청 시 다음 로그인에서 동의 모달이 노출됩니다
+      </p>
     </>
   );
 }
@@ -1628,10 +1663,10 @@ function RefundsPage() {
   return (
     <>
       <KpiGrid items={[
-        { name: "이번 달 매출", value: "₩4.2M", sub: "구독 + 크레딧" },
-        { name: "활성 구독", value: "312", sub: "Plus 248 · Pro 64" },
-        { name: "환불 (이번 달)", value: "₩186K", sub: "8건" },
-        { name: "결제 실패", value: "5", sub: "재청구 대기" },
+        { name: "이번 달 매출", value: "₩2.4M", sub: "전월 대비 +18%" },
+        { name: "활성 구독", value: "184", sub: "Pro 142 · Team 42" },
+        { name: "환불 (이번 달)", value: "₩84K", sub: "7건 · 환불율 3.5%" },
+        { name: "결제 실패", value: "5", sub: "재청구 대기 3건" },
       ]} />
       <Card className="overflow-hidden">
         <div className={thCls}><span className="flex-1">인보이스</span><span className="flex-[1.4]">사용자</span><span className="w-16 flex-none">플랜</span><span className="w-24 flex-none text-right">금액</span><span className="w-24 flex-none">결제수단</span><span className="w-20 flex-none">상태</span><span className="w-[150px] flex-none">조치</span></div>
