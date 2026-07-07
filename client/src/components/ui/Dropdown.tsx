@@ -5,6 +5,7 @@ export interface DropdownItem {
   key: string;
   name: string;
   swatch?: string; // 좌측 색상 칩
+  icon?: ReactNode; // 좌측 아이콘 (도형 미리보기·정렬 아이콘 등)
   badge?: string; // 우측 보조 배지 (예: "2차")
   disabled?: boolean;
 }
@@ -83,6 +84,11 @@ export function Dropdown({
                   className="h-3 w-3 shrink-0 rounded-[3px] border border-black/10"
                   style={{ background: it.swatch }}
                 />
+              )}
+              {it.icon && (
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center text-app-muted">
+                  {it.icon}
+                </span>
               )}
               <span className="flex-1 text-app-text">{it.name}</span>
               {it.badge && (

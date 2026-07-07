@@ -110,6 +110,48 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
   }
 }
 
+/** 도형 드롭다운 항목의 미리보기 아이콘 (프로토타입 시안 — 아웃라인 currentColor) */
+function shapeIcon(kind: string) {
+  const s = { fill: "none", stroke: "currentColor", strokeWidth: 1.4 } as const;
+  const p = (d: string) => <path d={d} {...s} strokeLinejoin="round" strokeLinecap="round" />;
+  const inner = (() => {
+    switch (kind) {
+      case "rect":
+        return <rect x="2.5" y="4" width="11" height="8" rx="1.5" {...s} />;
+      case "circle":
+        return <circle cx="8" cy="8" r="5" {...s} />;
+      case "ellipse":
+        return <ellipse cx="8" cy="8" rx="6" ry="4" {...s} />;
+      case "triangle":
+        return p("M8 3 L13.5 13 L2.5 13 Z");
+      case "diamond":
+        return p("M8 2.5 L13.5 8 L8 13.5 L2.5 8 Z");
+      case "star":
+        return p("M8 2.5 l1.55 3.15 3.45.5-2.5 2.45.6 3.45L8 12.9 4.9 14.55l.6-3.45-2.5-2.45 3.45-.5z");
+      case "parallelogram":
+        return p("M5 4 H14 L11 12 H2 Z");
+      case "line":
+        return p("M2.5 12.5 L13.5 3.5");
+      case "arrow":
+        return p("M2.5 8 H12 M9 5 L12.5 8 L9 11");
+      case "table":
+        return (
+          <>
+            <rect x="2.5" y="3.5" width="11" height="9" rx="1" {...s} />
+            <path d="M2.5 7 H13.5 M8 3.5 V12.5" {...s} />
+          </>
+        );
+      default:
+        return <rect x="2.5" y="4" width="11" height="8" rx="1.5" {...s} />;
+    }
+  })();
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4">
+      {inner}
+    </svg>
+  );
+}
+
 function ViewOnlyNotice() {
   return (
     <div className="px-4 py-8 text-center text-[12.5px] leading-relaxed text-app-faint">
@@ -650,6 +692,15 @@ export function EditorPage() {
         >
           <span className="mi text-[16px]">arrow_back</span>
         </button>
+        {/* DeckGen 로고 (시안 1f) */}
+        <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden>
+          <rect width="24" height="24" rx="7" fill="#1A1A1A" />
+          <rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF" />
+          <rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A" />
+          <rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)" />
+          <circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="1.2" />
+          <circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" strokeWidth="1.2" />
+        </svg>
         <input
           className="w-56 rounded-md border-b border-dashed border-transparent px-1 py-0.5 text-[14px] font-bold hover:border-app-border focus:border-app-accent focus:!outline-none read-only:hover:border-transparent"
           value={deck.title}
@@ -677,74 +728,6 @@ export function EditorPage() {
           <span className="flex items-center gap-1 text-[11px] text-app-faint"><span className="mi text-[13px]">cloud_done</span>자동 저장됨</span>
         )}
         <span className="flex-1" />
-        {/* 프레즌스 아바타 (§12) */}
-        {isCollab && (
-          <div className="flex items-center">
-            <span
-              title={`${getGuestName() || "나"} (나)`}
-              className="relative z-[3] inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
-              style={{ background: MY_COLOR }}
-            >
-              {(getGuestName() || "나").slice(0, 1)}
-            </span>
-            {peers.map((p) => (
-              <button
-                key={p.clientId}
-                onClick={() => {
-                  setFollowId((cur) => (cur === p.clientId ? null : p.clientId));
-                  setCurrentSlideIndex(p.slideIndex);
-                }}
-                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} · 클릭 시 시점 팔로우`}
-                className={`-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-[11px] font-semibold text-white ${
-                  followId === p.clientId ? "ring-2 ring-app-accent ring-offset-1" : "border-2 border-white"
-                }`}
-                style={{ background: p.color }}
-              >
-                {p.name.slice(0, 1)}
-              </button>
-            ))}
-            <span
-              className={`ml-1.5 text-[11px] ${collab.connected ? "text-app-success" : "text-app-faint"}`}
-            >
-              {collab.connected ? `${peers.length + 1}명 접속` : "연결 중…"}
-            </span>
-            {followId && (
-              <button
-                onClick={() => setFollowId(null)}
-                title="팔로우 해제"
-                className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-app-accent-soft px-2 py-0.5 text-[10.5px] font-semibold text-app-text"
-              >
-                <span className="mi text-[12px]">visibility</span> {peers.find((p) => p.clientId === followId)?.name ?? "?"} 팔로우 중 <span className="mi text-[12px]">close</span>
-              </button>
-            )}
-          </div>
-        )}
-        {!readOnly && (
-          <Dropdown
-            items={Object.values(themes).map((t) => ({
-              key: t.id,
-              name: t.name,
-              swatch: t.accent,
-            }))}
-            activeKey={deck.themeId}
-            onSelect={setThemeId}
-            align="right"
-            triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
-            title="슬라이드 테마"
-          >
-            <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
-            <span className="text-[12.5px] font-medium">{theme.name}</span>
-            <span className="mi text-[14px] text-app-faint">expand_more</span>
-          </Dropdown>
-        )}
-        <NotificationBell deckId={deck.id} onJump={(i) => setCurrentSlideIndex(i)} />
-        <button
-          onClick={() => setShortcutsOpen(true)}
-          title="키보드 단축키 (?)"
-          className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent"
-        >
-          <span className="mi text-[17px]">keyboard</span>
-        </button>
         <button
           onClick={() => setGridOpen(true)}
           title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
@@ -786,6 +769,70 @@ export function EditorPage() {
           >
             <span className="mi align-middle text-[15px] mr-1">share</span>공유
           </button>
+        )}
+        {/* 프레즌스 아바타 (§12) */}
+        {isCollab && (
+          <div className="flex items-center">
+            <span
+              title={`${getGuestName() || "나"} (나)`}
+              className="relative z-[3] inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
+              style={{ background: MY_COLOR }}
+            >
+              {(getGuestName() || "나").slice(0, 1)}
+            </span>
+            {peers.map((p) => (
+              <button
+                key={p.clientId}
+                onClick={() => {
+                  setFollowId((cur) => (cur === p.clientId ? null : p.clientId));
+                  setCurrentSlideIndex(p.slideIndex);
+                }}
+                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} · 클릭 시 시점 팔로우`}
+                className={`-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-[11px] font-semibold text-white ${
+                  followId === p.clientId ? "ring-2 ring-app-accent ring-offset-1" : "border-2 border-white"
+                }`}
+                style={{ background: p.color }}
+              >
+                {p.name.slice(0, 1)}
+              </button>
+            ))}
+            {followId && (
+              <button
+                onClick={() => setFollowId(null)}
+                title="팔로우 해제"
+                className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-app-accent-soft px-2 py-0.5 text-[10.5px] font-semibold text-app-text"
+              >
+                <span className="mi text-[12px]">visibility</span> {peers.find((p) => p.clientId === followId)?.name ?? "?"} 팔로우 중 <span className="mi text-[12px]">close</span>
+              </button>
+            )}
+          </div>
+        )}
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          title="키보드 단축키 (?)"
+          className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent"
+        >
+          <span className="mi text-[17px]">keyboard</span>
+        </button>
+        <NotificationBell deckId={deck.id} onJump={(i) => setCurrentSlideIndex(i)} />
+        {!readOnly && (
+          <Dropdown
+            items={Object.values(themes).map((t) => ({
+              key: t.id,
+              name: t.name,
+              swatch: t.accent,
+            }))}
+            activeKey={deck.themeId}
+            onSelect={setThemeId}
+            align="right"
+            triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
+            title="슬라이드 테마"
+          >
+            <span className="mi text-[14px] text-app-muted">palette</span>
+            <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
+            <span className="text-[12.5px] font-medium">{theme.name}</span>
+            <span className="mi text-[14px] text-app-faint">expand_more</span>
+          </Dropdown>
         )}
         <button
           onClick={() => setExportOpen((o) => !o)}
@@ -1220,16 +1267,16 @@ export function EditorPage() {
                 <Dropdown
                   direction="up"
                   items={[
-                    { key: "rect", name: "사각형" },
-                    { key: "circle", name: "원" },
-                    { key: "ellipse", name: "타원" },
-                    { key: "triangle", name: "삼각형" },
-                    { key: "diamond", name: "다이아몬드" },
-                    { key: "star", name: "별" },
-                    { key: "parallelogram", name: "평행사변형" },
-                    { key: "line", name: "선" },
-                    { key: "arrow", name: "화살표" },
-                    { key: "table", name: "표" },
+                    { key: "rect", name: "사각형", icon: shapeIcon("rect") },
+                    { key: "circle", name: "원", icon: shapeIcon("circle") },
+                    { key: "ellipse", name: "타원", icon: shapeIcon("ellipse") },
+                    { key: "triangle", name: "삼각형", icon: shapeIcon("triangle") },
+                    { key: "diamond", name: "다이아몬드", icon: shapeIcon("diamond") },
+                    { key: "star", name: "별", icon: shapeIcon("star") },
+                    { key: "parallelogram", name: "평행사변형", icon: shapeIcon("parallelogram") },
+                    { key: "line", name: "선", icon: shapeIcon("line") },
+                    { key: "arrow", name: "화살표", icon: shapeIcon("arrow") },
+                    { key: "table", name: "표", icon: shapeIcon("table") },
                   ]}
                   onSelect={(key) => insertElement(key)}
                   triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"
@@ -1249,14 +1296,14 @@ export function EditorPage() {
                 <Dropdown
                   direction="up"
                   items={[
-                    { key: "left", name: "왼쪽 정렬" },
-                    { key: "hcenter", name: "가로 가운데" },
-                    { key: "right", name: "오른쪽 정렬" },
-                    { key: "top", name: "위 정렬" },
-                    { key: "vcenter", name: "세로 가운데" },
-                    { key: "bottom", name: "아래 정렬" },
-                    { key: "disth", name: "가로 분배" },
-                    { key: "distv", name: "세로 분배" },
+                    { key: "left", name: "왼쪽 정렬", icon: <span className="mi text-[16px]">align_horizontal_left</span> },
+                    { key: "hcenter", name: "가로 가운데", icon: <span className="mi text-[16px]">align_horizontal_center</span> },
+                    { key: "right", name: "오른쪽 정렬", icon: <span className="mi text-[16px]">align_horizontal_right</span> },
+                    { key: "top", name: "위 정렬", icon: <span className="mi text-[16px]">align_vertical_top</span> },
+                    { key: "vcenter", name: "세로 가운데", icon: <span className="mi text-[16px]">align_vertical_center</span> },
+                    { key: "bottom", name: "아래 정렬", icon: <span className="mi text-[16px]">align_vertical_bottom</span> },
+                    { key: "disth", name: "가로 분배", icon: <span className="mi text-[16px]">horizontal_distribute</span> },
+                    { key: "distv", name: "세로 분배", icon: <span className="mi text-[16px]">vertical_distribute</span> },
                   ]}
                   onSelect={(key) => {
                     const api = canvasApi();
