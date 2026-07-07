@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { fetchShared } from "../../api/collab";
 import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
 import type { Slide, SlideElement } from "../../engine/schema";
 import { uid } from "../../engine/schema";
 import { getTheme, themes } from "../../engine/themes";
+import {
+  MY_COLOR,
+  getCollabSession,
+  getGuestName,
+  useCollabStore,
+} from "../../store/collabStore";
 import { clearHistory, useDeckStore, useTemporal } from "../../store/deckStore";
 import { useGenerationStore } from "../../store/generationStore";
 import type { SlideGenStatus } from "../../store/generationStore";
@@ -17,8 +24,10 @@ import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
 import { PropertiesPanel } from "./PropertiesPanel";
+import { ShareDialog } from "./ShareDialog";
 import { SlideCanvas } from "./SlideCanvas";
 import { SlideThumbnail } from "./SlideThumbnail";
+import { useCollabSync } from "./useCollabSync";
 
 type RightTab = "chat" | "props" | "notes";
 
@@ -88,8 +97,30 @@ function buildInsertElement(kind: string): SlideElement {
   }
 }
 
+function ViewOnlyNotice() {
+  return (
+    <div className="px-4 py-8 text-center text-[12.5px] leading-relaxed text-app-faint">
+      <p className="text-[20px]">👁</p>
+      <p className="mt-2 font-semibold text-app-muted">보기 전용 링크로 접속 중</p>
+      <p className="mt-1">
+        편집하려면 소유자에게
+        <br />
+        편집 링크를 요청하세요.
+      </p>
+    </div>
+  );
+}
+
 /** 노트 탭 — Slide.notes 편집 (blur 시 커밋 → undo 히스토리 오염 방지) */
-function NotesPanel({ slide, slideIndex }: { slide: Slide; slideIndex: number }) {
+function NotesPanel({
+  slide,
+  slideIndex,
+  readOnly = false,
+}: {
+  slide: Slide;
+  slideIndex: number;
+  readOnly?: boolean;
+}) {
   const [val, setVal] = useState(slide.notes ?? "");
   useEffect(() => {
     setVal(slide.notes ?? "");
@@ -112,9 +143,10 @@ function NotesPanel({ slide, slideIndex }: { slide: Slide; slideIndex: number })
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 p-4">
         <textarea
           value={val}
+          readOnly={readOnly}
           onChange={(e) => setVal(e.target.value)}
-          onBlur={commit}
-          placeholder="이 슬라이드에서 말할 내용을 적어두세요."
+          onBlur={readOnly ? undefined : commit}
+          placeholder={readOnly ? "노트가 없습니다." : "이 슬라이드에서 말할 내용을 적어두세요."}
           className="min-h-0 w-full flex-1 resize-none rounded-[10px] border border-app-border bg-white p-3 text-[13px] leading-relaxed focus:border-app-accent focus:!outline-none"
         />
         <div className="rounded-lg border border-app-border-soft bg-[#FBFBFA] p-2.5 text-[11.5px] leading-relaxed text-app-faint">
@@ -198,18 +230,44 @@ export function EditorPage() {
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const collab = useCollabStore();
+  useCollabSync(deck);
+  const isCollab = !!deck && collab.deckId === deck.id;
+  const readOnly = isCollab && collab.role === "view";
+  const peers = isCollab ? collab.peers : [];
   const gen = useGenerationStore();
   const genStatuses = deck && gen.deckId === deck.id ? gen.statuses : null;
   const genDone = genStatuses?.filter((s) => s === "done").length ?? 0;
 
-  // 덱 로드: localStorage → 없으면 샘플
+  // 덱 로드: localStorage → 협업 세션(서버) → 샘플
   useEffect(() => {
     if (!id) return;
     if (deck?.id === id) return;
-    const loaded = loadDeck(id) ?? (id === "sample" ? createSampleDeck() : null);
-    setDeck(loaded);
-    setCurrentSlideIndex(0);
-    clearHistory();
+    const local = loadDeck(id) ?? (id === "sample" ? createSampleDeck() : null);
+    if (local) {
+      setDeck(local);
+      setCurrentSlideIndex(0);
+      clearHistory();
+      return;
+    }
+    // 게스트 새로고침: 서버에서 공유 덱 복구
+    const sess = getCollabSession(id);
+    if (sess) {
+      let alive = true;
+      void fetchShared(sess.token)
+        .then((info) => {
+          if (!alive) return;
+          setDeck(info.deck);
+          setCurrentSlideIndex(0);
+          clearHistory();
+        })
+        .catch(() => alive && setDeck(null));
+      return () => {
+        alive = false;
+      };
+    }
+    setDeck(null);
     // deck은 의도적으로 deps에서 제외 — id 변경 시에만 로드
   }, [id]);
 
@@ -217,6 +275,8 @@ export function EditorPage() {
   const saveTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (!deck) return;
+    // 공유 링크로 들어온 게스트는 로컬 목록에 저장하지 않는다 (§12)
+    if (getCollabSession(deck.id)?.isGuest) return;
     window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
       saveDeck(deck);
@@ -314,60 +374,105 @@ export function EditorPage() {
         </button>
         <span className="h-5 w-5 shrink-0 rounded-md bg-app-accent" />
         <input
-          className="w-56 rounded-md border-b border-dashed border-transparent px-1 py-0.5 text-[14px] font-bold hover:border-app-border focus:border-app-accent focus:!outline-none"
+          className="w-56 rounded-md border-b border-dashed border-transparent px-1 py-0.5 text-[14px] font-bold hover:border-app-border focus:border-app-accent focus:!outline-none read-only:hover:border-transparent"
           value={deck.title}
+          readOnly={readOnly}
           onChange={(e) => setDeckTitle(e.target.value)}
-          title="덱 제목 (클릭해서 수정)"
+          title={readOnly ? "보기 전용" : "덱 제목 (클릭해서 수정)"}
         />
-        <div className="ml-1 flex items-center gap-1">
-          <button
-            onClick={() => useDeckStore.temporal.getState().undo()}
-            disabled={temporal.pastStates.length === 0}
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
-            title="실행 취소 (Ctrl+Z)"
-          >
-            ↺
-          </button>
-          <button
-            onClick={() => useDeckStore.temporal.getState().redo()}
-            disabled={temporal.futureStates.length === 0}
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
-            title="다시 실행 (Ctrl+Shift+Z)"
-          >
-            ↻
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="ml-1 flex items-center gap-1">
+            <button
+              onClick={() => useDeckStore.temporal.getState().undo()}
+              disabled={temporal.pastStates.length === 0}
+              className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
+              title="실행 취소 (Ctrl+Z)"
+            >
+              ↺
+            </button>
+            <button
+              onClick={() => useDeckStore.temporal.getState().redo()}
+              disabled={temporal.futureStates.length === 0}
+              className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
+              title="다시 실행 (Ctrl+Shift+Z)"
+            >
+              ↻
+            </button>
+          </div>
+        )}
         {gen.active && genStatuses && (
           <StatusBadge status="generating">
             생성 중 {genDone}/{genStatuses.length}
           </StatusBadge>
         )}
-        <span className="text-[11px] text-app-faint">✓ 자동 저장됨</span>
+        {readOnly && <StatusBadge status="queued">보기 전용</StatusBadge>}
+        {!collab.isGuest && !readOnly && (
+          <span className="text-[11px] text-app-faint">✓ 자동 저장됨</span>
+        )}
         <span className="flex-1" />
-        <Dropdown
-          items={INSERT_ITEMS}
-          onSelect={insertElement}
-          triggerClassName="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent data-open:border-app-accent"
-          title="요소 삽입"
-        >
-          + 삽입 <span className="text-[9px] text-app-faint">▾</span>
-        </Dropdown>
-        <Dropdown
-          items={Object.values(themes).map((t) => ({
-            key: t.id,
-            name: t.name,
-            swatch: t.accent,
-          }))}
-          activeKey={deck.themeId}
-          onSelect={setThemeId}
-          align="right"
-          triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
-          title="슬라이드 테마"
-        >
-          <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
-          <span className="text-[12.5px] font-medium">{theme.name}</span>
-          <span className="text-[9px] text-app-faint">▾</span>
-        </Dropdown>
+        {/* 프레즌스 아바타 (§12) */}
+        {isCollab && (
+          <div className="flex items-center">
+            <span
+              title={`${getGuestName() || "나"} (나)`}
+              className="relative z-[3] inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
+              style={{ background: MY_COLOR }}
+            >
+              {(getGuestName() || "나").slice(0, 1)}
+            </span>
+            {peers.map((p) => (
+              <span
+                key={p.clientId}
+                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} 보는 중`}
+                className="-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
+                style={{ background: p.color }}
+              >
+                {p.name.slice(0, 1)}
+              </span>
+            ))}
+            <span
+              className={`ml-1.5 text-[11px] ${collab.connected ? "text-app-success" : "text-app-faint"}`}
+            >
+              {collab.connected ? `● ${peers.length + 1}명 접속` : "연결 중…"}
+            </span>
+          </div>
+        )}
+        {!readOnly && (
+          <Dropdown
+            items={INSERT_ITEMS}
+            onSelect={insertElement}
+            triggerClassName="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent data-open:border-app-accent"
+            title="요소 삽입"
+          >
+            + 삽입 <span className="text-[9px] text-app-faint">▾</span>
+          </Dropdown>
+        )}
+        {!readOnly && (
+          <Dropdown
+            items={Object.values(themes).map((t) => ({
+              key: t.id,
+              name: t.name,
+              swatch: t.accent,
+            }))}
+            activeKey={deck.themeId}
+            onSelect={setThemeId}
+            align="right"
+            triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
+            title="슬라이드 테마"
+          >
+            <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
+            <span className="text-[12.5px] font-medium">{theme.name}</span>
+            <span className="text-[9px] text-app-faint">▾</span>
+          </Dropdown>
+        )}
+        {!collab.isGuest && (
+          <button
+            onClick={() => setShareOpen(true)}
+            className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+          >
+            공유
+          </button>
+        )}
         <button
           onClick={() => setExportOpen((o) => !o)}
           disabled={exporting}
@@ -378,6 +483,7 @@ export function EditorPage() {
         {exportOpen && (
           <ExportPopover onClose={() => setExportOpen(false)} onExport={runExport} />
         )}
+        {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -400,6 +506,7 @@ export function EditorPage() {
                   <button
                     onClick={() => setCurrentSlideIndex(i)}
                     onContextMenu={(e) => {
+                      if (readOnly) return;
                       e.preventDefault();
                       setMenu({ x: e.clientX, y: e.clientY, slideId: s.id });
                     }}
@@ -418,10 +525,22 @@ export function EditorPage() {
                       </span>
                     )}
                   </button>
-                  <div className="mt-1 px-0.5 text-[10px] text-app-faint">
-                    {i + 1} · {s.layout}
+                  <div className="mt-1 flex items-center gap-1 px-0.5 text-[10px] text-app-faint">
+                    <span className="flex-1 truncate">
+                      {i + 1} · {s.layout}
+                    </span>
+                    {peers
+                      .filter((p) => p.slideIndex === i)
+                      .map((p) => (
+                        <span
+                          key={p.clientId}
+                          title={`${p.name} 보는 중`}
+                          className="h-[7px] w-[7px] shrink-0 rounded-full"
+                          style={{ background: p.color }}
+                        />
+                      ))}
                   </div>
-                  {isCur && (
+                  {isCur && !readOnly && (
                     <div className="mt-1 flex gap-1.5">
                       <button
                         onClick={() => {
@@ -444,20 +563,22 @@ export function EditorPage() {
               </div>
             );
           })}
-          <button
-            onClick={() => {
-              addSlide(slideIndex);
-              setCurrentSlideIndex(slideIndex + 1);
-            }}
-            className="mt-0.5 rounded-lg border border-dashed border-[#D4D4CE] bg-white py-2 text-[12px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
-          >
-            + 슬라이드 추가
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => {
+                addSlide(slideIndex);
+                setCurrentSlideIndex(slideIndex + 1);
+              }}
+              className="mt-0.5 rounded-lg border border-dashed border-[#D4D4CE] bg-white py-2 text-[12px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
+            >
+              + 슬라이드 추가
+            </button>
+          )}
         </aside>
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
-          <SlideCanvas slide={slide} theme={theme} />
+          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} />
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[10px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             <button
               onClick={() => canvasApi()?.zoomOut()}
@@ -508,18 +629,30 @@ export function EditorPage() {
             ))}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
-            {tab === "chat" && (
-              <ChatPanel
-                slide={slide}
-                slideIndex={slideIndex}
-                theme={theme}
-                deckId={deck.id}
-              />
+            {tab === "chat" &&
+              (readOnly ? (
+                <ViewOnlyNotice />
+              ) : (
+                <ChatPanel
+                  slide={slide}
+                  slideIndex={slideIndex}
+                  theme={theme}
+                  deckId={deck.id}
+                />
+              ))}
+            {tab === "props" &&
+              (readOnly ? (
+                <ViewOnlyNotice />
+              ) : (
+                <PropertiesPanel
+                  slideId={slide.id}
+                  element={selectedElement}
+                  theme={theme}
+                />
+              ))}
+            {tab === "notes" && (
+              <NotesPanel slide={slide} slideIndex={slideIndex} readOnly={readOnly} />
             )}
-            {tab === "props" && (
-              <PropertiesPanel slideId={slide.id} element={selectedElement} theme={theme} />
-            )}
-            {tab === "notes" && <NotesPanel slide={slide} slideIndex={slideIndex} />}
           </div>
         </aside>
       </div>

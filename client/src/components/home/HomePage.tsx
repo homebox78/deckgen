@@ -2,10 +2,12 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { uid } from "../../engine/schema";
 import { DEFAULT_THEME_ID, getTheme, themes } from "../../engine/themes";
+import { WIREFRAME_LIBRARIES, createStoryboardDeck } from "../../engine/wireframes";
+import { clearHistory, useDeckStore } from "../../store/deckStore";
 import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
-import { deleteDeck, listDecks } from "../../store/storage";
+import { deleteDeck, listDecks, saveDeck } from "../../store/storage";
 import { Dropdown } from "../ui/Dropdown";
 import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
@@ -222,6 +224,54 @@ export function HomePage() {
               className="rounded-full border border-app-border bg-app-surface px-3.5 py-1.5 text-[12px] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
             >
               {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 스토리보드 템플릿 (§13) — 완성 장표가 아니라 팀이 함께 채우는 와이어프레임 */}
+      <div className="mx-auto w-[880px] max-w-[92vw] pb-12">
+        <div className="mb-3.5 flex items-baseline justify-between">
+          <h2 className="text-[16px] font-semibold">스토리보드로 시작</h2>
+          <span className="text-[12px] text-app-faint">
+            와이어프레임 골격을 만들고, 공유해서 팀이 함께 채워요
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+          {WIREFRAME_LIBRARIES.map((lib) => (
+            <button
+              key={lib.id}
+              onClick={() => {
+                const deck = createStoryboardDeck(lib.id, themeId);
+                if (!deck) return;
+                saveDeck(deck);
+                useDeckStore.getState().setDeck(deck);
+                clearHistory();
+                navigate(`/deck/${deck.id}/edit`);
+                showToast(`'${lib.name}' ${lib.frames.length}프레임 생성 — 자리를 채우고 공유하세요`);
+              }}
+              className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
+            >
+              {/* 와이어프레임 미니 프리뷰 */}
+              <div className="flex aspect-[16/10] flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3">
+                <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
+                <div className="mt-1 flex flex-1 gap-1.5">
+                  <div className="flex flex-1 flex-col justify-center gap-1">
+                    <div className="h-[3px] w-full rounded-sm bg-[#DEDEDA]" />
+                    <div className="h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
+                    <div className="h-[3px] w-[90%] rounded-sm bg-[#DEDEDA]" />
+                  </div>
+                  <div className="flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
+                    <span className="text-[8px] text-app-faint">AREA</span>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-2.5 text-[12.5px] font-semibold group-hover:text-app-accent">
+                {lib.name}
+              </p>
+              <p className="mt-0.5 text-[11px] leading-snug text-app-faint">
+                {lib.frames.length}프레임 · {lib.desc}
+              </p>
             </button>
           ))}
         </div>

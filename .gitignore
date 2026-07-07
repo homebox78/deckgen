@@ -4,3 +4,4 @@ dist/
 *.local
 *.tsbuildinfo
 .playwright-mcp/
+server/data/

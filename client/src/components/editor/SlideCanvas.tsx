@@ -21,7 +21,15 @@ function isEditableTarget(e: KeyboardEvent): boolean {
   return t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable;
 }
 
-export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
+export function SlideCanvas({
+  slide,
+  theme,
+  readOnly = false,
+}: {
+  slide: Slide;
+  theme: Theme;
+  readOnly?: boolean;
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const fcRef = useRef<Canvas | null>(null);
@@ -32,8 +40,9 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
     const host = hostRef.current!;
     const fc = new Canvas(canvasElRef.current!, {
       preserveObjectStacking: true,
-      selection: true,
+      selection: !readOnly,
       uniformScaling: true,
+      skipTargetFind: readOnly, // 보기 전용: 요소 선택/호버 비활성
     });
     fcRef.current = fc;
     if (import.meta.env.DEV) {
@@ -109,15 +118,18 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
       fc.selection = true;
     });
 
-    // --- 역동기화 ---
-    const detachSync = attachSync(fc, {
-      updateElement: (elementId, patch) => {
-        useDeckStore
-          .getState()
-          .updateElement(slideRef.current.id, elementId, patch);
-      },
-      onSelect: (elementId) => useUiStore.getState().setSelectedElementId(elementId),
-    });
+    // --- 역동기화 (보기 전용에선 편집 이벤트가 없으므로 생략) ---
+    const detachSync = readOnly
+      ? () => {}
+      : attachSync(fc, {
+          updateElement: (elementId, patch) => {
+            useDeckStore
+              .getState()
+              .updateElement(slideRef.current.id, elementId, patch);
+          },
+          onSelect: (elementId) =>
+            useUiStore.getState().setSelectedElementId(elementId),
+        });
 
     // --- 단축키 ---
     const activeElement = (): { obj: FabricObject; el: SlideElement } | null => {
@@ -139,6 +151,8 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
         e.preventDefault();
         return;
       }
+
+      if (readOnly) return; // 보기 전용: 팬 외 편집 단축키 차단
 
       const store = useDeckStore.getState();
       const ui = useUiStore.getState();
@@ -202,7 +216,7 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
       fcRef.current = null;
       void fc.dispose();
     };
-  }, []);
+  }, [readOnly]);
 
   // 슬라이드/테마 변경 시 재렌더 (Fabric 발 갱신은 스킵 — 값만 이미 동기화됨)
   useEffect(() => {
@@ -230,7 +244,7 @@ export function SlideCanvas({ slide, theme }: { slide: Slide; theme: Theme }) {
     return () => {
       cancelled = true;
     };
-  }, [slide, theme]);
+  }, [slide, theme, readOnly]);
 
   return (
     <div ref={hostRef} className="h-full w-full overflow-hidden bg-app-canvas">

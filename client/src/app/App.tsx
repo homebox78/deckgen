@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HomePage } from "../components/home/HomePage";
 import { EditorPage } from "../components/editor/EditorPage";
 import { OutlinePage } from "../components/outline/OutlinePage";
+import { SharedEntryPage } from "../components/share/SharedEntryPage";
 import { Toaster } from "../components/ui/toast";
 
 const router = createBrowserRouter(
@@ -9,6 +10,7 @@ const router = createBrowserRouter(
     { path: "/", element: <HomePage /> },
     { path: "/deck/:id/outline", element: <OutlinePage /> },
     { path: "/deck/:id/edit", element: <EditorPage /> },
+    { path: "/s/:token", element: <SharedEntryPage /> },
   ],
   { future: { v7_relativeSplatPath: true } },
 );

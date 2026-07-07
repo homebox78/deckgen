@@ -124,3 +124,15 @@ export const slideSchema = z.object({
   notes: z.string().optional(),
 });
 export type ServerSlide = z.infer<typeof slideSchema>;
+
+// ===== §12 공유/협업 — 덱 전체 =====
+export const deckSchema = z.object({
+  id: z.string().min(1).max(64),
+  title: z.string().max(300),
+  themeId: z.string().max(64),
+  aspect: z.literal("16:9"),
+  slides: z.array(slideSchema).min(1).max(60),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+export type ServerDeck = z.infer<typeof deckSchema>;
