@@ -36,7 +36,7 @@ function VizPreview({ type }: { type: VizType }) {
               className="flex-1 rounded-t-[3px]"
               style={{
                 height: `${h}%`,
-                background: ["#D4CBEF", "#B9A8E8", "#8F73DE", "#6D4AFF"][i],
+                background: ["#D4CBEF", "#B9A8E8", "#8F73DE", "#1A1A1A"][i],
               }}
             />
           ))}
@@ -58,7 +58,7 @@ function VizPreview({ type }: { type: VizType }) {
         <polyline
           points="12,54 84,44 156,28 228,18 290,8"
           fill="none"
-          stroke="#6D4AFF"
+          stroke="#1A1A1A"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -70,7 +70,7 @@ function VizPreview({ type }: { type: VizType }) {
           [228, 18],
           [290, 8],
         ].map(([x, y]) => (
-          <circle key={x} cx={x} cy={y} r="3" fill="#6D4AFF" />
+          <circle key={x} cx={x} cy={y} r="3" fill="#1A1A1A" />
         ))}
       </svg>
     );
@@ -82,12 +82,12 @@ function VizPreview({ type }: { type: VizType }) {
           className="h-15 w-15 rounded-full"
           style={{
             background:
-              "conic-gradient(#6D4AFF 0 150deg,#9B82FF 150deg 250deg,#C4B5FF 250deg 320deg,#E4E4E0 320deg 360deg)",
+              "conic-gradient(#1A1A1A 0 150deg,#9B82FF 150deg 250deg,#C4B5FF 250deg 320deg,#E4E4E0 320deg 360deg)",
           }}
         />
         <div className="flex flex-col gap-1">
           {[
-            ["#6D4AFF", "항목 A"],
+            ["#1A1A1A", "항목 A"],
             ["#9B82FF", "항목 B"],
             ["#C4B5FF", "항목 C"],
           ].map(([c, l]) => (
@@ -120,7 +120,7 @@ function VizPreview({ type }: { type: VizType }) {
   // process
   return (
     <div className="flex items-center gap-1.5 px-0.5 py-1.5">
-      {["#6D4AFF", "#9B82FF", "#C4B5FF", "#E0D8F9"].map((c, i) => (
+      {["#1A1A1A", "#9B82FF", "#C4B5FF", "#E0D8F9"].map((c, i) => (
         <div
           key={i}
           className="flex h-9 flex-1 items-center justify-center"
@@ -132,7 +132,7 @@ function VizPreview({ type }: { type: VizType }) {
         >
           <span
             className="text-[10px] font-bold"
-            style={{ color: i === 3 ? "#6D4AFF" : "#fff" }}
+            style={{ color: i === 3 ? "#1A1A1A" : "#fff" }}
           >
             0{i + 1}
           </span>
@@ -357,7 +357,7 @@ export function OutlinePage() {
           <div className="mt-auto flex flex-col gap-2 pt-5">
             <button
               disabled={store.status !== "done" || store.slides.length === 0}
-              className="rounded-[10px] bg-app-accent px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_2px_8px_rgba(109,74,255,.25)] hover:opacity-90 disabled:bg-[#C9C4E8] disabled:shadow-none"
+              className="rounded-[10px] bg-app-accent px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_2px_8px_rgba(26,26,26,.25)] hover:opacity-90 disabled:bg-[#C9C4E8] disabled:shadow-none"
               onClick={() => {
                 const deckId = beginSlideGeneration();
                 if (deckId) navigate(`/deck/${deckId}/edit`);

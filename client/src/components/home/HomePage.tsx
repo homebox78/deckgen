@@ -233,7 +233,7 @@ function DeckCard({ deck, onDelete }: { deck: DeckSummary; onDelete: () => void 
   return (
     <Link
       to={`/deck/${deck.id}/edit`}
-      className="group overflow-hidden rounded-xl border border-app-border bg-app-surface shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
+      className="group overflow-hidden rounded-xl border border-app-border bg-app-surface shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.15)]"
     >
       <div
         className="aspect-video w-full border-b border-app-border-soft"
@@ -564,7 +564,7 @@ export function HomePage() {
               onClick={create}
               disabled={!prompt.trim()}
               title="아웃라인 생성 (Ctrl+Enter)"
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-app-accent text-[15px] text-white shadow-[0_2px_8px_rgba(109,74,255,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-app-accent text-[15px] text-white shadow-[0_2px_8px_rgba(26,26,26,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
             >
               ↵
             </button>
@@ -655,7 +655,7 @@ export function HomePage() {
                 navigate(`/deck/${deck.id}/edit`);
                 showToast(`'${lib.name}' ${lib.frames.length}프레임 생성 — 자리를 채우고 공유하세요`);
               }}
-              className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
+              className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.15)]"
             >
               {/* 와이어프레임 미니 프리뷰 — 호버 시 뒤 슬라이드 레이어들이 라벨 위로 스르륵 펼쳐짐 */}
               <div

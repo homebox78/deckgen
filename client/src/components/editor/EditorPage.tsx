@@ -213,7 +213,7 @@ function ExportPopover({
               onClick={() => setFmt(f.id)}
               className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-left ${
                 fmt === f.id
-                  ? "border-[1.5px] border-app-accent bg-[#F7F4FF]"
+                  ? "border-[1.5px] border-app-accent bg-[#F0F0EE]"
                   : "border border-app-border hover:border-app-accent-border"
               }`}
             >
@@ -552,7 +552,7 @@ export function EditorPage() {
         <button
           onClick={() => setExportOpen((o) => !o)}
           disabled={exporting}
-          className="rounded-[9px] bg-app-accent px-4 py-2 text-[13px] font-semibold text-white shadow-[0_2px_6px_rgba(109,74,255,.25)] hover:opacity-90 disabled:opacity-50"
+          className="rounded-[9px] bg-app-accent px-4 py-2 text-[13px] font-semibold text-white shadow-[0_2px_6px_rgba(26,26,26,.25)] hover:opacity-90 disabled:opacity-50"
         >
           {exporting ? "내보내는 중…" : "⬇ PPTX 내보내기"}
         </button>
@@ -659,7 +659,7 @@ export function EditorPage() {
                     }}
                     className={`group relative block w-full overflow-hidden rounded-[7px] border-2 transition-colors ${
                       isCur
-                        ? "border-app-accent shadow-[0_2px_8px_rgba(109,74,255,.18)]"
+                        ? "border-app-accent shadow-[0_2px_8px_rgba(26,26,26,.18)]"
                         : "border-transparent hover:border-app-border"
                     }`}
                   >

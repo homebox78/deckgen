@@ -55,7 +55,16 @@ export function SlideCanvas({
       selection: !readOnly,
       uniformScaling: true,
       skipTargetFind: readOnly, // 보기 전용: 요소 선택/호버 비활성
+      selectionColor: "rgba(26,26,26,0.06)",
+      selectionBorderColor: "#1A1A1A",
     });
+    // 모노크롬 v2 선택 핸들 (Design.dc.html §2a): 검정 테두리 + 흰 코너
+    FabricObject.ownDefaults.borderColor = "#1A1A1A";
+    FabricObject.ownDefaults.cornerColor = "#FFFFFF";
+    FabricObject.ownDefaults.cornerStrokeColor = "#1A1A1A";
+    FabricObject.ownDefaults.cornerSize = 10;
+    FabricObject.ownDefaults.transparentCorners = false;
+    FabricObject.ownDefaults.cornerStyle = "circle";
     fcRef.current = fc;
     if (import.meta.env.DEV) {
       (window as unknown as Record<string, unknown>).__fc = fc;

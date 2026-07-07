@@ -120,7 +120,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
               onClick={() => setMode(m.id)}
               className={`flex items-center gap-2.5 rounded-[10px] border px-3 py-2.5 text-left ${
                 mode === m.id
-                  ? "border-[1.5px] border-app-accent bg-[#F7F4FF]"
+                  ? "border-[1.5px] border-app-accent bg-[#F0F0EE]"
                   : "border-app-border hover:border-app-accent-border"
               }`}
             >

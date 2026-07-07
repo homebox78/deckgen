@@ -10,7 +10,7 @@ const STYLES: Record<BadgeStatus, { cls: string; dot: string; pulse: boolean }> 
   },
   generating: {
     cls: "text-app-accent bg-app-accent-soft border-app-accent-border",
-    dot: "#6D4AFF",
+    dot: "#1A1A1A",
     pulse: true,
   },
   done: {

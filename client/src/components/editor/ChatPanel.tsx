@@ -210,7 +210,7 @@ export function ChatPanel({
           )}
           {/* Before / After 비교 카드 — 마지막 선택권은 사용자에게 */}
           {pendingHere && (
-            <div className="rounded-xl border border-app-accent-border bg-[#F7F4FF] p-2.5">
+            <div className="rounded-xl border border-app-accent-border bg-[#F0F0EE] p-2.5">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <p className="mb-1 text-[10.5px] font-bold tracking-wide text-app-faint">

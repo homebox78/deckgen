@@ -17,9 +17,10 @@
   --color-app-text: #1a1a1a;
   --color-app-muted: #6b6b66;
   --color-app-faint: #8a8a84;
-  --color-app-accent: #6d4aff;
-  --color-app-accent-soft: #f0ebff;
-  --color-app-accent-border: #ddd2ff;
+  /* 모노크롬 v2 (Design.dc.html Turn2 확정) — accent = 검정, soft = 중립 회색. 빨강은 오류/삭제 전용 */
+  --color-app-accent: #1a1a1a;
+  --color-app-accent-soft: #f0f0ee;
+  --color-app-accent-border: #d4d4ce;
   --color-app-danger: #e5484d;
   --color-app-danger-soft: #fff0f0;
   --color-app-danger-border: #f5c6c8;
