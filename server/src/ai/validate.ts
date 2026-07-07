@@ -132,11 +132,19 @@ const imageElementSchema = z.object({
   fit: z.enum(["cover", "contain"]),
 });
 
+const tableElementSchema = z.object({
+  ...elementBase,
+  type: z.literal("table"),
+  rows: z.array(z.array(z.string())),
+  headerRow: z.boolean().optional(),
+});
+
 export const slideElementSchema = z.discriminatedUnion("type", [
   textElementSchema,
   shapeElementSchema,
   chartElementSchema,
   imageElementSchema,
+  tableElementSchema,
 ]);
 
 export const slideSchema = z.object({

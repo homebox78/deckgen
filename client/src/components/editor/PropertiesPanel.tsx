@@ -59,6 +59,7 @@ const TARGET_LABEL: Record<SlideElement["type"], string> = {
   shape: "SHAPE",
   chart: "CHART",
   image: "IMAGE",
+  table: "TABLE",
 };
 
 export function PropertiesPanel({
@@ -385,6 +386,65 @@ export function PropertiesPanel({
           >
             ⛶ 개별 요소로 분해
           </button>
+        </div>
+      )}
+
+      {element.type === "table" && (
+        <div className="border-b border-app-border-soft px-4 py-3.5">
+          <SectionLabel>표 편집</SectionLabel>
+          <button
+            onClick={() => patch({ headerRow: !element.headerRow || undefined } as Partial<SlideElement>)}
+            className={`mb-2 w-full rounded-md border py-1.5 text-[11.5px] font-semibold ${
+              element.headerRow ? "border-app-accent bg-app-accent-soft text-app-accent" : "border-app-border bg-white text-app-muted"
+            }`}
+          >
+            {element.headerRow ? "첫 행 헤더 ✓" : "첫 행을 헤더로"}
+          </button>
+          <div className="flex flex-col gap-1">
+            {element.rows.map((row, r) => (
+              <div key={r} className="flex items-center gap-1">
+                {row.map((cell, c) => (
+                  <input
+                    key={c}
+                    value={cell}
+                    onChange={(e) => {
+                      const rows = element.rows.map((rr, ri) =>
+                        ri === r ? rr.map((cc, ci) => (ci === c ? e.target.value : cc)) : rr,
+                      );
+                      patch({ rows } as Partial<SlideElement>);
+                    }}
+                    className="min-w-0 flex-1 rounded border border-app-border px-1.5 py-1 text-[11px] focus:border-app-accent focus:outline-none"
+                  />
+                ))}
+                <button
+                  onClick={() => {
+                    if (element.rows.length <= 1) return;
+                    patch({ rows: element.rows.filter((_, ri) => ri !== r) } as Partial<SlideElement>);
+                  }}
+                  className="flex-none px-1 text-[12px] text-app-faint hover:text-app-danger"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-1.5 flex gap-1.5">
+            <button
+              onClick={() => {
+                const cols = Math.max(1, ...element.rows.map((r) => r.length));
+                patch({ rows: [...element.rows, Array(cols).fill("")] } as Partial<SlideElement>);
+              }}
+              className="flex-1 rounded-md border border-dashed border-app-border py-1 text-[11px] text-app-muted hover:border-app-accent"
+            >
+              + 행
+            </button>
+            <button
+              onClick={() => patch({ rows: element.rows.map((r) => [...r, ""]) } as Partial<SlideElement>)}
+              className="flex-1 rounded-md border border-dashed border-app-border py-1 text-[11px] text-app-muted hover:border-app-accent"
+            >
+              + 열
+            </button>
+          </div>
         </div>
       )}
 

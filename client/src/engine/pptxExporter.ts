@@ -5,6 +5,7 @@ import type {
   Deck,
   ImageElement,
   ShapeElement,
+  TableElement,
   TextElement,
 } from "./schema";
 import { aspectDims } from "./schema";
@@ -183,6 +184,31 @@ function addImage(slide: PptxGenJS.Slide, el: ImageElement): void {
   });
 }
 
+function addTable(slide: PptxGenJS.Slide, el: TableElement, theme: Theme): void {
+  const headerBg = hex(theme.surface);
+  const rows = el.rows.map((row, r) =>
+    row.map((cell) => ({
+      text: cell,
+      options: {
+        fontFace: "Pretendard",
+        fontSize: 12,
+        bold: !!(el.headerRow && r === 0),
+        color: hex(theme.textPrimary),
+        fill: { color: el.headerRow && r === 0 ? headerBg : hex(theme.surface) },
+        valign: "middle" as const,
+      },
+    })),
+  );
+  slide.addTable(rows, {
+    x: inch(el.x),
+    y: inch(el.y),
+    w: inch(el.w),
+    h: inch(el.h),
+    border: { type: "solid", pt: 0.5, color: hex(theme.textSecondary) },
+    align: "left",
+  });
+}
+
 function sanitizeFileName(name: string): string {
   const cleaned = name.replace(/[\\/:*?"<>|]/g, "_").trim();
   return (cleaned || "presentation") + ".pptx";
@@ -231,6 +257,9 @@ export async function exportDeckToPptx(deck: Deck): Promise<void> {
           break;
         case "image":
           addImage(slide, el);
+          break;
+        case "table":
+          addTable(slide, el, theme);
           break;
       }
     }

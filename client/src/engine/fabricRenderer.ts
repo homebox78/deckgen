@@ -22,6 +22,7 @@ import type {
   Slide,
   SlideDims,
   SlideElement,
+  TableElement,
   TextElement,
 } from "./schema";
 import { SLIDE_H, SLIDE_W } from "./schema";
@@ -265,6 +266,46 @@ async function buildImage(el: ImageElement): Promise<FabricObject> {
   return attach(img, el);
 }
 
+// ===== 표 (Fabric 그룹) — 그리드 Rect + 셀 Textbox =====
+function buildTable(el: TableElement, theme: Theme): FabricObject {
+  const rows = el.rows.length || 1;
+  const cols = Math.max(1, ...el.rows.map((r) => r.length));
+  const rowH = el.h / rows;
+  const colW = el.w / cols;
+  const parts: FabricObject[] = [];
+  el.rows.forEach((row, r) => {
+    for (let c = 0; c < cols; c++) {
+      const isHeader = el.headerRow && r === 0;
+      parts.push(
+        new Rect({
+          left: c * colW,
+          top: r * rowH,
+          width: colW,
+          height: rowH,
+          fill: isHeader ? mixHex(theme.bg, theme.accent, 0.12) : theme.surface,
+          stroke: theme.textSecondary,
+          strokeWidth: 1,
+          opacity: isHeader ? 1 : 1,
+        }),
+      );
+      parts.push(
+        new Textbox(row[c] ?? "", {
+          left: c * colW + 14,
+          top: r * rowH + rowH / 2 - 14,
+          width: colW - 28,
+          fontSize: 24,
+          fontWeight: isHeader ? 700 : 400,
+          fill: theme.textPrimary,
+          fontFamily: theme.fontFamily,
+          textAlign: "left",
+        }),
+      );
+    }
+  });
+  const group = new Group(parts, { left: el.x, top: el.y, subTargetCheck: false });
+  return attach(group, el);
+}
+
 export async function buildElement(
   el: SlideElement,
   theme: Theme,
@@ -278,6 +319,8 @@ export async function buildElement(
       return buildChart(el, theme);
     case "image":
       return buildImage(el);
+    case "table":
+      return buildTable(el, theme);
   }
 }
 

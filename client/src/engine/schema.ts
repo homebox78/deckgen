@@ -54,7 +54,12 @@ export interface Slide {
 }
 
 // ===== 요소 =====
-export type SlideElement = TextElement | ShapeElement | ChartElement | ImageElement;
+export type SlideElement =
+  | TextElement
+  | ShapeElement
+  | ChartElement
+  | ImageElement
+  | TableElement;
 
 export interface ElementBase {
   id: string;
@@ -132,6 +137,12 @@ export interface ImageElement extends ElementBase {
   type: "image";
   src: string; // MVP: dataURL만 지원
   fit: "cover" | "contain";
+}
+
+export interface TableElement extends ElementBase {
+  type: "table";
+  rows: string[][]; // [행][열] 셀 텍스트
+  headerRow?: boolean; // 첫 행을 헤더로 강조
 }
 
 // ===== 레이아웃 엔진 입력 (§5, §8.2) =====

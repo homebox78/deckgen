@@ -70,6 +70,21 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
       return { id: uid(), type: "shape", shape: "arrow", x: cx - 250, y: cy - 20, w: 500, h: 40, stroke: "@accent", strokeWidth: 4 };
     case "badge":
       return { ...base, type: "shape", shape: "roundRect", x: cx - 190, y: cy - 48, w: 380, h: 96, radius: 48, opacity: 0.16 };
+    case "table":
+      return {
+        id: uid(),
+        type: "table",
+        headerRow: true,
+        rows: [
+          ["항목", "지원 전", "지원 후"],
+          ["매출", "-", "-"],
+          ["효율", "-", "-"],
+        ],
+        x: cx - 500,
+        y: cy - 200,
+        w: 1000,
+        h: 400,
+      };
     default:
       return {
         id: uid(),
@@ -415,6 +430,7 @@ export function EditorPage() {
     line: "선",
     arrow: "화살표",
     badge: "라운드 배지",
+    table: "표",
     text: "텍스트 상자",
   };
 
@@ -892,6 +908,7 @@ export function EditorPage() {
                     { key: "pill", name: "▢ 알약" },
                     { key: "line", name: "— 선" },
                     { key: "arrow", name: "→ 화살표" },
+                    { key: "table", name: "▦ 표" },
                   ]}
                   onSelect={(key) => insertElement(key)}
                   triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
