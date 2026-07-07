@@ -37,6 +37,7 @@ import { listDecks, loadDeck, saveDeck } from "../../store/storage";
 import { getSettings } from "../../store/settingsStore";
 import { removeSavedTemplate, useSavedTemplates } from "../../store/savedTemplateStore";
 import { Dropdown } from "../ui/Dropdown";
+import { Logo } from "../ui/Logo";
 import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { OnboardingWizard } from "./OnboardingWizard";
@@ -612,9 +613,7 @@ export function HomePage() {
       {/* 상단 바 */}
       <header className="flex shrink-0 items-center justify-between border-b border-app-border bg-app-surface px-7 py-3.5">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-app-accent">
-            <span className="mi text-[14px] text-white">slideshow</span>
-          </span>
+          <Logo size={22} />
           <span className="text-[15px] font-bold tracking-tight">DeckGen</span>
           <span className="rounded-[5px] bg-app-border-soft px-1.5 py-0.5 text-[10px] font-bold text-app-faint">
             Prototype

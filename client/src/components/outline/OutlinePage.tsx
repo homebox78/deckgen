@@ -5,6 +5,7 @@ import { beginSlideGeneration } from "../../api/generateDeck";
 import type { OutlineSlide, VizType } from "../../engine/schema";
 import { useOutlineStore } from "../../store/outlineStore";
 import { Dropdown } from "../ui/Dropdown";
+import { Logo } from "../ui/Logo";
 import { StatusBadge } from "../ui/StatusBadge";
 
 const VIZ_LABELS: Record<string, string> = {
@@ -364,7 +365,7 @@ export function OutlinePage() {
       {/* 상단 바 */}
       <header className="flex shrink-0 items-center justify-between border-b border-app-border bg-app-surface px-6 py-3">
         <div className="flex items-center gap-2.5">
-          <Link to="/" className="h-5 w-5 rounded-md bg-app-accent" title="홈으로" />
+          <Link to="/" title="홈으로"><Logo size={20} /></Link>
           <span className="text-[14px] font-bold">DeckGen</span>
           <span className="ml-1 truncate text-[12.5px] text-app-faint">/ {title}</span>
         </div>

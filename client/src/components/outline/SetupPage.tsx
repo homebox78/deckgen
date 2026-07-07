@@ -1,5 +1,6 @@
 // 새 덱 설정 화면 (Demo Act 3) — 스타일 4종 + 테마 갤러리 + 변형 A~E. 홈과 아웃라인 사이.
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Logo } from "../ui/Logo";
 import { themes } from "../../engine/themes";
 import type { DeckStyle } from "../../store/outlineStore";
 import { useOutlineStore } from "../../store/outlineStore";
@@ -31,7 +32,7 @@ export function SetupPage() {
   return (
     <div className="flex h-full flex-col overflow-y-auto">
       <header className="flex shrink-0 items-center gap-2.5 border-b border-app-border bg-app-surface px-7 py-3.5">
-        <span className="h-[22px] w-[22px] rounded-md bg-app-accent" />
+        <Logo size={22} />
         <span className="text-[15px] font-bold">DeckGen</span>
         <span className="text-[13px] text-app-faint">/ 새 덱 설정</span>
         <span className="flex-1" />

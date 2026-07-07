@@ -1,6 +1,7 @@
 // 로그인/회원가입 (시안 프로토타입 01·02) — 계정 없는 MVP라 클라 시뮬레이션(입력 후 홈 진입)
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Logo } from "../ui/Logo";
 import { showToast } from "../ui/toast";
 
 type Tab = "login" | "signup";
@@ -32,9 +33,7 @@ export function LoginPage() {
       <div className="w-[460px] max-w-full rounded-2xl border border-app-border bg-app-surface p-8 shadow-[0_10px_40px_rgba(0,0,0,.06)]">
         {/* 로고 */}
         <div className="mb-6 flex items-center gap-2.5">
-          <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[7px] bg-app-accent">
-            <span className="mi text-[16px] text-white">slideshow</span>
-          </span>
+          <Logo size={26} />
           <span className="text-[16px] font-bold tracking-tight">DeckGen</span>
         </div>
 

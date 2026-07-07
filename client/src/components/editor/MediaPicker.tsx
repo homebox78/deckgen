@@ -73,12 +73,14 @@ export function MediaPicker({
   dims,
   onInsert,
   onClose,
+  initialTab = "image",
 }: {
   dims: SlideDims;
   onInsert: (el: SlideElement) => void;
   onClose: () => void;
+  initialTab?: Tab;
 }) {
-  const [tab, setTab] = useState<Tab>("image");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [libTab, setLibTab] = useState<"icon" | "emoji" | "gif">("icon");
   const [iconQuery, setIconQuery] = useState("");
   const [ytUrl, setYtUrl] = useState("");

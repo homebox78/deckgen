@@ -26,6 +26,7 @@ import type { SlideGenStatus } from "../../store/generationStore";
 import { loadDeck, saveDeck, saveDeckThumbnail } from "../../store/storage";
 import { useUiStore } from "../../store/uiStore";
 import { Dropdown } from "../ui/Dropdown";
+import { Logo } from "../ui/Logo";
 import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
@@ -459,6 +460,11 @@ export function EditorPage() {
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
+  const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
+  const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
+    setMediaTab(t);
+    setMediaPicker(true);
+  };
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [gridOpen, setGridOpen] = useState(false);
   const [slideQuery, setSlideQuery] = useState("");
@@ -693,14 +699,7 @@ export function EditorPage() {
           <span className="mi text-[16px]">arrow_back</span>
         </button>
         {/* DeckGen 로고 (시안 1f) */}
-        <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden>
-          <rect width="24" height="24" rx="7" fill="#1A1A1A" />
-          <rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF" />
-          <rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A" />
-          <rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)" />
-          <circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="1.2" />
-          <circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" strokeWidth="1.2" />
-        </svg>
+        <Logo size={20} />
         <input
           className="w-56 rounded-md border-b border-dashed border-transparent px-1 py-0.5 text-[14px] font-bold hover:border-app-border focus:border-app-accent focus:!outline-none read-only:hover:border-transparent"
           value={deck.title}
@@ -863,6 +862,7 @@ export function EditorPage() {
         {mediaPicker && (
           <MediaPicker
             dims={dims}
+            initialTab={mediaTab}
             onInsert={(el) => {
               addElement(slide.id, el);
               useUiStore.getState().setSelectedElementId(el.id);
@@ -1263,6 +1263,30 @@ export function EditorPage() {
                 >
                   <span className="mi text-[17px]">title</span>
                 </button>
+                {/* YouTube 임베딩 */}
+                <button
+                  onClick={() => openMedia("youtube")}
+                  title="YouTube 임베딩"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">smart_display</span>
+                </button>
+                {/* 이미지 (업로드·Pexels·GIPHY) */}
+                <button
+                  onClick={() => openMedia("image")}
+                  title="이미지 — 업로드·Pexels·GIPHY"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">image</span>
+                </button>
+                {/* 라이브러리 (아이콘·이모지·GIF) */}
+                <button
+                  onClick={() => openMedia("library")}
+                  title="아이콘 · 이모지 · GIF"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  <span className="mi text-[17px]">folder_open</span>
+                </button>
                 {/* 도형 드롭다운 (위로 열림) */}
                 <Dropdown
                   direction="up"
@@ -1284,14 +1308,6 @@ export function EditorPage() {
                 >
                   <span className="mi text-[17px]">square</span><span className="mi text-[13px]">keyboard_arrow_up</span>
                 </Dropdown>
-                {/* 미디어 삽입 (YouTube/이미지/Pexels/GIPHY/아이콘/AI) */}
-                <button
-                  onClick={() => setMediaPicker(true)}
-                  title="미디어 삽입 — 이미지·YouTube·Pexels·GIPHY·아이콘·AI"
-                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
-                >
-                  <span className="mi text-[17px]">image</span>
-                </button>
                 {/* 정렬·분배 드롭다운 (위로 열림) */}
                 <Dropdown
                   direction="up"
@@ -1318,8 +1334,8 @@ export function EditorPage() {
                   <span className="mi text-[17px]">format_align_center</span>
                 </Dropdown>
                 <button
-                  onClick={() => setTab("chat")}
-                  title="AI로 수정"
+                  onClick={() => openMedia("ai")}
+                  title="AI 이미지 생성"
                   className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
                 >
                   <span className="mi text-[17px]">auto_awesome</span>
@@ -1365,6 +1381,28 @@ export function EditorPage() {
               className="rounded-md px-2.5 py-1 text-[11.5px] font-medium hover:bg-app-bg"
             >
               화면 맞춤
+            </button>
+          </div>
+          {/* 하단 우측 페이지 네비 (시안) — 이전/다음 슬라이드 */}
+          <div className="absolute bottom-3.5 right-4 z-10 flex items-center gap-1 rounded-[10px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
+            <button
+              onClick={() => setCurrentSlideIndex(Math.max(0, slideIndex - 1))}
+              disabled={slideIndex === 0}
+              title="이전 슬라이드"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+            >
+              <span className="mi text-[18px]">chevron_left</span>
+            </button>
+            <span className="min-w-11 px-1 text-center text-[12px] font-semibold">
+              {slideIndex + 1} / {deck.slides.length}
+            </span>
+            <button
+              onClick={() => setCurrentSlideIndex(Math.min(deck.slides.length - 1, slideIndex + 1))}
+              disabled={slideIndex >= deck.slides.length - 1}
+              title="다음 슬라이드"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+            >
+              <span className="mi text-[18px]">chevron_right</span>
             </button>
           </div>
         </main>
