@@ -29,6 +29,58 @@ function SectionLabel({ children }: { children: string }) {
   );
 }
 
+// 레이아웃 미니 프리뷰 그래픽 (프로토타입 속성 패널)
+function MiniLayout({ id }: { id: string }) {
+  const bar = "h-[2px] rounded-full bg-[#8A8A84]";
+  const line = "h-[1.5px] rounded-full bg-[#C9C9C4]";
+  if (id === "cover")
+    return (
+      <>
+        <span className={`${bar} w-1/3`} />
+        <span className={`${line} w-3/4`} />
+      </>
+    );
+  if (id === "title-bullets")
+    return (
+      <>
+        <span className={`${bar} w-2/5`} />
+        <span className={`${line} w-full`} />
+        <span className={`${line} w-4/5`} />
+      </>
+    );
+  if (id === "title-bullets-chart")
+    return (
+      <div className="flex h-full items-center gap-1">
+        <span className="h-4 w-[1.5px] rounded bg-app-accent" />
+        <span className="flex flex-1 items-end gap-[2px]">
+          <span className="w-1 rounded-t bg-[#8A8A84]" style={{ height: 8 }} />
+          <span className="w-1 rounded-t bg-[#8A8A84]" style={{ height: 12 }} />
+          <span className="w-1 rounded-t bg-[#8A8A84]" style={{ height: 6 }} />
+        </span>
+      </div>
+    );
+  if (id === "kpi-cards")
+    return (
+      <div className="flex h-full items-center gap-[3px]">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} className="h-4 flex-1 rounded-[2px] bg-app-accent/50" />
+        ))}
+      </div>
+    );
+  if (id === "chart-focus")
+    return <span className="my-auto h-5 w-full rounded bg-[#C9C9C4]" />;
+  if (id === "two-column")
+    return (
+      <div className="flex h-full flex-col justify-center gap-[3px]">
+        <span className="h-[3px] w-full rounded-sm bg-[#8A8A84]" />
+        <span className="h-[3px] w-full rounded-sm bg-[#C9C9C4]" />
+        <span className="h-[3px] w-full rounded-sm bg-[#C9C9C4]" />
+      </div>
+    );
+  // section
+  return <span className="my-auto h-[2px] w-2/3 self-center rounded-full bg-app-accent" />;
+}
+
 function ValueRow({
   label,
   value,
@@ -105,39 +157,44 @@ export function PropertiesPanel({
             ))}
           </div>
         </div>
-        {/* 슬라이드 레이아웃 스위처 (Demo Act 5) */}
+        {/* 슬라이드 레이아웃 스위처 — 미니 프리뷰 (프로토타입) */}
         <div>
           <SectionLabel>슬라이드 레이아웃</SectionLabel>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-4 gap-1.5">
             {(
               [
                 ["cover", "표지"],
                 ["title-bullets", "불릿"],
-                ["title-bullets-chart", "차트+불릿"],
-                ["chart-focus", "차트"],
+                ["title-bullets-chart", "차트"],
                 ["kpi-cards", "KPI"],
-                ["two-column", "2단"],
+                ["chart-focus", "이미지"],
+                ["two-column", "표"],
                 ["section", "섹션"],
               ] as const
-            ).map(([lo, label]) => (
-              <button
-                key={lo}
-                onClick={() => {
-                  setSlide({ layout: lo });
-                  showToast(`레이아웃을 '${label}'(으)로 바꿨어요`);
-                }}
-                className={`rounded-md border py-1.5 text-[11px] font-semibold ${
-                  cur?.layout === lo
-                    ? "border-app-accent bg-app-accent-soft text-app-accent"
-                    : "border-app-border bg-white text-app-muted hover:border-app-accent"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            ).map(([lo, label]) => {
+              const on = cur?.layout === lo;
+              return (
+                <button
+                  key={lo}
+                  onClick={() => {
+                    setSlide({ layout: lo });
+                    showToast(`레이아웃을 '${label}'(으)로 바꿨어요`);
+                  }}
+                  title={label}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-1.5 ${
+                    on ? "border-[1.5px] border-app-text bg-app-bg" : "border-app-border bg-white hover:border-app-accent"
+                  }`}
+                >
+                  <span className="flex h-8 w-full flex-col justify-center gap-[3px] rounded bg-app-border-soft px-1.5">
+                    <MiniLayout id={lo} />
+                  </span>
+                  <span className={`text-[9.5px] font-semibold ${on ? "text-app-text" : "text-app-faint"}`}>{label}</span>
+                </button>
+              );
+            })}
           </div>
           <p className="mt-1.5 text-[10.5px] leading-relaxed text-app-faint">
-            레이아웃 라벨은 썸네일·개요에 표시됩니다. 요소는 그대로 유지돼요.
+            레이아웃을 바꾸면 아웃라인의 시각화 설정도 함께 바뀝니다.
           </p>
         </div>
         <button
