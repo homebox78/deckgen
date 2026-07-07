@@ -252,24 +252,28 @@ export function HomePage() {
               }}
               className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
             >
-              {/* 와이어프레임 미니 프리뷰 */}
-              <div className="flex aspect-[16/10] flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3">
-                <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
-                <div className="mt-1 flex flex-1 gap-1.5">
-                  <div className="flex flex-1 flex-col justify-center gap-1">
-                    <div className="h-[3px] w-full rounded-sm bg-[#DEDEDA]" />
-                    <div className="h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
-                    <div className="h-[3px] w-[90%] rounded-sm bg-[#DEDEDA]" />
-                  </div>
-                  <div className="flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
-                    <span className="text-[8px] text-app-faint">AREA</span>
+              {/* 와이어프레임 미니 프리뷰 — 호버 시 뒤 슬라이드 레이어들이 스르륵 내려옴 */}
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-x-2.5 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_2px_6px_rgba(0,0,0,.07)] transition-transform duration-300 ease-out group-hover:translate-y-[26px] group-hover:scale-x-[.86] group-hover:scale-y-[.97] motion-safe:delay-75" />
+                <div className="pointer-events-none absolute inset-x-1 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_2px_6px_rgba(0,0,0,.07)] transition-transform duration-300 ease-out group-hover:translate-y-[13px] group-hover:scale-x-[.93]" />
+                <div className="relative z-10 flex aspect-[16/10] flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                  <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
+                  <div className="mt-1 flex flex-1 gap-1.5">
+                    <div className="flex flex-1 flex-col justify-center gap-1">
+                      <div className="h-[3px] w-full rounded-sm bg-[#DEDEDA]" />
+                      <div className="h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
+                      <div className="h-[3px] w-[90%] rounded-sm bg-[#DEDEDA]" />
+                    </div>
+                    <div className="flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
+                      <span className="text-[8px] text-app-faint">AREA</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <p className="mt-2.5 text-[12.5px] font-semibold group-hover:text-app-accent">
+              <p className="relative z-20 mt-2.5 text-[12.5px] font-semibold group-hover:text-app-accent">
                 {lib.name}
               </p>
-              <p className="mt-0.5 text-[11px] leading-snug text-app-faint">
+              <p className="relative z-20 mt-0.5 text-[11px] leading-snug text-app-faint">
                 {lib.frames.length}프레임 · {lib.desc}
               </p>
             </button>
