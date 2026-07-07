@@ -791,8 +791,23 @@ export function HomePage() {
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create();
             }}
           />
-          {/* 하단 컨트롤 바 — 모델 · 장수 · 테마 · 첨부 · 전송 (스냅덱 배치) */}
+          {/* 하단 컨트롤 바 — 장수 · 모델 · 테마 · 생성 (프로토타입 배치) */}
           <div className="flex items-center gap-2 border-t border-app-border-soft pt-3">
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => setSlideCount((n) => Math.max(MIN_SLIDES, n - 1))}
+                className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
+              ><span className="mi text-[16px]">remove</span></button>
+              <span className="min-w-8 text-center text-[13px] font-semibold">
+                {slideCount}장
+              </span>
+              <button
+                onClick={() => setSlideCount((n) => Math.min(MAX_SLIDES, n + 1))}
+                className="rounded-md px-2 py-1 text-app-faint hover:bg-app-bg"
+              >
+                <span className="mi text-[16px]">add</span>
+              </button>
+            </div>
             <Dropdown
               items={[
                 { key: "deckgen-1.1", name: "DeckGen 1.1" },
@@ -815,21 +830,6 @@ export function HomePage() {
               </span>
               <span className="mi text-[14px] text-white/70">expand_more</span>
             </Dropdown>
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => setSlideCount((n) => Math.max(MIN_SLIDES, n - 1))}
-                className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
-              ><span className="mi text-[16px]">remove</span></button>
-              <span className="min-w-8 text-center text-[13px] font-semibold">
-                {slideCount}장
-              </span>
-              <button
-                onClick={() => setSlideCount((n) => Math.min(MAX_SLIDES, n + 1))}
-                className="rounded-md px-2 py-1 text-app-faint hover:bg-app-bg"
-              >
-                <span className="mi text-[16px]">add</span>
-              </button>
-            </div>
             <Dropdown
               items={Object.values(themes).map((t) => ({
                 key: t.id,
@@ -849,24 +849,10 @@ export function HomePage() {
             </Dropdown>
             <span className="flex-1" />
             <button
-              onClick={() => fileRef.current?.click()}
-              disabled={importing}
-              title="PPTX 첨부"
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent disabled:opacity-50"
-            >
-              {importing ? (
-                <span className="animate-dg-pulse text-[11px]">…</span>
-              ) : (
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                </svg>
-              )}
-            </button>
-            <button
               onClick={create}
               disabled={!prompt.trim()}
               title="아웃라인 생성 (Ctrl+Enter)"
-              className="flex h-9 items-center gap-1.5 rounded-[10px] bg-app-accent px-4 text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(26,26,26,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
+              className="flex h-9 items-center gap-1.5 rounded-[10px] bg-app-accent px-5 text-[13px] font-semibold text-white shadow-[0_2px_8px_rgba(26,26,26,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
             >
               <span className="mi text-[15px]">auto_awesome</span>
               아웃라인 생성

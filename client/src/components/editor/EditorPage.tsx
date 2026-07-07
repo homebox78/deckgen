@@ -1235,7 +1235,7 @@ export function EditorPage() {
                   triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"
                   title="도형"
                 >
-                  <span className="mi text-[17px]">category</span><span className="mi text-[13px]">expand_more</span>
+                  <span className="mi text-[17px]">square</span><span className="mi text-[13px]">keyboard_arrow_up</span>
                 </Dropdown>
                 {/* 미디어 삽입 (YouTube/이미지/Pexels/GIPHY/아이콘/AI) */}
                 <button
