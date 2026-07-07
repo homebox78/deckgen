@@ -11,6 +11,8 @@ require __DIR__ . '/src/Db.php';
 require __DIR__ . '/src/Prompts.php';
 require __DIR__ . '/src/Collab.php';
 require __DIR__ . '/src/Ai.php';
+require __DIR__ . '/src/Mail.php';
+require __DIR__ . '/src/Auth.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '';
@@ -42,6 +44,10 @@ try {
         if ($method === 'POST' && $m[2] === 'presence') Collab::presence($deckId);
         if ($method === 'GET' && $m[2] === 'events') Collab::events($deckId);
     }
+
+    // ── 이메일 인증 ──
+    if ($method === 'POST' && $path === '/auth/send-code') { Auth::sendCode(); exit; }
+    if ($method === 'POST' && $path === '/auth/verify') { Auth::verify(); exit; }
 
     // ── AI ──
     if ($method === 'GET' && $path === '/models') { Ai::models(); exit; }
