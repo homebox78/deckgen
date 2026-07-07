@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import express from "express";
+import { loadConfigPhp } from "./config.js";
 
-// 서버 자체 .env 우선, 없으면 모노레포 루트 .env 사용
+// 우선순위: 환경변수(.env) > server/config/config.php (키 관리 단일 소스)
 dotenv.config();
 dotenv.config({ path: "../.env" });
+loadConfigPhp(); // anthropic_api_key → ANTHROPIC_API_KEY 등 주입
 
 const { aiRouter } = await import("./routes/ai.js"); // env 로드 후 임포트
 const { collabRouter } = await import("./routes/collab.js");

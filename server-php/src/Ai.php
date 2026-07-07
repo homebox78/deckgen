@@ -24,12 +24,13 @@ final class Ai
 
     private static function key(): string
     {
-        return (string) Db::cfg('anthropic_api_key', '');
+        // 키에 줄바꿈/공백이 섞여 붙여넣어져도 HTTP 헤더가 깨지지 않게 정리
+        return trim((string) Db::cfg('anthropic_api_key', ''));
     }
 
     private static function model(): string
     {
-        return (string) Db::cfg('anthropic_model', 'claude-sonnet-4-6');
+        return trim((string) Db::cfg('anthropic_model', 'claude-sonnet-4-6'));
     }
 
     /** Anthropic 단건 호출 → 텍스트 (스트리밍 없음 — 배포판 단순화) */

@@ -4,7 +4,7 @@ AI 프레젠테이션 생성 도구 MVP. 단일 소스 문서는 @DECKGEN_SPEC.m
 
 ## 실행
 - `npm run dev` → client(5173) + server(3001) 동시 실행
-- 루트 `.env`에 `ANTHROPIC_API_KEY` 설정 (없으면 서버가 모의(mock) 응답 모드로 동작)
+- **키 관리 단일 소스 = `server/config/config.php`** (git 제외) — DB·클로드 API 키(`anthropic_api_key`)·SMTP 등 전부 여기서. Node 서버(src/config.ts 로더)·PHP 서버(Db::cfg) 둘 다 이 파일을 읽고, 환경변수(.env)가 있으면 그쪽 우선. 키가 비면 모의(mock) 응답 모드로 동작
 
 ## 구조 요약
 - `client/src/engine/` — DeckSchema(§3) 기준: layout.ts(좌표 계산) → fabricRenderer.ts(렌더) → fabricSync.ts(역동기화) → pptxExporter.ts(내보내기)
