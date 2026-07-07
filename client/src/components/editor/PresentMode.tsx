@@ -140,7 +140,7 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
           onClick={onExit}
           className="rounded-lg border border-white/25 px-3 py-1.5 text-[12px] font-semibold hover:bg-white/10"
         >
-          ✕ 발표 종료 (Esc)
+          <span className="mi align-middle text-[14px] mr-1">close</span>발표 종료 (Esc)
         </button>
         <span className="text-[12px]">클릭/→ 다음 · ← 이전 · N 노트</span>
         {/* 전환 효과 선택 (Demo Act 7) */}
@@ -161,7 +161,7 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
           disabled={index === 0}
           className="rounded-lg border border-white/25 px-3 py-1.5 text-[13px] hover:bg-white/10 disabled:opacity-30"
         >
-          ←
+          <span className="mi text-[20px]">arrow_back</span>
         </button>
         <span className="min-w-[64px] text-center font-mono text-[13px]">
           {index + 1} / {deck.slides.length}
@@ -171,7 +171,7 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
           disabled={index === deck.slides.length - 1}
           className="rounded-lg border border-white/25 px-3 py-1.5 text-[13px] hover:bg-white/10 disabled:opacity-30"
         >
-          →
+          <span className="mi text-[20px]">arrow_forward</span>
         </button>
       </div>
     </div>

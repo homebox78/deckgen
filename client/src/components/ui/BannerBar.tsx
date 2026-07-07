@@ -56,7 +56,7 @@ export function BannerBar() {
         style={{ color: s.color }}
         title="닫기"
       >
-        ✕
+        <span className="mi text-[15px]">close</span>
       </button>
     </div>
   );

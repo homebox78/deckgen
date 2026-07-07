@@ -227,7 +227,7 @@ function OutlineCard({ slide }: { slide: OutlineSlide }) {
               {viz ? "◈ " : ""}
               {VIZ_LABELS[viz]}
             </span>
-            <span className="text-[9px] text-app-faint">▾</span>
+            <span className="mi text-[14px] text-app-faint">expand_more</span>
           </Dropdown>
           {slide.viz && (
             <input
@@ -370,13 +370,13 @@ export function OutlinePage() {
                 if (deckId) navigate(`/deck/${deckId}/edit`);
               }}
             >
-              ✦ 슬라이드 생성 ({store.slides.length || store.slideCount}장)
+              <span className="mi align-middle text-[15px] mr-1">auto_awesome</span>슬라이드 생성 ({store.slides.length || store.slideCount}장)
             </button>
             <button
               onClick={() => navigate("/")}
               className="rounded-[10px] border border-app-border bg-white px-4 py-2.5 text-[13px] font-medium text-app-muted hover:bg-app-bg"
             >
-              ← 주제 다시 입력
+              <span className="mi align-middle text-[14px] mr-0.5">arrow_back</span>주제 다시 입력
             </button>
           </div>
         </aside>

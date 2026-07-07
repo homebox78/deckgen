@@ -51,7 +51,7 @@ export function ShortcutsModal({ onClose }: Props) {
             onClick={onClose}
             className="rounded-lg border border-app-border bg-white px-2.5 py-1 text-[13px] text-app-muted hover:border-app-accent"
           >
-            ✕
+            <span className="mi text-[15px]">close</span>
           </button>
         </div>
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">

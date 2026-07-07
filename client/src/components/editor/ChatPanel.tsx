@@ -197,7 +197,7 @@ export function ChatPanel({
                     onClick={undoLast}
                     className="rounded-md border border-app-border bg-white px-2 py-1 text-[11.5px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
                   >
-                    ↺ 되돌리기
+                    <span className="mi align-middle text-[13px] mr-0.5">undo</span>되돌리기
                   </button>
                 </div>
               )}
@@ -238,7 +238,7 @@ export function ChatPanel({
                   onClick={applyPending}
                   className="flex-1 rounded-lg bg-app-accent py-1.5 text-[12px] font-semibold text-white hover:opacity-90"
                 >
-                  ✓ 적용
+                  <span className="mi align-middle text-[13px] mr-0.5">check</span>적용
                 </button>
                 <button
                   onClick={discardPending}

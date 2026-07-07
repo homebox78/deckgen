@@ -79,7 +79,7 @@ export function RegenerateLayer({ slide, theme, anchor, onClose }: Props) {
         style={{ top, left }}
       >
         <div className="flex items-center justify-between px-4 pt-3.5 pb-1">
-          <span className="text-[13.5px] font-bold">✦ 슬라이드 재생성</span>
+          <span className="text-[13.5px] font-bold"><span className="mi align-middle text-[14px] mr-1">auto_awesome</span>슬라이드 재생성</span>
           <button
             onClick={onClose}
             className="rounded-md px-1.5 text-[15px] text-app-faint hover:bg-app-bg hover:text-app-text"
@@ -107,7 +107,7 @@ export function RegenerateLayer({ slide, theme, anchor, onClose }: Props) {
           <div className="mt-2.5 flex items-center justify-between">
             {/* 모델 선택 — config.php 키 기반 목록 (주력/폴백/저비용) */}
             <div className="flex items-center gap-1.5 rounded-full border border-app-border bg-app-bg px-3 py-1.5">
-              <span className="text-[12px]">✦</span>
+              <span className="mi text-[13px]">auto_awesome</span>
               <select
                 value={modelId}
                 onChange={(e) => setModelId(e.target.value)}

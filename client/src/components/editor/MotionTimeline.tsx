@@ -38,7 +38,7 @@ export function MotionTimeline({ deckId, onPlay, onClose }: Props) {
           }}
           className="flex items-center gap-1 rounded-lg bg-app-accent px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90"
         >
-          ▶ 재생
+          <span className="mi align-middle text-[14px] mr-0.5">play_arrow</span>재생
         </button>
         <button
           onClick={onClose}

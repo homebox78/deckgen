@@ -106,7 +106,7 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
 function ViewOnlyNotice() {
   return (
     <div className="px-4 py-8 text-center text-[12.5px] leading-relaxed text-app-faint">
-      <p className="text-[20px]">👁</p>
+      <p className="mi text-[26px] text-app-muted">visibility</p>
       <p className="mt-2 font-semibold text-app-muted">보기 전용 링크로 접속 중</p>
       <p className="mt-1">
         편집하려면 소유자에게
@@ -277,7 +277,7 @@ function ExportPopover({
           onClick={() => onExport(fmt)}
           className="mt-3 w-full rounded-[10px] bg-app-accent py-2.5 text-[13px] font-semibold text-white hover:opacity-90"
         >
-          ⬇ {fmt === "pptx" ? "PPTX" : fmt === "png" ? "PNG" : "Figma SVG"} 다운로드
+          <span className="mi align-middle text-[14px] mr-1">download</span>{fmt === "pptx" ? "PPTX" : fmt === "png" ? "PNG" : "Figma SVG"} 다운로드
         </button>
       </div>
     </>
@@ -518,7 +518,7 @@ export function EditorPage() {
           title="홈으로"
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-app-border text-[13px] text-app-muted hover:bg-app-bg"
         >
-          ←
+          <span className="mi text-[16px]">arrow_back</span>
         </button>
         <span className="h-5 w-5 shrink-0 rounded-md bg-app-accent" />
         <input
@@ -535,7 +535,7 @@ export function EditorPage() {
         )}
         {readOnly && <StatusBadge status="queued">보기 전용</StatusBadge>}
         {!collab.isGuest && !readOnly && (
-          <span className="text-[11px] text-app-faint">✓ 자동 저장됨</span>
+          <span className="flex items-center gap-1 text-[11px] text-app-faint"><span className="mi text-[13px]">cloud_done</span>자동 저장됨</span>
         )}
         <span className="flex-1" />
         {/* 프레즌스 아바타 (§12) */}
@@ -567,7 +567,7 @@ export function EditorPage() {
             <span
               className={`ml-1.5 text-[11px] ${collab.connected ? "text-app-success" : "text-app-faint"}`}
             >
-              {collab.connected ? `● ${peers.length + 1}명 접속` : "연결 중…"}
+              {collab.connected ? `${peers.length + 1}명 접속` : "연결 중…"}
             </span>
             {followId && (
               <button
@@ -575,7 +575,7 @@ export function EditorPage() {
                 title="팔로우 해제"
                 className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-app-accent-soft px-2 py-0.5 text-[10.5px] font-semibold text-app-text"
               >
-                👁 {peers.find((p) => p.clientId === followId)?.name ?? "?"} 팔로우 중 ✕
+                <span className="mi text-[12px]">visibility</span> {peers.find((p) => p.clientId === followId)?.name ?? "?"} 팔로우 중 <span className="mi text-[12px]">close</span>
               </button>
             )}
           </div>
@@ -595,7 +595,7 @@ export function EditorPage() {
           >
             <span className="h-[11px] w-[11px] rounded-[3px]" style={{ background: theme.accent }} />
             <span className="text-[12.5px] font-medium">{theme.name}</span>
-            <span className="text-[9px] text-app-faint">▾</span>
+            <span className="mi text-[14px] text-app-faint">expand_more</span>
           </Dropdown>
         )}
         <NotificationBell deckId={deck.id} onJump={(i) => setCurrentSlideIndex(i)} />
@@ -604,7 +604,7 @@ export function EditorPage() {
           title="키보드 단축키 (?)"
           className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent"
         >
-          ⌨
+          <span className="mi text-[17px]">keyboard</span>
         </button>
         <button
           onClick={() => setGridOpen(true)}
@@ -630,7 +630,7 @@ export function EditorPage() {
               motionOpen ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
             }`}
           >
-            ▷ 모션
+            <span className="mi align-middle text-[15px] mr-1">movie</span>모션
           </button>
         )}
         <button
@@ -638,7 +638,7 @@ export function EditorPage() {
           title="발표 모드 — 클릭/→ 진행 · N 노트 · Esc 종료"
           className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
         >
-          ▶ 발표
+          <span className="mi align-middle text-[15px] mr-1">play_arrow</span>발표
         </button>
         {!collab.isGuest && (
           <button
@@ -653,7 +653,7 @@ export function EditorPage() {
           disabled={exporting}
           className="rounded-[9px] bg-app-accent px-4 py-2 text-[13px] font-semibold text-white shadow-[0_2px_6px_rgba(26,26,26,.25)] hover:opacity-90 disabled:opacity-50"
         >
-          {exporting ? "내보내는 중…" : "⬇ PPTX 내보내기"}
+          {exporting ? "내보내는 중…" : <><span className="mi align-middle text-[14px] mr-1">download</span>PPTX 내보내기</>}
         </button>
         {exportOpen && (
           <ExportPopover onClose={() => setExportOpen(false)} onExport={runExport} />
@@ -722,7 +722,7 @@ export function EditorPage() {
                 items={[
                   { key: "blank", name: "+ 빈 슬라이드" },
                   { key: "dup", name: "⧉ 현재 슬라이드 복제" },
-                  { key: "ai", name: "✦ AI로 생성" },
+                  { key: "ai", name: "AI로 생성" },
                   { key: "regen", name: "≡ 덱 다시 생성" },
                 ]}
                 onSelect={(key) => {
@@ -751,7 +751,7 @@ export function EditorPage() {
                 triggerClassName="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"
                 title="새 슬라이드"
               >
-                New slide <span className="text-[9px] text-app-faint">▾</span>
+                New slide <span className="mi text-[14px] text-app-faint">expand_more</span>
               </Dropdown>
               <button
                 onClick={() => {
@@ -767,7 +767,7 @@ export function EditorPage() {
           )}
           {/* 슬라이드 검색 (제목·본문·노트) */}
           <div className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-2.5 py-1.5">
-            <span className="text-[11px] text-app-faint">🔍</span>
+            <span className="mi text-[15px] text-app-faint">search</span>
             <input
               value={slideQuery}
               onChange={(e) => setSlideQuery(e.target.value)}
@@ -775,7 +775,7 @@ export function EditorPage() {
               className="min-w-0 flex-1 bg-transparent text-[11.5px] focus:outline-none"
             />
             {slideQuery && (
-              <button onClick={() => setSlideQuery("")} className="text-[11px] text-app-faint hover:text-app-text">✕</button>
+              <button onClick={() => setSlideQuery("")} className="mi text-[14px] text-app-faint hover:text-app-text">close</button>
             )}
           </div>
           {(() => {
@@ -856,9 +856,9 @@ export function EditorPage() {
                           setCurrentSlideIndex(i);
                           setRegen({ slideId: s.id, x: r.right + 10, y: r.top - 4 });
                         }}
-                        className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-[12.5px] text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
+                        className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
                       >
-                        ↻
+                        <span className="mi text-[15px]">refresh</span>
                       </span>
                     )}
                   </button>
@@ -939,7 +939,7 @@ export function EditorPage() {
           )}
           {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 */}
           <div className="absolute bottom-3.5 left-3.5 z-10 flex items-center gap-1.5 rounded-[11px] border border-app-border bg-white px-2.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
-            <span className="text-[11px] text-app-muted">🗺</span>
+            <span className="mi text-[15px] text-app-muted">map</span>
             {deck.slides.map((s, i) => (
               <button
                 key={s.id}
@@ -970,21 +970,21 @@ export function EditorPage() {
                 {/* 도형 드롭다운 (Demo Act 5.5) */}
                 <Dropdown
                   items={[
-                    { key: "rect", name: "▭ 사각형" },
-                    { key: "ellipse", name: "○ 원" },
-                    { key: "triangle", name: "△ 삼각형" },
-                    { key: "diamond", name: "◇ 다이아몬드" },
-                    { key: "star", name: "★ 별" },
+                    { key: "rect", name: "사각형" },
+                    { key: "ellipse", name: "원" },
+                    { key: "triangle", name: "삼각형" },
+                    { key: "diamond", name: "다이아몬드" },
+                    { key: "star", name: "별" },
                     { key: "pill", name: "▢ 알약" },
                     { key: "line", name: "— 선" },
-                    { key: "arrow", name: "→ 화살표" },
+                    { key: "arrow", name: "화살표" },
                     { key: "table", name: "▦ 표" },
                   ]}
                   onSelect={(key) => insertElement(key)}
                   triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
                   title="도형"
                 >
-                  ▭<span className="text-[8px]">▾</span>
+                  <span className="mi text-[16px]">category</span><span className="mi text-[13px]">expand_more</span>
                 </Dropdown>
                 {/* 미디어 삽입 (YouTube/이미지/Pexels/GIPHY/아이콘/AI) */}
                 <button
@@ -997,14 +997,14 @@ export function EditorPage() {
                 {/* 정렬·분배 드롭다운 (Demo Act 5.5) */}
                 <Dropdown
                   items={[
-                    { key: "left", name: "⇤ 왼쪽 정렬" },
-                    { key: "hcenter", name: "⇹ 가로 가운데" },
-                    { key: "right", name: "⇥ 오른쪽 정렬" },
-                    { key: "top", name: "⤒ 위 정렬" },
+                    { key: "left", name: "왼쪽 정렬" },
+                    { key: "hcenter", name: "가로 가운데" },
+                    { key: "right", name: "오른쪽 정렬" },
+                    { key: "top", name: "위 정렬" },
                     { key: "vcenter", name: "⇳ 세로 가운데" },
-                    { key: "bottom", name: "⤓ 아래 정렬" },
-                    { key: "disth", name: "↔ 가로 분배" },
-                    { key: "distv", name: "↕ 세로 분배" },
+                    { key: "bottom", name: "아래 정렬" },
+                    { key: "disth", name: "가로 분배" },
+                    { key: "distv", name: "세로 분배" },
                   ]}
                   onSelect={(key) => {
                     const api = canvasApi();
@@ -1016,7 +1016,7 @@ export function EditorPage() {
                   triggerClassName="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
                   title="정렬 · 분배"
                 >
-                  ⇹
+                  <span className="mi text-[16px]">format_align_center</span>
                 </Dropdown>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
                 <button
@@ -1025,7 +1025,7 @@ export function EditorPage() {
                   title="실행 취소 (Ctrl+Z)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-[13px] text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
                 >
-                  ↺
+                  <span className="mi text-[16px]">undo</span>
                 </button>
                 <button
                   onClick={() => useDeckStore.temporal.getState().redo()}
@@ -1033,7 +1033,7 @@ export function EditorPage() {
                   title="다시 실행 (Ctrl+Shift+Z)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg text-[13px] text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
                 >
-                  ↻
+                  <span className="mi text-[16px]">redo</span>
                 </button>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
               </>
@@ -1042,7 +1042,7 @@ export function EditorPage() {
               onClick={() => canvasApi()?.zoomOut()}
               className="rounded-md px-2.5 py-1 text-[12px] text-app-muted hover:bg-app-bg"
             >
-              −
+              <span className="mi text-[16px]">remove</span>
             </button>
             <span className="min-w-11 px-1 text-center text-[12px] font-semibold">
               {Math.round(zoom * 100)}%

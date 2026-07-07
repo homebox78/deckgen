@@ -106,13 +106,13 @@ export function SetupPage() {
 
         <div className="flex justify-between">
           <button onClick={() => navigate("/")} className="rounded-lg border border-app-border px-4 py-2.5 text-[13px] font-semibold hover:border-app-accent">
-            ← 뒤로
+            <span className="mi align-middle text-[14px] mr-0.5">arrow_back</span>뒤로
           </button>
           <button
             onClick={() => navigate(`/deck/${id}/outline`)}
             className="rounded-lg bg-app-accent px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90"
           >
-            아웃라인 생성 →
+            아웃라인 생성<span className="mi align-middle text-[14px] ml-0.5">arrow_forward</span>
           </button>
         </div>
       </div>

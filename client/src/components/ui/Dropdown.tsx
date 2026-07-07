@@ -89,7 +89,7 @@ export function Dropdown({
                 </span>
               )}
               {it.key === activeKey && (
-                <span className="text-[11px] font-bold text-app-accent">✓</span>
+                <span className="mi text-[15px] text-app-accent">check</span>
               )}
             </button>
           ))}

@@ -155,7 +155,7 @@ export function MediaPicker({
       ctx.fill();
       insertImage(c.toDataURL("image/png"), 800, 450, "cover");
     };
-    img.onerror = () => insertImage(gradientDataURL("#1A1A1A", "#55554F", 800, 450, "▶ YouTube"), 800, 450);
+    img.onerror = () => insertImage(gradientDataURL("#1A1A1A", "#55554F", 800, 450, "YouTube"), 800, 450);
     img.src = `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
   };
 
@@ -207,7 +207,7 @@ export function MediaPicker({
           ))}
           <span className="flex-1" />
           <button onClick={onClose} className="px-2 text-[15px] text-app-faint hover:text-app-text">
-            ✕
+            <span className="mi text-[15px]">close</span>
           </button>
         </div>
 
@@ -222,7 +222,7 @@ export function MediaPicker({
               }}
               className="flex h-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-app-border text-center hover:border-app-accent"
             >
-              <span className="text-[32px]">🖼️</span>
+              <span className="mi text-[34px] text-app-muted">image</span>
               <p className="text-[13px] font-semibold">이미지를 드래그하거나 클릭해 업로드</p>
               <p className="text-[11.5px] text-app-faint">PNG · JPG · GIF · WEBP</p>
               <input

@@ -45,7 +45,7 @@ export function NotificationBell({ deckId, onJump }: Props) {
           open ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
         }`}
       >
-        🔔
+        <span className="mi text-[18px]">notifications</span>
         {unread > 0 && (
           <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
             {unread}

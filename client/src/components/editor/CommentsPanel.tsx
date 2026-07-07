@@ -133,7 +133,7 @@ export function CommentsPanel({
                 {!readOnly && (
                   <div className="mt-1.5 flex items-center gap-1.5">
                     <button onClick={() => setReplyTo(replyTo === c.id ? null : c.id)} className="text-[10.5px] font-semibold text-app-muted hover:text-app-accent">답글</button>
-                    <button onClick={() => toggleResolve(deckId, c.id)} className="text-[10.5px] font-semibold text-app-success">{c.resolved ? "다시 열기" : "✓ 해결"}</button>
+                    <button onClick={() => toggleResolve(deckId, c.id)} className="text-[10.5px] font-semibold text-app-success">{c.resolved ? "다시 열기" : "해결"}</button>
                     <button onClick={() => deleteComment(deckId, c.id)} className="text-[10.5px] font-semibold text-app-danger">삭제</button>
                   </div>
                 )}

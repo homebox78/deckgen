@@ -95,7 +95,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-lg bg-app-bg text-[13px] text-app-muted hover:bg-app-border-soft"
           >
-            ✕
+            <span className="mi text-[15px]">close</span>
           </button>
         </div>
         <p className="mt-1 mb-4 text-[12.5px] text-app-muted">
@@ -150,7 +150,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
                 copied ? "bg-app-success" : "bg-app-accent hover:opacity-90"
               }`}
             >
-              {copied ? "복사됨 ✓" : "복사"}
+              {copied ? "복사됨" : "복사"}
             </button>
           </div>
         )}

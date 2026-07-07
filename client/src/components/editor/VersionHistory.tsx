@@ -64,11 +64,12 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
           <div className="flex items-center justify-between border-b border-app-border px-5 py-3.5">
             <span className="text-[15px] font-bold">버전 비교</span>
             <button onClick={() => setCompareId(null)} className="rounded-md border border-app-border px-2.5 py-1 text-[12px] text-app-muted hover:border-app-accent">
-              ← 목록
+              <span className="mi align-middle text-[14px] mr-0.5">arrow_back</span>목록
             </button>
           </div>
           <div className="px-5 py-3 text-[12px] text-app-muted">
-            <b className="text-app-text">{compareVer.label}</b> ↔ 현재 · 추가 {diff.added} · 삭제{" "}
+            <b className="text-app-text">{compareVer.label}</b>{" "}
+            <span className="mi align-middle text-[13px]">sync_alt</span> 현재 · 추가 {diff.added} · 삭제{" "}
             {diff.removed} · 변경 {diff.changed}
           </div>
           <div className="max-h-[56vh] overflow-y-auto px-5 pb-4">
@@ -127,7 +128,7 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
       >
         <div className="flex items-center justify-between border-b border-app-border px-5 py-3.5">
           <span className="text-[15px] font-bold">버전 히스토리</span>
-          <button onClick={onClose} className="text-[15px] text-app-faint hover:text-app-text">✕</button>
+          <button onClick={onClose} className="text-[15px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
         </div>
         <div className="p-4">
           <button

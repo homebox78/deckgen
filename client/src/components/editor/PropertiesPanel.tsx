@@ -147,7 +147,7 @@ export function PropertiesPanel({
           }}
           className="rounded-lg border border-app-border bg-white py-2 text-[12.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
         >
-          ✨ 슬라이드 자동 정리
+          <span className="mi align-middle text-[14px] mr-1">auto_fix_high</span>슬라이드 자동 정리
         </button>
       </div>
     );
@@ -188,21 +188,21 @@ export function PropertiesPanel({
         <div className="mb-2 grid grid-cols-6 gap-1.5">
           {(
             [
-              ["⇤", "왼쪽 정렬", { x: 0 }],
-              ["⇹", "가로 중앙", { x: Math.round((dims.w - element.w) / 2) }],
-              ["⇥", "오른쪽 정렬", { x: dims.w - element.w }],
-              ["⤒", "위 정렬", { y: 0 }],
-              ["⇳", "세로 중앙", { y: Math.round((dims.h - element.h) / 2) }],
-              ["⤓", "아래 정렬", { y: dims.h - element.h }],
+              ["format_align_left", "왼쪽 정렬", { x: 0 }],
+              ["format_align_center", "가로 중앙", { x: Math.round((dims.w - element.w) / 2) }],
+              ["format_align_right", "오른쪽 정렬", { x: dims.w - element.w }],
+              ["vertical_align_top", "위 정렬", { y: 0 }],
+              ["vertical_align_center", "세로 중앙", { y: Math.round((dims.h - element.h) / 2) }],
+              ["vertical_align_bottom", "아래 정렬", { y: dims.h - element.h }],
             ] as const
           ).map(([glyph, title, p]) => (
             <button
               key={title}
               title={title}
               onClick={() => patch(p as Partial<SlideElement>)}
-              className="rounded-md border border-app-border bg-white py-1 text-[12px] text-app-muted hover:border-app-accent hover:text-app-accent"
+              className="flex items-center justify-center rounded-md border border-app-border bg-white py-1.5 text-app-muted hover:border-app-accent hover:text-app-accent"
             >
-              {glyph}
+              <span className="mi text-[17px]">{glyph}</span>
             </button>
           ))}
         </div>
@@ -250,7 +250,7 @@ export function PropertiesPanel({
               : "border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent"
           }`}
         >
-          {element.locked ? "🔒 잠김 — 클릭해서 해제" : "🔓 요소 잠금"}
+          <><span className="mi align-middle text-[14px] mr-1">{element.locked ? "lock" : "lock_open"}</span>{element.locked ? "잠김 — 클릭해서 해제" : "요소 잠금"}</>
         </button>
       </div>
 
@@ -356,9 +356,7 @@ export function PropertiesPanel({
                     } as Partial<SlideElement>);
                   }}
                   className="flex-none px-1 text-[13px] text-app-faint hover:text-app-danger"
-                >
-                  ✕
-                </button>
+                ><span className="mi text-[14px]">close</span></button>
               </div>
             ))}
           </div>
@@ -398,7 +396,7 @@ export function PropertiesPanel({
               element.headerRow ? "border-app-accent bg-app-accent-soft text-app-accent" : "border-app-border bg-white text-app-muted"
             }`}
           >
-            {element.headerRow ? "첫 행 헤더 ✓" : "첫 행을 헤더로"}
+            {element.headerRow ? "첫 행 헤더 켜짐" : "첫 행을 헤더로"}
           </button>
           <div className="flex flex-col gap-1">
             {element.rows.map((row, r) => (
@@ -422,9 +420,7 @@ export function PropertiesPanel({
                     patch({ rows: element.rows.filter((_, ri) => ri !== r) } as Partial<SlideElement>);
                   }}
                   className="flex-none px-1 text-[12px] text-app-faint hover:text-app-danger"
-                >
-                  ✕
-                </button>
+                ><span className="mi text-[14px]">close</span></button>
               </div>
             ))}
           </div>
@@ -623,9 +619,7 @@ export function PropertiesPanel({
                   patch({ fontSize: Math.max(8, fontSize - 2) } as Partial<SlideElement>)
                 }
                 className="border-r border-app-border bg-white px-2.5 py-1.5 text-[13px] text-app-muted hover:bg-app-bg"
-              >
-                −
-              </button>
+              ><span className="mi text-[16px]">remove</span></button>
               <span className="flex-1 text-center text-[12.5px] font-semibold">
                 {fontSize}px
               </span>

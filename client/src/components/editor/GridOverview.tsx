@@ -32,7 +32,7 @@ export function GridOverview({
         </span>
         <span className="flex-1" />
         <button onClick={onClose} className="rounded-lg border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent">
-          ✕ 닫기
+          <span className="mi align-middle text-[14px] mr-0.5">close</span>닫기
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-6">

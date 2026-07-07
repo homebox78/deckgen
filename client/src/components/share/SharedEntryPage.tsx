@@ -70,7 +70,7 @@ export function SharedEntryPage() {
               </p>
               <div className="mt-3.5 flex items-center gap-2">
                 <StatusBadge status={info.role === "edit" ? "generating" : "queued"} showDot={false}>
-                  {info.role === "edit" ? "✎ 편집 권한" : "👁 보기 전용"}
+                  <><span className="mi align-middle text-[14px] mr-1">{info.role === "edit" ? "edit" : "visibility"}</span>{info.role === "edit" ? "편집 권한" : "보기 전용"}</>
                 </StatusBadge>
                 <span className="text-[11.5px] text-white/55">
                   {info.deck.slides.length}장 · {theme?.name}

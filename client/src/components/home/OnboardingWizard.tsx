@@ -3,14 +3,14 @@ import { useState } from "react";
 import { patchSettings } from "../../store/settingsStore";
 
 const LANGS = [
-  ["ko", "한국어", "🇰🇷"],
-  ["en", "English", "🇺🇸"],
-  ["ja", "日本語", "🇯🇵"],
-  ["zh", "中文 (简)", "🇨🇳"],
-  ["es", "Español", "🇪🇸"],
-  ["fr", "Français", "🇫🇷"],
-  ["de", "Deutsch", "🇩🇪"],
-  ["pt", "Português", "🇵🇹"],
+  ["ko", "한국어", ""],
+  ["en", "English", ""],
+  ["ja", "日本語", ""],
+  ["zh", "中文 (简)", ""],
+  ["es", "Español", ""],
+  ["fr", "Français", ""],
+  ["de", "Deutsch", ""],
+  ["pt", "Português", ""],
 ] as const;
 
 const FOCUS = [
@@ -65,7 +65,7 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
               ))}
             </div>
             <div className="mt-5 flex justify-end">
-              <button onClick={() => setStep(1)} className="rounded-lg bg-app-text px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90">계속 →</button>
+              <button onClick={() => setStep(1)} className="rounded-lg bg-app-text px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90">계속<span className="mi align-middle text-[14px] ml-0.5">arrow_forward</span></button>
             </div>
           </>
         )}
@@ -86,7 +86,7 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                     }`}
                   >
                     <span className={`flex h-5 w-5 items-center justify-center rounded-md border text-[11px] ${on ? "border-app-text bg-app-text text-white" : "border-app-border"}`}>
-                      {on ? "✓" : ""}
+                      {on ? <span className="mi text-[13px]">check</span> : ""}
                     </span>
                     <div>
                       <div className="text-[13px] font-semibold">{name}</div>
@@ -97,8 +97,8 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
               })}
             </div>
             <div className="mt-5 flex justify-between">
-              <button onClick={() => setStep(0)} className="rounded-lg border border-app-border px-4 py-2.5 text-[13px] font-semibold hover:border-app-accent">← 뒤로</button>
-              <button onClick={() => setStep(2)} className="rounded-lg bg-app-text px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90">계속 →</button>
+              <button onClick={() => setStep(0)} className="rounded-lg border border-app-border px-4 py-2.5 text-[13px] font-semibold hover:border-app-accent"><span className="mi align-middle text-[14px] mr-0.5">arrow_back</span>뒤로</button>
+              <button onClick={() => setStep(2)} className="rounded-lg bg-app-text px-5 py-2.5 text-[13px] font-semibold text-white hover:opacity-90">계속<span className="mi align-middle text-[14px] ml-0.5">arrow_forward</span></button>
             </div>
           </>
         )}

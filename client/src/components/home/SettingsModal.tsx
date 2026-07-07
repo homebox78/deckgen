@@ -23,10 +23,10 @@ const PLANS: Plan[] = [
 const COMPARE = [
   ["월간 생성", "5/일", "30/일", "무제한", "무제한"],
   ["덱당 슬라이드", "12", "20", "40", "무제한"],
-  ["AI 이미지", "—", "—", "○", "○"],
+  ["AI 이미지", "—", "—", "supported", "supported"],
   ["워터마크", "있음", "없음", "없음", "없음"],
-  ["PPTX 내보내기", "—", "○", "○", "○"],
-  ["Figma 내보내기", "—", "—", "○", "○"],
+  ["PPTX 내보내기", "—", "supported", "supported", "supported"],
+  ["Figma 내보내기", "—", "—", "supported", "supported"],
   ["처리 속도", "표준", "표준", "빠름", "우선"],
 ];
 
@@ -40,7 +40,7 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[18px] font-bold">플랜 업그레이드</h2>
-          <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text">✕</button>
+          <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {PLANS.map((p) => (
@@ -88,7 +88,13 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
             <div key={row[0]} className="grid grid-cols-5 border-b border-[#F0F0EE] px-3 py-1.5 text-[11.5px] last:border-0">
               <span className="text-app-muted">{row[0]}</span>
               {row.slice(1).map((c, i) => (
-                <span key={i} className="text-center">{c}</span>
+                <span key={i} className="text-center">
+                  {c === "supported" ? (
+                    <span className="mi text-[16px] text-app-text">check</span>
+                  ) : (
+                    <span className="text-app-faint">{c}</span>
+                  )}
+                </span>
               ))}
             </div>
           ))}
@@ -135,7 +141,7 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-[17px] font-bold">설정</h2>
-            <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text">✕</button>
+            <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
           </div>
 
           {/* 계정 */}
@@ -159,9 +165,9 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
               className="w-40 rounded-lg border border-app-border px-2.5 py-1.5 text-[12px] focus:border-app-accent focus:outline-none"
             />
           </Row>
-          <Row label="브랜드 색">
+          <Row label="브랜드 색" sub="모노크롬 v2 — 그레이 스케일">
             <div className="flex gap-1.5">
-              {["", "#2563EB", "#1E9C5B", "#E0701F", "#D6336C"].map((c) => (
+              {["", "#1A1A1A", "#55554F", "#8A8A84", "#C9C9C4"].map((c) => (
                 <button
                   key={c || "def"}
                   onClick={() => patchSettings({ brandAccent: c })}
@@ -213,7 +219,7 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
           </Row>
           <Row label="기본 슬라이드 수">
             <div className="flex items-center overflow-hidden rounded-lg border border-app-border">
-              <button onClick={() => patchSettings({ defaultCount: Math.max(3, s.defaultCount - 1) })} className="border-r border-app-border px-2.5 py-1 text-[13px]">−</button>
+              <button onClick={() => patchSettings({ defaultCount: Math.max(3, s.defaultCount - 1) })} className="border-r border-app-border px-2.5 py-1 text-[13px]"><span className="mi text-[16px]">remove</span></button>
               <span className="px-3 text-[12px] font-semibold">{s.defaultCount}장</span>
               <button onClick={() => patchSettings({ defaultCount: Math.min(12, s.defaultCount + 1) })} className="border-l border-app-border px-2.5 py-1 text-[13px]">+</button>
             </div>
