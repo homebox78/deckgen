@@ -131,31 +131,37 @@ export function PropertiesPanel({
     };
     return (
       <div className="flex flex-col gap-4 px-4 py-4">
-        {/* 슬라이드 배경 (Demo Act 5) */}
+        {/* 슬라이드 배경 — 미니 프리뷰 (프로토타입) */}
         <div>
           <SectionLabel>슬라이드 배경</SectionLabel>
           <div className="grid grid-cols-4 gap-1.5">
             {(
               [
-                ["theme", "테마"],
-                ["tint", "틴트"],
-                ["gradient", "그라디언트"],
-                ["spot", "스포트"],
+                ["theme", "테마 기본", theme.bg],
+                ["tint", "틴트", theme.surface],
+                ["gradient", "그라디언트", `linear-gradient(135deg, ${theme.bg}, ${theme.surface})`],
+                ["spot", "스포트", `radial-gradient(circle at 30% 30%, ${theme.accent}44, ${theme.bg})`],
               ] as const
-            ).map(([bg, label]) => (
-              <button
-                key={bg}
-                onClick={() => setSlide({ background: bg === "theme" ? undefined : bg })}
-                className={`rounded-md border py-1.5 text-[10.5px] font-semibold ${
-                  (cur?.background ?? "theme") === bg
-                    ? "border-app-accent bg-app-accent-soft text-app-accent"
-                    : "border-app-border bg-white text-app-muted hover:border-app-accent"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            ).map(([bg, label, preview]) => {
+              const on = (cur?.background ?? "theme") === bg;
+              return (
+                <button
+                  key={bg}
+                  onClick={() => setSlide({ background: bg === "theme" ? undefined : bg })}
+                  title={label}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-1 ${
+                    on ? "border-[1.5px] border-app-text" : "border-app-border hover:border-app-accent"
+                  }`}
+                >
+                  <span className="h-7 w-full rounded" style={{ background: preview, border: "1px solid rgba(0,0,0,.06)" }} />
+                  <span className={`text-[9px] font-semibold ${on ? "text-app-text" : "text-app-faint"}`}>{label}</span>
+                </button>
+              );
+            })}
           </div>
+          <p className="mt-1.5 text-[10.5px] leading-relaxed text-app-faint">
+            이 슬라이드에만 적용 · 테마를 바꾸면 '테마 기본'만 재해석됩니다
+          </p>
         </div>
         {/* 슬라이드 레이아웃 스위처 — 미니 프리뷰 (프로토타입) */}
         <div>
@@ -539,10 +545,19 @@ export function PropertiesPanel({
                   : patch({ fill: e.target.value } as Partial<SlideElement>)
               }
             />
-            <span className="font-mono text-[12px] font-semibold">
+            <span className="flex-1 font-mono text-[12px] font-semibold">
               {currentColor().toUpperCase()}
             </span>
+            {((element.type === "text" && !element.color) ||
+              (element.type === "shape" && !element.fill)) && (
+              <span className="rounded bg-app-bg px-1.5 py-0.5 text-[9.5px] font-semibold text-app-faint">
+                테마 {element.type === "text" ? "role" : "surface"}
+              </span>
+            )}
           </div>
+          <p className="mt-1 text-[10.5px] leading-relaxed text-app-faint">
+            색·크기를 비우면 테마 기본값을 따릅니다. 테마 변경 시 자동 재해석됩니다.
+          </p>
           {/* Fill 타입 (Solid/Linear/Circular) — 도형 전용 (P3) */}
           {element.type === "shape" && (
             <div className="mt-2 flex overflow-hidden rounded-lg border border-app-border">
