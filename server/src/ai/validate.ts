@@ -106,6 +106,8 @@ const shapeElementSchema = z.object({
     "pill",
   ]),
   fill: z.string().optional(),
+  fillType: z.enum(["solid", "linear", "circular"]).optional(),
+  fillTo: z.string().optional(),
   stroke: z.string().optional(),
   strokeWidth: z.number().optional(),
   radius: z.number().optional(),

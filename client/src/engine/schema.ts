@@ -108,6 +108,8 @@ export interface ShapeElement extends ElementBase {
   type: "shape";
   shape: ShapeKind;
   fill?: string;
+  fillType?: "solid" | "linear" | "circular"; // 미지정 시 solid
+  fillTo?: string; // gradient 끝 색 (미지정 시 fill을 어둡게)
   stroke?: string;
   strokeWidth?: number;
   radius?: number; // roundRect 전용

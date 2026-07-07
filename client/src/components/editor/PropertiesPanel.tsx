@@ -430,6 +430,32 @@ export function PropertiesPanel({
               {currentColor().toUpperCase()}
             </span>
           </div>
+          {/* Fill 타입 (Solid/Linear/Circular) — 도형 전용 (P3) */}
+          {element.type === "shape" && (
+            <div className="mt-2 flex overflow-hidden rounded-lg border border-app-border">
+              {(
+                [
+                  ["solid", "Solid"],
+                  ["linear", "Linear"],
+                  ["circular", "Circular"],
+                ] as const
+              ).map(([ft, label], i) => (
+                <button
+                  key={ft}
+                  onClick={() =>
+                    patch({ fillType: ft === "solid" ? undefined : ft } as Partial<SlideElement>)
+                  }
+                  className={`flex-1 py-1.5 text-[11px] font-semibold ${i > 0 ? "border-l border-app-border" : ""} ${
+                    (element.fillType ?? "solid") === ft
+                      ? "bg-app-accent-soft text-app-accent"
+                      : "bg-white text-app-faint hover:bg-app-bg"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

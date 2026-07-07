@@ -88,8 +88,32 @@ function buildText(el: TextElement, theme: Theme): FabricObject {
 }
 
 function buildShape(el: ShapeElement, theme: Theme): FabricObject {
-  const fill = el.fill ? resolveColor(theme, el.fill) : theme.accent;
+  const baseColor = el.fill ? resolveColor(theme, el.fill) : theme.accent;
   const stroke = el.stroke ? resolveColor(theme, el.stroke) : undefined;
+  // gradient fill (P3) — linear/circular. 끝 색 미지정 시 base를 어둡게
+  const toColor = el.fillTo ? resolveColor(theme, el.fillTo) : mixHex(baseColor, "#000000", 0.35);
+  let fill: string | Gradient<"linear"> | Gradient<"radial"> = baseColor;
+  if (el.fillType === "linear") {
+    fill = new Gradient({
+      type: "linear",
+      gradientUnits: "pixels",
+      coords: { x1: 0, y1: 0, x2: el.w, y2: el.h },
+      colorStops: [
+        { offset: 0, color: baseColor },
+        { offset: 1, color: toColor },
+      ],
+    });
+  } else if (el.fillType === "circular") {
+    fill = new Gradient({
+      type: "radial",
+      gradientUnits: "pixels",
+      coords: { x1: el.w / 2, y1: el.h / 2, r1: 0, x2: el.w / 2, y2: el.h / 2, r2: Math.max(el.w, el.h) / 2 },
+      colorStops: [
+        { offset: 0, color: baseColor },
+        { offset: 1, color: toColor },
+      ],
+    });
+  }
   const common = {
     left: el.x,
     top: el.y,
@@ -153,7 +177,7 @@ function buildShape(el: ShapeElement, theme: Theme): FabricObject {
           : [el.y + el.h, el.y]
         : [el.y + el.h / 2, el.y + el.h / 2];
       obj = new Line([el.x, y1, el.x + el.w, y2], {
-        stroke: el.stroke ? resolveColor(theme, el.stroke) : (el.fill ? fill : theme.textSecondary),
+        stroke: el.stroke ? resolveColor(theme, el.stroke) : (el.fill ? baseColor : theme.textSecondary),
         strokeWidth: el.strokeWidth ?? 4,
         strokeLineCap: "round",
       });
