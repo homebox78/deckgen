@@ -643,14 +643,30 @@ export function EditorPage() {
                 items={[
                   { key: "blank", name: "+ 빈 슬라이드" },
                   { key: "dup", name: "⧉ 현재 슬라이드 복제" },
+                  { key: "ai", name: "✦ AI로 생성" },
+                  { key: "regen", name: "≡ 덱 다시 생성" },
                 ]}
                 onSelect={(key) => {
                   if (key === "blank") {
                     addSlide(slideIndex);
                     setCurrentSlideIndex(slideIndex + 1);
-                  } else {
+                  } else if (key === "dup") {
                     duplicateSlide(slide.id);
                     setCurrentSlideIndex(slideIndex + 1);
+                  } else if (key === "ai") {
+                    // 빈 슬라이드 추가 후 재생성 레이어 열기
+                    addSlide(slideIndex);
+                    const newIdx = slideIndex + 1;
+                    setCurrentSlideIndex(newIdx);
+                    setTimeout(() => {
+                      const st = useDeckStore.getState();
+                      const ns = st.deck?.slides[newIdx];
+                      if (ns) setRegen({ slideId: ns.id, x: 280, y: 120 });
+                    }, 50);
+                  } else if (key === "regen") {
+                    if (confirm("덱을 처음부터 다시 생성할까요? 아웃라인 화면으로 이동합니다.")) {
+                      navigate(`/deck/${deck.id}/outline`);
+                    }
                   }
                 }}
                 triggerClassName="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"

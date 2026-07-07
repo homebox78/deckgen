@@ -292,6 +292,10 @@ export function HomePage() {
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
   const [aspect, setAspect] = useState<DeckAspect>("16:9");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [webResearch, setWebResearch] = useState(false);
+  const [scrapOpen, setScrapOpen] = useState(false);
+  const [scrapUrls, setScrapUrls] = useState<string[]>([]);
+  const [scrapDraft, setScrapDraft] = useState("");
   // 첫 실행 시 온보딩 노출
   const [onboarding, setOnboarding] = useState(() => !getSettings().onboardingDone);
   const [query, setQuery] = useState("");
@@ -332,7 +336,11 @@ export function HomePage() {
   const create = () => {
     if (!prompt.trim()) return;
     const deckId = uid();
-    begin({ deckId, prompt: prompt.trim(), slideCount, themeId, aspect });
+    // 웹 리서치·스크랩 URL을 생성 컨텍스트로 프롬프트에 첨부
+    let fullPrompt = prompt.trim();
+    if (webResearch) fullPrompt += "\n\n[웹 리서치를 반영해 최신 근거·수치를 포함해줘]";
+    if (scrapUrls.length > 0) fullPrompt += `\n\n[참고 URL]\n${scrapUrls.join("\n")}`;
+    begin({ deckId, prompt: fullPrompt, slideCount, themeId, aspect });
     navigate(`/deck/${deckId}/outline`);
   };
 
@@ -612,32 +620,52 @@ export function HomePage() {
             onChange={(e) => void onPickFile(e.target.files?.[0])}
           />
           {[
-            { key: "research", label: "🔍 Web Research", soon: true },
-            { key: "scrap", label: "🌐 Web Scrap", soon: true },
+            { key: "research", label: "🔍 Web Research", soon: false },
+            { key: "scrap", label: "🌐 Web Scrap", soon: false },
             { key: "pptx", label: "🟥 Import PPTX", soon: false },
             { key: "agent", label: "🤖 Auto Agent", soon: true },
-          ].map((m) => (
-            <button
-              key={m.key}
-              disabled={m.soon || importing}
-              title={m.soon ? "2차 로드맵 — 준비 중" : "기존 PowerPoint를 열어 이어서 고치거나 참고자료로 재구성"}
-              onClick={() => {
-                if (!m.soon) fileRef.current?.click();
-              }}
-              className={`rounded-full border px-4 py-2 text-[12.5px] font-semibold transition-colors ${
-                m.soon
-                  ? "cursor-not-allowed border-app-border bg-app-bg text-app-faint opacity-60"
-                  : "border-[#C9C9C4] bg-app-surface hover:border-app-accent hover:text-app-accent"
-              }`}
-            >
-              {m.label}
-              {m.soon && (
-                <span className="ml-1.5 rounded bg-app-border-soft px-1 py-0.5 text-[9.5px] text-app-faint">
-                  2차
-                </span>
-              )}
-            </button>
-          ))}
+          ].map((m) => {
+            const active = (m.key === "research" && webResearch) || (m.key === "scrap" && scrapUrls.length > 0);
+            return (
+              <button
+                key={m.key}
+                disabled={m.soon || importing}
+                title={
+                  m.soon
+                    ? "2차 로드맵 — 준비 중"
+                    : m.key === "pptx"
+                      ? "기존 PowerPoint를 열어 이어서 고치거나 참고자료로 재구성"
+                      : m.key === "research"
+                        ? "웹 리서치 컨텍스트를 생성에 포함"
+                        : "스크랩할 URL을 붙여넣어 생성 컨텍스트로"
+                }
+                onClick={() => {
+                  if (m.key === "pptx") fileRef.current?.click();
+                  else if (m.key === "research") setWebResearch((v) => !v);
+                  else if (m.key === "scrap") setScrapOpen(true);
+                }}
+                className={`rounded-full border px-4 py-2 text-[12.5px] font-semibold transition-colors ${
+                  m.soon
+                    ? "cursor-not-allowed border-app-border bg-app-bg text-app-faint opacity-60"
+                    : active
+                      ? "border-app-accent bg-app-accent-soft text-app-accent"
+                      : "border-[#C9C9C4] bg-app-surface hover:border-app-accent hover:text-app-accent"
+                }`}
+              >
+                {m.label}
+                {m.key === "scrap" && scrapUrls.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-app-accent px-1.5 py-0.5 text-[9.5px] font-bold text-white">
+                    {scrapUrls.length}
+                  </span>
+                )}
+                {m.soon && (
+                  <span className="ml-1.5 rounded bg-app-border-soft px-1 py-0.5 text-[9.5px] text-app-faint">
+                    2차
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -877,6 +905,59 @@ export function HomePage() {
         />
       )}
       {onboarding && <OnboardingWizard onDone={() => setOnboarding(false)} />}
+      {/* Web Scrap 모달 (Demo Act 2) */}
+      {scrapOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.45)] p-4" onClick={() => setScrapOpen(false)}>
+          <div className="w-[440px] max-w-[94vw] rounded-2xl bg-white p-5 shadow-[0_24px_64px_rgba(0,0,0,.28)]" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[15px] font-bold">Web Scrap</span>
+              <button onClick={() => setScrapOpen(false)} className="text-[15px] text-app-faint hover:text-app-text">✕</button>
+            </div>
+            <p className="mb-3 text-[12px] text-app-muted">스크랩할 URL을 붙여넣으면 생성 컨텍스트로 사용합니다.</p>
+            <div className="flex gap-2">
+              <input
+                value={scrapDraft}
+                onChange={(e) => setScrapDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && scrapDraft.trim()) {
+                    setScrapUrls((p) => [...p, scrapDraft.trim()]);
+                    setScrapDraft("");
+                  }
+                }}
+                placeholder="https://..."
+                className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none"
+              />
+              <button
+                onClick={() => {
+                  if (scrapDraft.trim()) {
+                    setScrapUrls((p) => [...p, scrapDraft.trim()]);
+                    setScrapDraft("");
+                  }
+                }}
+                className="flex-none rounded-lg border border-app-border bg-white px-3 py-2 text-[12.5px] font-semibold hover:border-app-accent"
+              >
+                + 링크 추가
+              </button>
+            </div>
+            {scrapUrls.length > 0 && (
+              <div className="mt-3 flex flex-col gap-1.5">
+                {scrapUrls.map((u, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-lg border border-app-border-soft bg-[#FBFBFA] px-2.5 py-1.5">
+                    <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-app-muted">{u}</span>
+                    <button onClick={() => setScrapUrls((p) => p.filter((_, x) => x !== i))} className="text-[12px] text-app-faint hover:text-app-danger">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => { setScrapUrls([]); setScrapOpen(false); }} className="rounded-lg border border-app-border px-3.5 py-2 text-[12.5px] font-semibold">비우기</button>
+              <button onClick={() => setScrapOpen(false)} className="rounded-lg bg-app-text px-4 py-2 text-[12.5px] font-semibold text-white hover:opacity-90">
+                추가 ({scrapUrls.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
