@@ -4,6 +4,7 @@ import {
   Ellipse,
   FabricImage,
   FabricObject,
+  Gradient,
   Group,
   Line,
   Path,
@@ -258,9 +259,24 @@ export async function buildElement(
 
 export type AnyCanvas = Canvas | StaticCanvas;
 
-/** 슬라이드 배경 종이(선택 불가) — 캔버스 주변(#EDEDEA) 위에 떠 보이게 그림자 처리 */
-function buildBackground(theme: Theme, shadow: boolean, dims: SlideDims): Rect {
-  return new Rect({
+/** hex 두 색을 t(0~1)로 섞는다 */
+function mixHex(a: string, b: string, t: number): string {
+  const pa = a.replace("#", "");
+  const pb = b.replace("#", "");
+  const ai = [0, 2, 4].map((i) => parseInt(pa.slice(i, i + 2) || "0", 16));
+  const bi = [0, 2, 4].map((i) => parseInt(pb.slice(i, i + 2) || "0", 16));
+  const m = ai.map((v, i) => Math.round(v + (bi[i] - v) * t));
+  return "#" + m.map((v) => v.toString(16).padStart(2, "0")).join("");
+}
+
+/** 슬라이드 배경 종이(선택 불가) — 배경 변형(테마/틴트/그라디언트/스포트) 지원 */
+function buildBackground(
+  theme: Theme,
+  shadow: boolean,
+  dims: SlideDims,
+  bg: import("./schema").SlideBackground = "theme",
+): Rect {
+  const rect = new Rect({
     left: 0,
     top: 0,
     width: dims.w,
@@ -273,6 +289,35 @@ function buildBackground(theme: Theme, shadow: boolean, dims: SlideDims): Rect {
       ? new Shadow({ color: "rgba(0,0,0,0.18)", blur: 48, offsetY: 10 })
       : undefined,
   });
+  const tint = mixHex(theme.bg, theme.accent, 0.08);
+  if (bg === "tint") {
+    rect.set({ fill: tint });
+  } else if (bg === "gradient") {
+    rect.set({
+      fill: new Gradient({
+        type: "linear",
+        gradientUnits: "pixels",
+        coords: { x1: 0, y1: 0, x2: dims.w, y2: dims.h },
+        colorStops: [
+          { offset: 0, color: theme.bg },
+          { offset: 1, color: mixHex(theme.bg, theme.accent, 0.16) },
+        ],
+      }),
+    });
+  } else if (bg === "spot") {
+    rect.set({
+      fill: new Gradient({
+        type: "radial",
+        gradientUnits: "pixels",
+        coords: { x1: dims.w * 0.8, y1: dims.h * 0.15, r1: 0, x2: dims.w * 0.8, y2: dims.h * 0.15, r2: dims.w * 0.7 },
+        colorStops: [
+          { offset: 0, color: mixHex(theme.bg, theme.accent, 0.22) },
+          { offset: 1, color: theme.bg },
+        ],
+      }),
+    });
+  }
+  return rect;
 }
 
 const DEFAULT_DIMS: SlideDims = { w: SLIDE_W, h: SLIDE_H };
@@ -304,7 +349,7 @@ export async function renderSlide(
 ): Promise<void> {
   const objects = await Promise.all(slide.elements.map((el) => buildElement(el, theme)));
   canvas.clear();
-  canvas.add(buildBackground(theme, opts.shadow ?? true, opts.dims ?? DEFAULT_DIMS));
+  canvas.add(buildBackground(theme, opts.shadow ?? true, opts.dims ?? DEFAULT_DIMS, slide.background));
   objects.forEach((obj) => canvas.add(obj));
   canvas.requestRenderAll();
 }

@@ -70,13 +70,75 @@ export function PropertiesPanel({
   const updateElement = useDeckStore((s) => s.updateElement);
 
   if (!element) {
+    const cur = useDeckStore.getState().deck?.slides.find((s) => s.id === slideId);
+    const setSlide = (patch: Partial<import("../../engine/schema").Slide>) => {
+      const st = useDeckStore.getState();
+      const sl = st.deck?.slides.find((s) => s.id === slideId);
+      if (sl) st.replaceSlide(slideId, { ...sl, ...patch });
+    };
     return (
-      <div className="flex flex-col gap-3 px-4 py-5">
-        <p className="text-center text-[12.5px] leading-relaxed text-app-faint">
-          캔버스에서 요소를 선택하면
-          <br />
-          속성이 표시됩니다.
-        </p>
+      <div className="flex flex-col gap-4 px-4 py-4">
+        {/* 슬라이드 배경 (Demo Act 5) */}
+        <div>
+          <SectionLabel>슬라이드 배경</SectionLabel>
+          <div className="grid grid-cols-4 gap-1.5">
+            {(
+              [
+                ["theme", "테마"],
+                ["tint", "틴트"],
+                ["gradient", "그라디언트"],
+                ["spot", "스포트"],
+              ] as const
+            ).map(([bg, label]) => (
+              <button
+                key={bg}
+                onClick={() => setSlide({ background: bg === "theme" ? undefined : bg })}
+                className={`rounded-md border py-1.5 text-[10.5px] font-semibold ${
+                  (cur?.background ?? "theme") === bg
+                    ? "border-app-accent bg-app-accent-soft text-app-accent"
+                    : "border-app-border bg-white text-app-muted hover:border-app-accent"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* 슬라이드 레이아웃 스위처 (Demo Act 5) */}
+        <div>
+          <SectionLabel>슬라이드 레이아웃</SectionLabel>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(
+              [
+                ["cover", "표지"],
+                ["title-bullets", "불릿"],
+                ["title-bullets-chart", "차트+불릿"],
+                ["chart-focus", "차트"],
+                ["kpi-cards", "KPI"],
+                ["two-column", "2단"],
+                ["section", "섹션"],
+              ] as const
+            ).map(([lo, label]) => (
+              <button
+                key={lo}
+                onClick={() => {
+                  setSlide({ layout: lo });
+                  showToast(`레이아웃을 '${label}'(으)로 바꿨어요`);
+                }}
+                className={`rounded-md border py-1.5 text-[11px] font-semibold ${
+                  cur?.layout === lo
+                    ? "border-app-accent bg-app-accent-soft text-app-accent"
+                    : "border-app-border bg-white text-app-muted hover:border-app-accent"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[10.5px] leading-relaxed text-app-faint">
+            레이아웃 라벨은 썸네일·개요에 표시됩니다. 요소는 그대로 유지돼요.
+          </p>
+        </div>
         <button
           onClick={() => {
             useDeckStore.getState().tidySlide(slideId, dims);

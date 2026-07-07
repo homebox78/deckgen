@@ -197,9 +197,27 @@ export async function exportDeckToPptx(deck: Deck): Promise<void> {
   pptx.layout = "DECK";
   pptx.title = deck.title;
 
+  const mix = (a: string, b: string, t: number): string => {
+    const pa = a.replace("#", "");
+    const pb = b.replace("#", "");
+    const m = [0, 2, 4].map((i) => {
+      const av = parseInt(pa.slice(i, i + 2) || "0", 16);
+      const bv = parseInt(pb.slice(i, i + 2) || "0", 16);
+      return Math.round(av + (bv - av) * t);
+    });
+    return m.map((v) => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+  };
+
   for (const s of deck.slides) {
     const slide = pptx.addSlide();
-    slide.background = { color: hex(theme.bg) };
+    // 배경 변형: tint/spot은 근사 틴트 솔리드, gradient/theme는 테마 bg (PPTX 그라디언트 제한)
+    const bgColor =
+      s.background === "tint"
+        ? mix(theme.bg, theme.accent, 0.08)
+        : s.background === "spot"
+          ? mix(theme.bg, theme.accent, 0.05)
+          : hex(theme.bg);
+    slide.background = { color: bgColor };
     for (const el of s.elements) {
       switch (el.type) {
         case "text":

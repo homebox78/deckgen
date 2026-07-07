@@ -42,11 +42,15 @@ export type LayoutId =
   | "two-column"
   | "section";
 
+export type SlideBackground = "theme" | "tint" | "gradient" | "spot";
+
 export interface Slide {
   id: string;
   layout: LayoutId;
   elements: SlideElement[]; // 배열 순서 = z-order
   notes?: string;
+  background?: SlideBackground; // 미지정 시 "theme" (테마 bg)
+  section?: string; // 섹션 이름 (개요/썸네일에서 구분)
 }
 
 // ===== 요소 =====
