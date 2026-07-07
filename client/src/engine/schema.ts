@@ -166,7 +166,7 @@ export interface SlideContent {
 }
 
 // ===== AI 파이프라인 (§8) =====
-export type VizType = "bar" | "line" | "pie" | "kpi-cards" | "process";
+export type VizType = "bar" | "line" | "pie" | "kpi-cards" | "process" | "image" | "table";
 
 export interface OutlineSlide {
   index: number;

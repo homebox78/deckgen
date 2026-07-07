@@ -12,6 +12,7 @@ import {
   createStoryboardDeck,
 } from "../../engine/wireframes";
 import { clearHistory, useDeckStore } from "../../store/deckStore";
+import { StoryboardGallery } from "./StoryboardGallery";
 import {
   addFolder,
   deckFolderMap,
@@ -1071,6 +1072,9 @@ export function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* 와이어프레임 갤러리 (§13) — 35종 단일 골격을 카테고리별로 탐색·담기 */}
+      <StoryboardGallery themeId={themeId} aspect={aspect} />
 
       {/* 내 덱 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-16">

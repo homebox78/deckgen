@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0">
+<style>
+body{margin:0;background:#EDEDEA;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif;color:#1A1A1A}
+.mi{font-family:'Material Symbols Outlined';font-weight:400;line-height:1;vertical-align:-3px}
+.doc{max-width:920px;margin:0 auto;background:#fff;padding:64px 76px;box-shadow:0 2px 20px rgba(0,0,0,.08)}
+h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+h2{font-size:19px;font-weight:700;margin:44px 0 12px;padding-bottom:8px;border-bottom:2px solid #1A1A1A;display:flex;align-items:center;gap:8px}
+h3{font-size:15px;font-weight:700;margin:24px 0 8px;color:#1A1A1A}
+p,li{font-size:13.5px;line-height:1.7;color:#2A2A2A}
+.lead{font-size:14px;color:#55554F;line-height:1.7}
+.meta{font-size:12px;color:#8A8A84;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:12.5px}
+th,td{border:1px solid #E4E4E0;padding:8px 11px;text-align:left;vertical-align:top}
+th{background:#F7F7F5;font-weight:700;font-size:12px}
+td b{color:#1A1A1A}
+code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#F0F0EE;border-radius:4px;padding:1px 5px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 7px;margin-right:4px}
+.sim{background:#F7F7F5;border-left:3px solid #1A1A1A;border-radius:0 8px 8px 0;padding:10px 14px;margin:10px 0;font-size:12.5px;line-height:1.6}
+.sim b{color:#1A1A1A}
+ul{margin:6px 0;padding-left:20px}li{margin:3px 0}
+.toc{background:#FBFBFA;border:1px solid #E4E4E0;border-radius:10px;padding:16px 22px;margin:18px 0;column-count:2;column-gap:28px}
+.toc a{color:#1A1A1A;text-decoration:none;font-size:13px;line-height:2;display:block}
+.toc a:hover{text-decoration:underline}
+a{color:#1A1A1A}
+.sw{display:inline-flex;flex-direction:column;gap:5px;font-size:10.5px;color:#6B6B66;font-family:ui-monospace,monospace}
+.swrow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;border:1px solid #E4E4E0;border-radius:8px;padding:5px 10px}
+.arch{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.7;background:#14141A;color:#E8E8E8;border-radius:10px;padding:16px 18px;white-space:pre;overflow-x:auto}
+</style>
+</helmet>
+<div class="doc">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <svg viewBox="0 0 24 24" style="width:42px;height:42px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg>
+    <div><h1>DeckGen 통합 명세서</h1><div class="meta">브랜드·디자인 시스템 · 프론트엔드 · 백엔드 · 동작 시뮬레이션 · v1.0</div></div>
+  </div>
+  <p class="lead">AI 스토리보드·프레젠테이션 협업 플랫폼 <b>DeckGen</b>의 전체 사양서입니다. ① 브랜드/디자인 시스템, ② 프론트엔드(사용자 앱·관리자 콘솔) 기능, ③ 백엔드(아키텍처·데이터·API), ④ 동작 시뮬레이션을 통합 정리했습니다. <span class="tag">SIM</span> 블록은 프로토타입에서 실제 재현되는 동작입니다.</p>
+
+  <div class="toc">
+    <a href="#a">A. 브랜드 · 디자인 시스템</a>
+    <a href="#b">B. 정보 구조 · 화면 맵</a>
+    <a href="#c">C. 프론트엔드 — 계정·온보딩·홈</a>
+    <a href="#d">D. 프론트엔드 — 스토리보드·아웃라인</a>
+    <a href="#e">E. 프론트엔드 — 에디터·AI편집</a>
+    <a href="#f">F. 프론트엔드 — 협업·발표·내보내기</a>
+    <a href="#g">G. 프론트엔드 — 워크스페이스·관리자</a>
+    <a href="#h">H. 백엔드 — 아키텍처</a>
+    <a href="#i">I. 백엔드 — 데이터 모델</a>
+    <a href="#j">J. 백엔드 — API · 실시간 · AI</a>
+    <a href="#k">K. 비기능 요건</a>
+    <a href="#l">L. 산출물 · 파일</a>
+  </div>
+
+  <h2 id="a"><span class="mi">palette</span>A. 브랜드 · 디자인 시스템</h2>
+  <h3>브랜드 개요</h3>
+  <p><b>DeckGen</b> — "말하면, 논리 구조부터 편집 가능한 결과물까지". 로고 심볼은 <b>흰 슬라이드 + 겹친 아바타 2개</b>(슬라이드 협업)를 검정 라운드 사각형에 담아 20px에서도 판독됩니다.</p>
+  <h3>컬러 — 모노크롬 원칙</h3>
+  <p>블랙/그레이/화이트 모노크롬. <b>액센트 컬러 없음</b>, 레드(#E5484D)는 오류·삭제·경고 전용.</p>
+  <div class="swrow">
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#1A1A1A"></span>#1A1A1A text/primary</span>
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#55554F"></span>#55554F</span>
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#8A8A84"></span>#8A8A84 secondary</span>
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#D4D4CE"></span>#D4D4CE</span>
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#F0F0EE;border:1px solid #E4E4E0"></span>#F0F0EE surface</span>
+    <span class="chip"><span style="width:14px;height:14px;border-radius:4px;background:#E5484D"></span>#E5484D 오류 전용</span>
+  </div>
+  <h3>타이포그래피</h3>
+  <table>
+    <tr><th>역할</th><th>사양</th></tr>
+    <tr><td><b>화면 제목</b></td><td>Pretendard 22 / 700 / -1%</td></tr>
+    <tr><td><b>섹션 제목</b></td><td>16 / 600</td></tr>
+    <tr><td><b>본문</b></td><td>13.5 / 400 / line 1.5 — <b>13px 미만 금지</b></td></tr>
+    <tr><td><b>캡션</b></td><td>12 / 400</td></tr>
+    <tr><td><b>로그·코드</b></td><td>Mono 11</td></tr>
+  </table>
+  <p>UI 전역 <code>Pretendard Variable</code> 통일(키캡·배지 포함). 아이콘은 <b>Google Material Symbols Outlined</b> 단일화, 이모지·유니코드 글리프 금지, 항상 라벨 병기.</p>
+  <h3>컴포넌트 · 토큰</h3>
+  <ul>
+    <li><b>Radius</b> 10 기준 · <b>Spacing</b> 8pt 그리드</li>
+    <li>버튼: primary(검정)·보조(라인)·고스트·삭제(레드). CTA만 강조</li>
+    <li>상태 배지: Queued / Generating(펄스) / Done / 오류 — 색+텍스트 병기</li>
+    <li>선택·핸들: 회전(Shift 15° 스냅)·리사이즈·삭제·스냅 가이드·마퀴</li>
+    <li>오버레이: 우클릭 컨텍스트 메뉴, 댓글 팝오버(답글 스레드), 미니맵, 드롭다운 레이어 메뉴</li>
+  </ul>
+  <h3>슬라이드 테마 4종</h3>
+  <div class="swrow">
+    <span class="chip">clean-light · bg #FFF / ac #2563EB</span>
+    <span class="chip">ink-dark · bg #14141A / ac #7C9CFF</span>
+    <span class="chip">warm-craft · bg #FAF6EF / ac #C25E3A</span>
+    <span class="chip">violet-bold · bg #0F0B1E / ac #8B6BFF</span>
+  </div>
+  <p style="font-size:12px;color:#8A8A84">※ 앱 UI는 모노크롬, 슬라이드 <b>콘텐츠</b>는 사용자가 고른 테마 팔레트를 사용(별개 레이어).</p>
+
+  <h2 id="b"><span class="mi">account_tree</span>B. 정보 구조 · 화면 맵</h2>
+  <div class="arch">DeckGen
+├─ 계정        로그인 · 회원가입 · 소셜(Google·카카오)
+├─ 온보딩      언어 → 용도 → 추천 템플릿
+├─ 홈          프롬프트 · 스토리보드 · 내 덱 · 워크스페이스 스위처
+│   ├─ PPTX 가져오기(Reference / Import)
+│   └─ 내 템플릿
+├─ 아웃라인    스트리밍 카드 · 시각화 지시문 · 미리보기
+├─ 에디터      레일 · 캔버스 · 패널(속성/디자인/채팅/노트)
+│   ├─ 개요 그리드 · 미니맵 · 검색
+│   ├─ 발표 모드
+│   └─ 내보내기(PNG·PDF·PPTX·FIG)
+├─ 협업        댓글 핀 · 멘션 · 실시간 커서 · 알림
+├─ 워크스페이스 팀/개인 · 멤버 · 플랜 · 폴더 · 휴지통 · 버전
+└─ 관리자 콘솔  6그룹 · 24 페이지</div>
+
+  <h3 style="margin-top:26px">화면 스크린샷</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+    <figure style="margin:0"><img src="spec-shots/01-login.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">로그인 · 소셜(Google·카카오)</figcaption></figure>
+    <figure style="margin:0"><img src="spec-shots/home.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">홈 · 프롬프트 + 비율·모델·테마</figcaption></figure>
+    <figure style="margin:0"><img src="spec-shots/editor.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">에디터 · 개요 그리드 + 협업 커서</figcaption></figure>
+    <figure style="margin:0"><img src="spec-shots/export.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">내보내기 · PNG/PDF/PPTX/FIG + 플랜 게이팅</figcaption></figure>
+    <figure style="margin:0"><img src="spec-shots/admin.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">관리자 콘솔 · 대시보드(모노크롬)</figcaption></figure>
+    <figure style="margin:0"><img src="spec-shots/design.png" style="width:100%;border:1px solid #E4E4E0;border-radius:8px;display:block"><figcaption style="font-size:11.5px;color:#8A8A84;margin-top:5px">디자인 시스템 · 컴포넌트 스펙</figcaption></figure>
+  </div>
+
+  <h2 id="c"><span class="mi">login</span>C. 프론트엔드 — 계정 · 온보딩 · 홈</h2>
+  <table>
+    <tr><th style="width:28%">기능</th><th>설명</th></tr>
+    <tr><td><b>로그인/회원가입</b></td><td>탭 전환, 이메일 검증·오류 상태, 소셜(Google·카카오), 비밀번호 재설정. 네이버 제외.</td></tr>
+    <tr><td><b>온보딩 3단계</b></td><td>언어(국기 아이콘) → 용도(Pitch/Report/Sales) → 완료 + 용도별 추천 템플릿 3종.</td></tr>
+    <tr><td><b>홈 프롬프트</b></td><td>비율 세그먼트, AI 모델 드롭다운(Plus 잠금), 슬라이드 수·테마, Web Research/Scrap/Auto Agent 칩.</td></tr>
+    <tr><td><b>PPTX 가져오기</b></td><td>Reference(첨부 칩) / Import(3단계 변환 → 편집 덱) 분기.</td></tr>
+    <tr><td><b>내 덱</b></td><td>검색·필터, 폴더 정리(드래그), 우클릭 메뉴, 즐겨찾기, 휴지통/복원, 버전 비교, 빈 상태·예시 복원.</td></tr>
+  </table>
+  <div class="sim"><b>SIM:</b> 추천 템플릿 클릭 → 주제·테마·장수 채운 채 아웃라인 자동 생성. 프롬프트 입력값은 상태로 반영되어 다음 단계 전달.</div>
+
+  <h2 id="d"><span class="mi">grid_view</span>D. 프론트엔드 — 스토리보드 · 아웃라인</h2>
+  <ul>
+    <li><b>35종 와이어프레임</b>, 5개 카테고리 분류 + 필터 탭 + 즐겨찾기(★ 그룹), 확대 미리보기(모달 ←/→)</li>
+    <li>담기 → 하단 스트립 드래그 정렬 → [이 구성으로 아웃라인 생성]</li>
+    <li>아웃라인: 스트리밍 카드, 제목·불릿 인라인 편집, 시각화 셀렉트 + 지시문 + 미리보기 블록</li>
+  </ul>
+  <div class="sim"><b>SIM:</b> 카드 호버 시 블록이 70ms 스태거로 배치되는 애니메이션. 담은 순서·시각화가 아웃라인·슬라이드에 그대로 반영, Queued→Generating→Done 순차 생성.</div>
+
+  <h2 id="e"><span class="mi">dashboard_customize</span>E. 프론트엔드 — 에디터 · AI 편집</h2>
+  <table>
+    <tr><th style="width:28%">영역</th><th>기능</th></tr>
+    <tr><td><b>레이아웃</b></td><td>썸네일 레일(잠금·노트 배지·드래그) · 캔버스(820×461 자동 스케일) · 속성/디자인/채팅/노트 패널.</td></tr>
+    <tr><td><b>개별 선택</b></td><td>제목·막대·불릿·KPI·표 셀 등 모든 요소 개별 편집.</td></tr>
+    <tr><td><b>직접 조작</b></td><td>더블클릭 편집·드래그 이동·리사이즈·회전(Shift 15°)·스냅 가이드·마퀴 다중선택·그룹.</td></tr>
+    <tr><td><b>삽입 툴바</b></td><td>도형·텍스트·YouTube·Pexels·아이콘/이모지/GIPHY·AI 이미지·이미지 슬롯.</td></tr>
+    <tr><td><b>보조</b></td><td>우클릭 메뉴·z-order·복사/서식복사·잠금·자동 정리·차트 데이터 편집·표 행 편집.</td></tr>
+    <tr><td><b>뷰</b></td><td>개요 그리드(미니 프리뷰·섹션)·미니맵·슬라이드 검색.</td></tr>
+    <tr><td><b>AI</b></td><td>채팅+작업로그·퀵칩·Magic Edit before/after·↺ Undo.</td></tr>
+  </table>
+  <div class="sim"><b>SIM:</b> 위치/회전 슬라이드별 저장·복제 시 유지. 채팅 지시로 차트 재렌더+Undo. 잠긴 슬라이드 편집 거부. 테마 대량 적용은 명시값 없는 요소만 재해석.</div>
+
+  <h2 id="f"><span class="mi">ios_share</span>F. 협업 · 발표 · 내보내기</h2>
+  <ul>
+    <li><b>협업:</b> 댓글 핀(클릭 생성)·팝오버 스레드·@멘션·해결, 실시간 커서/선택 하이라이트·팔로우, 멘션 알림 센터+토스트</li>
+    <li><b>발표:</b> 전체화면, 클릭/→/Space, N 노트 토글, Esc 종료, 전환효과(슬라이드/페이드/줌)+미리보기</li>
+    <li><b>내보내기 ▾:</b> PNG(zip)·PDF·PPTX·FIG <b>실제 다운로드</b>. Free는 PPTX·FIG 🔒→업그레이드 모달</li>
+    <li><b>공유:</b> 이메일 초대(편집/보기 분리)·권한 변경·링크. 초대 메일 템플릿 연동</li>
+  </ul>
+  <div class="sim"><b>SIM:</b> 각 슬라이드 canvas 렌더→PNG/PDF/SVG 생성 후 자체 zip 인코더로 묶어 실제 다운로드(검증 완료).</div>
+
+  <h2 id="g"><span class="mi">admin_panel_settings</span>G. 워크스페이스 · 관리자 콘솔</h2>
+  <p><b>워크스페이스:</b> 팀↔개인 스위처, 멤버 초대·역할·시트·플랜·사용량, 내 템플릿 저장·재사용.</p>
+  <p><b>관리자(모노크롬, 트리 사이드바 + 접힌 레일 플라이아웃·전체검색·상태저장):</b></p>
+  <table>
+    <tr><th style="width:24%">그룹</th><th>페이지</th></tr>
+    <tr><td><b>개요</b></td><td>대시보드</td></tr>
+    <tr><td><b>사용자·콘텐츠</b></td><td>사용자 · 덱·공유 · 초대·댓글 · 템플릿 · 스토리보드 템플릿 · 워크스페이스</td></tr>
+    <tr><td><b>생성·AI</b></td><td>작업 큐 · AI 모델 · 크레딧 · 기능 플래그 · A/B 테스트 · 온보딩 퍼널 · 사용량 리포트</td></tr>
+    <tr><td><b>매출·정책</b></td><td>플랜·결제 · 환불·청구 · 약관·정책</td></tr>
+    <tr><td><b>커뮤니케이션</b></td><td>공지·배너 · 이메일 로그</td></tr>
+    <tr><td><b>시스템·보안</b></td><td>시스템 상태 · 오류 로그 · 감사 로그 · 데이터 내보내기 · API 키 · 역할·권한 · 설정</td></tr>
+  </table>
+
+  <h2 id="h"><span class="mi">dns</span>H. 백엔드 — 아키텍처</h2>
+  <div class="arch">[Client SPA] ──HTTPS──▶ [API Gateway]
+                              │
+   ┌──────────────┬───────────┼───────────┬──────────────┐
+ Auth Svc      Deck Svc    AI Svc      Collab Svc     Export Svc
+ (OIDC/JWT)  (덱·슬라이드) (LLM 오케)  (WebSocket)   (PPTX/PDF/PNG/FIG)
+   │            │            │            │              │
+ [Postgres]  [Postgres]   [Vector DB]  [Redis Pub/Sub] [Object Storage]
+             + [Redis]    + LLM API                     (S3 호환)
+                              │
+                        [Job Queue] ── 슬라이드 생성/이미지 워커</div>
+  <ul>
+    <li><b>MSA</b> — 게이트웨이 + 서비스별 분리, 상태 full은 Redis, 영속은 Postgres, 파일은 오브젝트 스토리지</li>
+    <li><b>실시간</b> — 협업/커서/댓글은 WebSocket + Redis Pub/Sub, CRDT/OT로 동시 편집 병합</li>
+    <li><b>AI</b> — 아웃라인·Magic Edit·이미지 생성은 비동기 Job Queue 워커, SSE로 스트리밍 반환</li>
+    <li><b>내보내기</b> — 서버 렌더(headless) 또는 클라이언트 canvas → 파일 워커</li>
+  </ul>
+
+  <h2 id="i"><span class="mi">schema</span>I. 백엔드 — 데이터 모델</h2>
+  <table>
+    <tr><th>엔티티</th><th>핵심 필드</th></tr>
+    <tr><td><b>User</b></td><td>id, email, provider(google/kakao/local), locale, role</td></tr>
+    <tr><td><b>Workspace</b></td><td>id, name, plan(Free/Plus/Pro/Team), seats, ownerId</td></tr>
+    <tr><td><b>Membership</b></td><td>userId, workspaceId, role(owner/admin/editor/viewer)</td></tr>
+    <tr><td><b>Deck</b></td><td>id, workspaceId, title, theme, folderId, status, deletedAt</td></tr>
+    <tr><td><b>Slide</b></td><td>id, deckId, index, layout, locked, notes, elements[]</td></tr>
+    <tr><td><b>Element</b></td><td>id, slideId, type(text/shape/chart/table/image), x,y,w,h,rot, style, data</td></tr>
+    <tr><td><b>Template</b></td><td>id, scope(me/workspace), name, cover, prompt, count, theme</td></tr>
+    <tr><td><b>Comment</b></td><td>id, slideId, x,y, authorId, body, mentions[], resolved, replies[]</td></tr>
+    <tr><td><b>Version</b></td><td>id, deckId, snapshot, createdAt, reason</td></tr>
+    <tr><td><b>ShareGrant</b></td><td>deckId, memberId/email, permission(edit/view), linkToken</td></tr>
+    <tr><td><b>Job</b></td><td>id, kind(outline/render/image), status, payload, result</td></tr>
+    <tr><td><b>AuditLog</b></td><td>id, actorId, action, target, at</td></tr>
+  </table>
+
+  <h2 id="j"><span class="mi">api</span>J. 백엔드 — API · 실시간 · AI</h2>
+  <table>
+    <tr><th style="width:42%">엔드포인트</th><th>용도</th></tr>
+    <tr><td><code>POST /auth/oidc/{provider}</code></td><td>소셜 로그인 → JWT 발급</td></tr>
+    <tr><td><code>POST /decks</code> · <code>GET /decks?q=&filter=</code></td><td>덱 생성 · 검색/필터</td></tr>
+    <tr><td><code>POST /ai/outline</code> (SSE)</td><td>프롬프트/스토리보드 → 아웃라인 카드 스트리밍</td></tr>
+    <tr><td><code>POST /ai/edit</code> (SSE)</td><td>Magic Edit — before/after 제안</td></tr>
+    <tr><td><code>POST /ai/image</code></td><td>AI 이미지 생성(비동기 Job)</td></tr>
+    <tr><td><code>PATCH /slides/{id}/elements</code></td><td>요소 CRUD·이동·회전·잠금</td></tr>
+    <tr><td><code>WS /collab/{deckId}</code></td><td>커서·선택·댓글·동시편집(Pub/Sub)</td></tr>
+    <tr><td><code>POST /export/{deckId}?fmt=</code></td><td>PPTX/PDF/PNG/FIG 생성(플랜 게이팅)</td></tr>
+    <tr><td><code>POST /shares</code> · <code>POST /templates</code></td><td>권한 초대 · 템플릿 저장</td></tr>
+  </table>
+  <div class="sim"><b>SIM(프로토타입):</b> 위 백엔드는 명세이며, 프로토타입은 이 계약을 클라이언트 상태·타이머·자체 zip/canvas 렌더로 재현합니다.</div>
+
+  <h2 id="k"><span class="mi">verified_user</span>K. 비기능 요건</h2>
+  <ul>
+    <li><b>보안</b> — OIDC/JWT, 워크스페이스·덱 단위 RBAC, 링크 토큰 만료, 감사 로그, 전송/저장 암호화</li>
+    <li><b>권한</b> — 편집/보기 분리, 편집자 실시간 공동 작업, 슬라이드·요소 잠금</li>
+    <li><b>성능</b> — 아웃라인 스트리밍(SSE), 자동 스케일 캔버스, 렌더 워커 분리</li>
+    <li><b>확장</b> — MSA·큐 기반 수평 확장, 오브젝트 스토리지 파일, 기능 플래그·A/B</li>
+    <li><b>접근성</b> — 본문 13px+, 색+텍스트 병기, 아이콘+라벨, 단축키 도움말</li>
+  </ul>
+
+  <h2 id="l"><span class="mi">inventory_2</span>L. 산출물 · 파일</h2>
+  <table>
+    <tr><th style="width:38%">파일</th><th>내용</th></tr>
+    <tr><td><b>DeckGen Prototype.dc.html</b></td><td>사용자 앱 전체 동작 프로토타입</td></tr>
+    <tr><td><b>DeckGen Admin.dc.html</b></td><td>관리자 콘솔 24페이지</td></tr>
+    <tr><td><b>DeckGen Design.dc.html</b></td><td>브랜드·디자인 시스템·컴포넌트</td></tr>
+    <tr><td><b>DeckGen Feature Spec.dc.html</b></td><td>본 통합 명세서</td></tr>
+    <tr><td><b>DeckGen Backend Spec.dc.html</b></td><td>백엔드 상세 설계</td></tr>
+    <tr><td><b>DeckGen Demo Scenario.dc.html</b></td><td>전체 플로우 데모(약 10분)</td></tr>
+    <tr><td><b>DeckGen Invite Email.html</b></td><td>초대 메일 템플릿</td></tr>
+    <tr><td><b>support.js · image-slot.js</b></td><td>런타임·이미지 슬롯</td></tr>
+  </table>
+  <p style="font-size:12px;color:#8A8A84;margin-top:20px">© DeckGen · 통합 명세서 v1.0 — 프로토타입 동작 기준</p>
+</div>
+</x-dc>
+</body>
+</html>

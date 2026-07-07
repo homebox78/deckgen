@@ -14,6 +14,8 @@ const VIZ_LABELS: Record<string, string> = {
   pie: "파이 차트",
   "kpi-cards": "KPI 카드",
   process: "프로세스",
+  image: "이미지",
+  table: "표",
 };
 
 const VIZ_BADGES: Record<string, string> = {
@@ -22,6 +24,8 @@ const VIZ_BADGES: Record<string, string> = {
   pie: "PIE 차트",
   "kpi-cards": "KPI 카드",
   process: "프로세스",
+  image: "이미지",
+  table: "표",
 };
 
 /** 디자인 시안(1e)의 시각화 미리보기 블록 — 예시 데이터로 형태만 보여준다 */
@@ -112,6 +116,36 @@ function VizPreview({ type }: { type: VizType }) {
             <div className="mb-1.5 h-[3px] w-2/5 rounded-sm bg-[#D4CBEF]" />
             <div className="text-[15px] font-extrabold">{v}</div>
             <div className="text-[9.5px] tracking-wider text-app-faint">{l}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (type === "image") {
+    return (
+      <div className="flex h-16 items-center justify-center rounded-lg border border-dashed border-app-border bg-app-bg">
+        <div className="flex flex-col items-center gap-1 text-app-faint">
+          <span className="material-symbols-outlined text-[22px]">image</span>
+          <span className="text-[10px]">이미지 영역</span>
+        </div>
+      </div>
+    );
+  }
+  if (type === "table") {
+    return (
+      <div className="overflow-hidden rounded-lg border border-app-border">
+        {[0, 1, 2].map((r) => (
+          <div key={r} className="flex border-b border-app-border last:border-b-0">
+            {[0, 1, 2].map((c) => (
+              <div
+                key={c}
+                className={`flex-1 border-r border-app-border px-2 py-1.5 text-[9.5px] last:border-r-0 ${
+                  r === 0 ? "bg-app-bg font-semibold text-app-text" : "text-app-muted"
+                }`}
+              >
+                {r === 0 ? ["항목", "값", "비고"][c] : "—"}
+              </div>
+            ))}
           </div>
         ))}
       </div>

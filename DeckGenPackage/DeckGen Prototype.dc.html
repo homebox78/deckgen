@@ -21,6 +21,8 @@ body{margin:0;background:#F7F7F5;font-family:"Basier Square","SD Gothic Neo","To
 @keyframes dgSlideR{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:translateX(0)}}
 @keyframes dgFade{from{opacity:0}to{opacity:1}}
 @keyframes dgZoom{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes tlRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tlPop{0%{opacity:0;transform:scale(.8)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
 textarea:focus,input:focus,select:focus{outline:2px solid #1A1A1A33}
 button,input,textarea,select,option{font-family:"Basier Square","SD Gothic Neo","Toss Product Sans","Noto Sans KR",Roboto,"Segoe UI",-apple-system,sans-serif}
 button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="font-weight:700"],input[style*="font-weight:800"]{font-family:"sf","SF Pro Display","SF Pro KR","Toss Product Sans","SD Gothic Neo","Noto Sans KR",-apple-system,sans-serif}
@@ -33,8 +35,32 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
   <div style="flex:1;display:flex;flex-direction:column;overflow:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
-      <div style="display:flex;align-items:center;gap:9px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg><span style="font-size:15px;font-weight:700;color:#1A1A1A">DeckGen</span><span style="font-size:11px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 7px">Prototype</span></div>
-      <div style="display:flex;align-items:center;gap:14px"><button onClick="{{ openSettings }}" style="border:none;background:transparent;font-size:13px;color:#6B6B66;cursor:pointer;padding:0" style-hover="color:#1A1A1A">설정</button><span style="width:28px;height:28px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">우</span></div>
+      <div style="display:flex;align-items:center;gap:9px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg><span style="font-size:15px;font-weight:700;color:#1A1A1A">DeckGen</span><span style="font-size:11px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 7px">Prototype</span>
+        <span style="width:1px;height:18px;background:#E4E4E0;margin:0 4px"></span>
+        <div style="position:relative">
+          <button onClick="{{ toggleWsMenu }}" style="display:flex;align-items:center;gap:8px;border:1px solid #E4E4E0;background:#fff;border-radius:9px;padding:5px 10px;cursor:pointer" style-hover="background:#FBFBFA">
+            <span style="width:20px;height:20px;flex:none;border-radius:6px;background:{{ wsColor }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">{{ wsInitial }}</span>
+            <span style="font-size:12.5px;font-weight:700;color:#1A1A1A">{{ wsName }}</span>
+            <span class="mi" style="font-size:15px;color:#8A8A84">unfold_more</span>
+          </button>
+          <sc-if value="{{ wsMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:38px;left:0;z-index:40;width:250px;background:#fff;border:1px solid #E4E4E0;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.14);padding:6px">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:#8A8A84;padding:6px 10px 4px">워크스페이스 전환</div>
+              <sc-for list="{{ wsList }}" as="ws" hint-placeholder-count="2">
+                <button onClick="{{ ws.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ ws.bg }};border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left">
+                  <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ ws.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">{{ ws.initial }}</span>
+                  <span style="flex:1;min-width:0"><span style="display:block;font-size:12.5px;font-weight:600;color:#1A1A1A">{{ ws.name }}</span><span style="display:block;font-size:11px;color:#8A8A84">{{ ws.meta }}</span></span>
+                  <sc-if value="{{ ws.active }}" hint-placeholder-val="{{ false }}"><span class="mi" style="font-size:16px;color:#1A1A1A">check</span></sc-if>
+                </button>
+              </sc-for>
+              <div style="height:1px;background:#F0F0EE;margin:5px 6px"></div>
+              <button onClick="{{ openWorkspace }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left" style-hover="background:#F7F7F5"><span class="mi" style="font-size:16px;color:#6B6B66">groups</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">팀 워크스페이스 관리</span></button>
+              <button onClick="{{ createWs }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left" style-hover="background:#F7F7F5"><span class="mi" style="font-size:16px;color:#6B6B66">add</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">새 워크스페이스</span></button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px"><button onClick="{{ openWorkspace }}" style="display:inline-flex;align-items:center;gap:5px;border:none;background:transparent;font-size:13px;color:#6B6B66;cursor:pointer;padding:0" style-hover="color:#1A1A1A"><span class="mi" style="font-size:17px">groups</span>워크스페이스</button><button onClick="{{ openSettings }}" style="border:none;background:transparent;font-size:13px;color:#6B6B66;cursor:pointer;padding:0" style-hover="color:#1A1A1A">설정</button><span style="width:28px;height:28px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">우</span></div>
     </div>
     <div style="padding:52px 24px 40px;display:flex;flex-direction:column;align-items:center">
       <div style="font-size:30px;font-weight:700;color:#1A1A1A;letter-spacing:-.02em">어떤 발표를 만들까요?</div>
@@ -69,7 +95,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                     <span class="mi" style="width:16px;flex:none;font-size:14px;color:#55554F">{{ mo.icon }}</span>
                     <span style="flex:1;font-size:12.5px;font-weight:{{ mo.weight }};color:#1A1A1A">{{ mo.name }}</span>
                     <sc-if value="{{ mo.isPlus }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 6px">Plus</span></sc-if>
-                    <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ mo.check }}</span>
+                    <span class="mi" style="font-size:15px;color:#1A1A1A">{{ mo.check }}</span>
                   </button>
                 </sc-for>
               </div>
@@ -83,7 +109,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ o.rowBg }};border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
                 <span style="width:12px;height:12px;flex:none;border-radius:3px;background:{{ o.swatch }};border:1px solid rgba(0,0,0,.1);box-sizing:border-box"></span>
                 <span style="flex:1;font-size:12.5px;font-weight:{{ o.weight }};color:#1A1A1A">{{ o.name }}</span>
-                <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ o.check }}</span>
+                <span class="mi" style="font-size:15px;color:#1A1A1A">{{ o.check }}</span>
               </button>
             </sc-for>
           </div>
@@ -99,20 +125,48 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
         <button onClick="{{ openImport }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#1A1A1A;background:#FFFFFF;border:1px solid #C9C9C4;border-radius:99px;padding:7px 14px;cursor:pointer" style-hover="border-color:#1A1A1A;color:#1A1A1A"><svg viewBox="0 0 24 24" style="width:13px;height:13px" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L7 8m5-5l5 5"></path><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>PPTX 가져오기</button>
         <button onClick="{{ autoAgent }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#1A1A1A;background:#FFFFFF;border:1px solid #C9C9C4;border-radius:99px;padding:7px 14px;cursor:pointer" style-hover="border-color:#1A1A1A;color:#1A1A1A"><span class="mi" style="font-size:14px">smart_toy</span>Auto Agent</button>
       </div>
+      <sc-if value="{{ hasSavedTpl }}" hint-placeholder-val="{{ false }}">
+        <div style="width:720px;max-width:92vw;margin-top:40px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px"><span style="font-size:16px;font-weight:600;color:#1A1A1A">내 템플릿</span><span style="font-size:12px;color:#8A8A84">저장한 덱 구성을 다시 사용하세요</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <sc-for list="{{ savedTplCards }}" as="mt" hint-placeholder-count="1">
+              <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+                <div onClick="{{ mt.pick }}" style="position:relative;aspect-ratio:16/10;background:{{ mt.bg }};border-bottom:1px solid #F0F0EE;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:5px;cursor:pointer">
+                  <span style="width:16%;height:3px;background:{{ mt.accent }}"></span>
+                  <span style="font-size:11px;font-weight:700;line-height:1.35;color:{{ mt.ink }}">{{ mt.coverTitle }}</span>
+                  <span style="position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:#1A1A1A;background:rgba(255,255,255,.85);border-radius:5px;padding:2px 6px">내 템플릿</span>
+                </div>
+                <div style="padding:9px 12px;display:flex;align-items:center;justify-content:space-between">
+                  <div style="min-width:0"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ mt.name }}</div><div style="font-size:10.5px;color:#8A8A84">{{ mt.meta }}</div></div>
+                  <button onClick="{{ mt.del }}" title="삭제" style="border:none;background:transparent;padding:2px;cursor:pointer;flex:none"><span class="mi" style="font-size:15px;color:#B4B4AE">delete</span></button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
       <div style="width:720px;max-width:92vw;margin-top:40px">
         <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px"><span style="font-size:16px;font-weight:600;color:#1A1A1A">스토리보드로 시작</span><span style="font-size:12px;color:#8A8A84">와이어프레임을 조합해 장표 흐름을 먼저 설계하세요</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <sc-for list="{{ wfCatTabs }}" as="tab" hint-placeholder-count="6">
+            <button onClick="{{ tab.pick }}" style="border:1px solid {{ tab.border }};background:{{ tab.bg }};color:{{ tab.color }};border-radius:99px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">{{ tab.label }}</button>
+          </sc-for>
+        </div>
+        <sc-for list="{{ wireLibGroups }}" as="grp" hint-placeholder-count="5">
+        <div style="display:flex;align-items:center;gap:7px;margin:14px 0 9px"><span style="font-size:12.5px;font-weight:700;color:#1A1A1A">{{ grp.cat }}</span><span style="font-size:10.5px;font-weight:600;color:#8A8A84;background:#F0F0EE;border-radius:99px;padding:1px 8px">{{ grp.count }}</span><span style="flex:1;height:1px;background:#F0F0EE"></span></div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-          <sc-for list="{{ wireLib }}" as="wf" hint-placeholder-count="4">
+          <sc-for list="{{ grp.items }}" as="wf" hint-placeholder-count="4">
             <div onClick="{{ wf.add }}" class="wf-card" style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04)" style-hover="border-color:#1A1A1A;box-shadow:0 4px 14px rgba(26,26,26,.15)">
               <div style="position:relative;aspect-ratio:16/10;background:#FBFBFA;border-bottom:1px solid #F0F0EE">
                 <sc-for list="{{ wf.blocks }}" as="bk" hint-placeholder-count="3">
                   <span class="wf-bk" style="position:absolute;left:{{ bk.l }};top:{{ bk.t }};width:{{ bk.w }};height:{{ bk.h }};border-radius:{{ bk.r }};background:{{ bk.bg }};--d:{{ bk.delay }}"></span>
                 </sc-for>
               </div>
-              <div style="padding:9px 12px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">{{ wf.name }}</div><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ wf.zoom }}" title="크게 보기" style="border:none;background:transparent;padding:0;font-size:11px;color:#8A8A84;cursor:pointer" style-hover="color:#1A1A1A"><span class="mi" style="font-size:12px;margin-right:2px;vertical-align:-2px">open_in_full</span>확대</button><span style="font-size:11px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
+              <div style="padding:9px 12px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">{{ wf.name }}</div><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ wf.toggleFav }}" title="즐겨찾기" style="border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:15px;color:{{ wf.favColor }}">{{ wf.favIcon }}</span></button><button onClick="{{ wf.zoom }}" title="크게 보기" style="border:none;background:transparent;padding:0;font-size:11px;color:#8A8A84;cursor:pointer" style-hover="color:#1A1A1A"><span class="mi" style="font-size:12px;margin-right:2px;vertical-align:-2px">open_in_full</span>확대</button><span style="font-size:11px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
             </div>
           </sc-for>
         </div>
+        </sc-for>
         <sc-if value="{{ wfZoomOpen }}" hint-placeholder-val="{{ false }}">
           <div onClick="{{ wfZoomClose }}" style="position:fixed;inset:0;background:rgba(20,20,26,.5);z-index:45;display:flex;align-items:center;justify-content:center">
             <div onClick="{{ stopClick }}" style="width:640px;max-width:92vw;background:#FFFFFF;border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.3);padding:20px;box-sizing:border-box">
@@ -176,13 +230,49 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </sc-for>
           </div>
         </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+          <span class="mi" style="font-size:15px;color:#8A8A84">folder</span>
+          <sc-for list="{{ folderChips }}" as="fc" hint-placeholder-count="3">
+            <button onClick="{{ fc.pick }}" onDragOver="{{ fc.dragOver }}" onDrop="{{ fc.drop }}" title="덱을 끌어다 놓아 이동" style="display:inline-flex;align-items:center;gap:5px;border:{{ fc.dropBorder }};background:{{ fc.bg }};color:{{ fc.color }};border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:600;cursor:pointer">{{ fc.name }}<span style="font-size:10px;color:#8A8A84">{{ fc.count }}</span></button>
+          </sc-for>
+          <button onClick="{{ addFolder }}" title="새 폴더" style="border:1px dashed #C9C9C4;background:transparent;color:#6B6B66;border-radius:8px;padding:6px 10px;font-size:11.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:3px"><span class="mi" style="font-size:13px">create_new_folder</span>새 폴더</button>
+        </div>
+        <sc-if value="{{ trashView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:12px;color:#8A8A84;flex:1">휴지통의 덱은 30일 후 영구 삭제됩니다</span><sc-if value="{{ hasTrash }}" hint-placeholder-val="{{ false }}"><button onClick="{{ emptyTrash }}" style="border:1px solid #F5C6C8;background:#FFF0F0;color:#E5484D;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:600;cursor:pointer">휴지통 비우기</button></sc-if></div>
+          <sc-if value="{{ trashEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:40px;text-align:center;font-size:13px;color:#8A8A84">휴지통이 비어 있어요</div></sc-if>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <sc-for list="{{ trashCards }}" as="tc" hint-placeholder-count="0">
+              <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;opacity:.85">
+                <div style="aspect-ratio:16/9;border-bottom:1px solid #F0F0EE;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:{{ tc.bg }}"><div style="width:10%;height:3px;background:{{ tc.accent }}"></div><div style="font-size:11px;font-weight:700;line-height:1.4;color:{{ tc.ink }}">{{ tc.cover }}</div></div>
+                <div style="padding:10px 13px;display:flex;align-items:center;gap:8px"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ tc.title }}</div><div style="font-size:11px;color:#8A8A84;margin-top:2px">삭제됨 · {{ tc.delAt }}</div></div><button onClick="{{ tc.restore }}" style="flex:none;border:1px solid #E4E4E0;background:#fff;color:#1A1A1A;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">복원</button><button onClick="{{ tc.purge }}" title="영구 삭제" style="flex:none;border:1px solid #F5C6C8;background:#FFF0F0;color:#E5484D;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">delete_forever</span></button></div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ notTrashView }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
           <sc-for list="{{ deckCards }}" as="dk" hint-placeholder-count="3">
-            <div onClick="{{ dk.open }}" style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04)" style-hover="border-color:#1A1A1A;box-shadow:0 4px 14px rgba(26,26,26,.15)">
-              <div style="aspect-ratio:16/9;border-bottom:1px solid #F0F0EE;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:{{ dk.bg }}"><div style="width:10%;height:3px;background:{{ dk.accent }}"></div><div style="font-size:11px;font-weight:700;line-height:1.4;color:{{ dk.ink }}">{{ dk.cover }}</div></div>
+            <div onClick="{{ dk.open }}" draggable="true" onDragStart="{{ dk.dragStart }}" onDragEnd="{{ dk.dragEnd }}" onContextMenu="{{ dk.ctx }}" style="position:relative;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.04);opacity:{{ dk.dragOpacity }}" style-hover="border-color:#1A1A1A;box-shadow:0 4px 14px rgba(26,26,26,.15)">
+              <sc-if value="{{ dk.ctxOpen }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ stopClick }}" style="position:absolute;top:{{ dk.ctxY }};left:{{ dk.ctxX }};min-width:172px;background:#fff;border:1px solid #E4E4E0;border-radius:11px;box-shadow:0 14px 40px rgba(0,0,0,.2);padding:5px;z-index:40">
+                  <sc-for list="{{ dk.ctxItems }}" as="ci" hint-placeholder-count="4">
+                    <sc-if value="{{ ci.divider }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:#F0F0EE;margin:4px 6px"></div></sc-if>
+                    <sc-if value="{{ ci.isItem }}" hint-placeholder-val="{{ true }}"><button onClick="{{ ci.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE"><span class="mi" style="font-size:15px;color:{{ ci.color }}">{{ ci.icon }}</span><span style="flex:1;font-size:12.5px;font-weight:500;color:{{ ci.color }}">{{ ci.name }}</span></button></sc-if>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="position:relative;aspect-ratio:16/9;border-bottom:1px solid #F0F0EE;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:{{ dk.bg }}"><div style="width:10%;height:3px;background:{{ dk.accent }}"></div><div style="font-size:11px;font-weight:700;line-height:1.4;color:{{ dk.ink }}">{{ dk.cover }}</div><button onClick="{{ dk.toggleFav }}" title="즐겨찾기" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border:none;border-radius:50%;background:rgba(255,255,255,.85);color:{{ dk.favColor }};cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.12)"><span class="mi" style="font-size:15px">{{ dk.favIcon }}</span></button></div>
               <div style="padding:10px 13px;display:flex;align-items:center;gap:8px">
                 <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ dk.title }}</div><div style="font-size:11.5px;color:#8A8A84;margin-top:2px">{{ dk.meta }}</div></div>
                 <sc-if value="{{ dk.generating }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:3px 8px"><span style="width:5px;height:5px;border-radius:50%;background:#1A1A1A;animation:dgPulse 1.2s infinite"></span>생성 중</span></sc-if>
+                <div style="position:relative;flex:none">
+                  <button onClick="{{ dk.folderToggle }}" title="폴더로 이동" style="border:1px solid #E4E4E0;background:#fff;color:#6B6B66;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center"><span class="mi" style="font-size:14px">drive_file_move</span></button>
+                  <sc-if value="{{ dk.folderMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;bottom:calc(100% + 5px);right:0;min-width:130px;background:#fff;border:1px solid #E4E4E0;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:5px;z-index:30">
+                      <sc-for list="{{ dk.folderOpts }}" as="fo" hint-placeholder-count="2"><button onClick="{{ fo.pick }}" style="display:flex;align-items:center;gap:7px;width:100%;border:none;background:{{ fo.bg }};border-radius:7px;padding:7px 9px;cursor:pointer;text-align:left;font-size:11.5px;font-weight:500;color:#1A1A1A"><span class="mi" style="font-size:13px;color:#8A8A84">folder</span>{{ fo.name }}</button></sc-for>
+                    </div>
+                  </sc-if>
+                </div>
                 <button onClick="{{ dk.del }}" title="덱 삭제" style="flex:none;border:1px solid #F5C6C8;background:#FFF0F0;color:#E5484D;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer">삭제</button>
               </div>
             </div>
@@ -204,6 +294,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           <div style="font-size:12.5px;color:#8A8A84;text-align:center;line-height:1.6">위 입력창에 주제를 적으면 AI가 아웃라인부터 만들어 드립니다.</div>
           <button onClick="{{ restoreSample }}" style="margin-top:6px;background:#FFFFFF;color:#6B6B66;border:1px solid #E4E4E0;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:500;cursor:pointer">예시 덱 복원 (프로토타입)</button>
         </div>
+        </sc-if>
         </sc-if>
       </div>
     </div>
@@ -284,6 +375,78 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
   </div>
 </sc-if>
 
+<!-- ================= WORKSPACE ================= -->
+<sc-if value="{{ isWorkspace }}" hint-placeholder-val="{{ false }}">
+  <div style="flex:1;display:flex;flex-direction:column;overflow:auto;background:#F7F7F5">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 24px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+      <button onClick="{{ goHome }}" style="width:28px;height:28px;border-radius:8px;border:1px solid #E4E4E0;background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><span class="mi" style="font-size:16px;color:#6B6B66">arrow_back</span></button>
+      <span style="width:26px;height:26px;flex:none;border-radius:7px;background:{{ wsColor }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">{{ wsInitial }}</span>
+      <div><div style="font-size:15px;font-weight:700;color:#1A1A1A">{{ wsName }}</div><div style="font-size:11.5px;color:#8A8A84">{{ wsPlanLabel }} · 멤버 {{ wsMemberCount }}명</div></div>
+      <span style="flex:1"></span>
+      <button onClick="{{ openUpgrade }}" style="border:1px solid #E4E4E0;background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;color:#1A1A1A;cursor:pointer">플랜 관리</button>
+    </div>
+    <div style="max-width:960px;width:100%;margin:0 auto;padding:26px 24px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:22px">
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <sc-for list="{{ wsStats }}" as="ws" hint-placeholder-count="4">
+          <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:14px 16px"><div style="font-size:11px;color:#8A8A84">{{ ws.name }}</div><div style="font-size:22px;font-weight:800;color:#1A1A1A;margin-top:3px">{{ ws.value }}</div><div style="font-size:10.5px;color:#6B6B66;margin-top:1px">{{ ws.sub }}</div></div>
+        </sc-for>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid #F0F0EE">
+          <span style="font-size:14px;font-weight:700;color:#1A1A1A">멤버</span>
+          <span style="font-size:11.5px;color:#8A8A84">{{ wsMemberCount }}명 · 역할별 권한</span>
+          <span style="flex:1"></span>
+          <div style="display:flex;align-items:center;gap:6px;border:1px solid #E4E4E0;border-radius:9px;padding:4px 4px 4px 12px">
+            <input value="{{ wsInvite }}" onChange="{{ onWsInvite }}" placeholder="이메일로 멤버 초대" style="border:none;background:transparent;font-family:inherit;font-size:12.5px;color:#1A1A1A;width:200px;outline:none"></input>
+            <select value="{{ wsInviteRole }}" onChange="{{ onWsInviteRole }}" style="border:1px solid #E4E4E0;border-radius:7px;padding:5px 6px;font-family:inherit;font-size:12px;color:#1A1A1A;background:#fff"><option value="editor">편집자</option><option value="viewer">뷰어</option><option value="admin">관리자</option></select>
+            <button onClick="{{ wsInviteSend }}" style="border:none;background:#1A1A1A;color:#fff;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer">초대</button>
+          </div>
+        </div>
+        <sc-for list="{{ wsMembers }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #F7F7F5">
+            <span style="width:32px;height:32px;flex:none;border-radius:50%;background:{{ m.avColor }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ m.initial }}</span>
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#1A1A1A">{{ m.name }} <sc-if value="{{ m.isYou }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;color:#8A8A84;font-weight:500">(나)</span></sc-if></div><div style="font-size:11.5px;color:#8A8A84">{{ m.email }}</div></div>
+            <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:600;color:#8A6B1F;background:#FFF7E6;border:1px solid #F0E0B8;border-radius:99px;padding:3px 9px">초대 대기</span></sc-if>
+            <sc-if value="{{ m.isOwner }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:600;color:#6B6B66">소유자</span></sc-if>
+            <sc-if value="{{ m.canEditRole }}" hint-placeholder-val="{{ true }}">
+              <select value="{{ m.role }}" onChange="{{ m.onRole }}" style="border:1px solid #E4E4E0;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12px;font-weight:600;color:#1A1A1A;background:#fff"><option value="admin">관리자</option><option value="editor">편집자</option><option value="viewer">뷰어</option></select>
+              <button onClick="{{ m.remove }}" title="멤버 제거" style="border:1px solid #E4E4E0;background:#fff;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer"><span class="mi" style="font-size:15px;color:#E5484D">close</span></button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;overflow:hidden">
+          <div style="padding:15px 18px;border-bottom:1px solid #F0F0EE;font-size:14px;font-weight:700;color:#1A1A1A">공유 덱 <span style="font-weight:500;color:#8A8A84;font-size:11.5px">워크스페이스 전체 접근</span></div>
+          <sc-for list="{{ wsDecks }}" as="d" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #F7F7F5">
+              <span style="width:44px;height:26px;flex:none;border-radius:5px;background:{{ d.bg }};border:1px solid #F0F0EE;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:4px 5px;box-sizing:border-box"><span style="width:40%;height:2px;background:{{ d.accent }}"></span><span style="width:70%;height:2px;background:rgba(128,128,128,.3);border-radius:1px"></span></span>
+              <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">{{ d.title }}</div><div style="font-size:11px;color:#8A8A84">{{ d.meta }}</div></div>
+              <div style="display:flex;align-items:center">
+                <sc-for list="{{ d.avatars }}" as="av" hint-placeholder-count="2"><span style="width:22px;height:22px;border-radius:50%;background:{{ av.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;margin-left:-6px;border:1.5px solid #fff">{{ av.initial }}</span></sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;padding:18px">
+          <div style="font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:12px">플랜 · 사용량</div>
+          <div style="font-size:12px;color:#6B6B66;margin-bottom:5px">이번 달 AI 생성 크레딧</div>
+          <div style="height:10px;border-radius:5px;background:#F0F0EE;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:{{ wsCreditPct }};background:#1A1A1A;border-radius:5px"></div></div>
+          <div style="font-size:11.5px;color:#8A8A84;margin-bottom:16px">{{ wsCreditUsed }} / {{ wsCreditTotal }} 크레딧 사용</div>
+          <div style="font-size:12px;color:#6B6B66;margin-bottom:5px">멤버 시트</div>
+          <div style="height:10px;border-radius:5px;background:#F0F0EE;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:{{ wsSeatPct }};background:#1A1A1A;border-radius:5px"></div></div>
+          <div style="font-size:11.5px;color:#8A8A84;margin-bottom:16px">{{ wsMemberCount }} / {{ wsSeatTotal }} 시트</div>
+          <button onClick="{{ openUpgrade }}" style="width:100%;border:none;background:#1A1A1A;color:#fff;border-radius:10px;padding:11px;font-size:12.5px;font-weight:600;cursor:pointer">시트·크레딧 늘리기</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</sc-if>
+
 <!-- ================= OUTLINE ================= -->
 <sc-if value="{{ isOutline }}" hint-placeholder-val="{{ false }}">
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
@@ -324,7 +487,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                       <sc-for list="{{ c.vizOptions }}" as="o">
                         <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ o.rowBg }};border-radius:8px;padding:8px 11px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
                           <span style="flex:1;font-size:12px;font-weight:{{ o.weight }};color:#1A1A1A">{{ o.name }}</span>
-                          <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ o.check }}</span>
+                          <span class="mi" style="font-size:15px;color:#1A1A1A">{{ o.check }}</span>
                         </button>
                       </sc-for>
                     </div>
@@ -428,20 +591,45 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
       <sc-if value="{{ generating }}" hint-placeholder-val="{{ false }}">
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#1A1A1A;animation:dgPulse 1.2s infinite"></span>생성 중 {{ doneCount }}/{{ count }}</span>
       </sc-if>
-      <span style="font-size:11px;color:#8A8A84;flex:none;white-space:nowrap">✓ 자동 저장됨</span>
+      <span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#8A8A84;flex:none;white-space:nowrap"><span class="mi" style="font-size:13px">cloud_done</span>자동 저장됨</span>
       <span style="flex:1"></span>
       <div style="position:relative">
       </div>
       <button onClick="{{ toggleGrid }}" style="display:inline-flex;align-items:center;gap:4px;background:{{ gridBtnBg }};color:{{ gridBtnColor }};border:1px solid {{ gridBtnBorder }};border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">grid_view</span>개요</button>
+      <button onClick="{{ toggleTimeline }}" style="display:inline-flex;align-items:center;gap:4px;background:{{ tlBtnBg }};color:{{ tlBtnColor }};border:1px solid {{ tlBtnBorder }};border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">movie</span>모션</button>
       <button onClick="{{ openHistory }}" style="display:inline-flex;align-items:center;gap:4px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">history</span>버전</button>
       <button onClick="{{ startPresent }}" style="display:inline-flex;align-items:center;gap:4px;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">play_arrow</span>발표</button>
       <button onClick="{{ openShare }}" style="display:inline-flex;align-items:center;gap:4px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">share</span>공유</button>
       <div style="display:flex;align-items:center">
         <span title="우진 (나)" style="width:26px;height:26px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:2px solid #fff;z-index:3;position:relative">우</span>
         <sc-for list="{{ collabAvatars }}" as="ca" hint-placeholder-count="2">
-          <span title="{{ ca.tooltip }}" style="width:26px;height:26px;border-radius:50%;background:{{ ca.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:2px solid #fff;margin-left:-8px">{{ ca.initial }}</span>
+          <button onClick="{{ ca.follow }}" title="{{ ca.tooltip }}" style="width:26px;height:26px;border-radius:50%;background:{{ ca.color }};color:#fff;border:{{ ca.ring }};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-left:-8px;cursor:pointer;padding:0">{{ ca.initial }}</button>
         </sc-for>
-        <span style="font-size:11px;color:#1A1A1A;margin-left:6px;white-space:nowrap">● {{ collabCount }}명 접속</span>
+        <sc-if value="{{ following }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ stopFollow }}" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;border:1px solid #1A1A1A;background:#1A1A1A;color:#fff;border-radius:99px;padding:4px 10px;font-size:10.5px;font-weight:600;cursor:pointer;white-space:nowrap"><span class="mi" style="font-size:12px">visibility</span>{{ followName }} 팔로우 중 ✕</button>
+        </sc-if>
+        <sc-if value="{{ notFollowing }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:11px;color:#1A1A1A;margin-left:6px;white-space:nowrap">● {{ collabCount }}명 접속</span>
+        </sc-if>
+      </div>
+      <div style="position:relative">
+        <button onClick="{{ openShortcuts }}" title="키보드 단축키 (?)" style="width:32px;height:32px;border:1px solid #E4E4E0;background:#fff;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A;cursor:pointer;margin-right:6px"><span class="mi" style="font-size:17px">keyboard</span></button>
+        <button onClick="{{ toggleNotif }}" title="알림" style="position:relative;width:32px;height:32px;border:1px solid #E4E4E0;background:#fff;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A;cursor:pointer"><span class="mi" style="font-size:17px">notifications</span><sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;border-radius:99px;background:#E5484D;color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 3px;box-sizing:border-box;border:1.5px solid #fff">{{ unreadCount }}</span></sc-if></button>
+        <sc-if value="{{ notifOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:calc(100% + 8px);right:0;width:320px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;box-shadow:0 14px 40px rgba(0,0,0,.18);z-index:60;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #F0F0EE"><span style="font-size:13px;font-weight:700;color:#1A1A1A;flex:1">알림</span><button onClick="{{ markAllRead }}" style="border:none;background:transparent;color:#6B6B66;font-size:11px;font-weight:600;cursor:pointer;padding:0" style-hover="color:#1A1A1A">모두 읽음</button></div>
+            <div style="max-height:340px;overflow:auto">
+              <sc-if value="{{ noNotif }}" hint-placeholder-val="{{ false }}"><div style="padding:28px 16px;text-align:center;font-size:12px;color:#8A8A84">새 알림이 없어요</div></sc-if>
+              <sc-for list="{{ notifList }}" as="nt" hint-placeholder-count="3">
+                <button onClick="{{ nt.open }}" style="display:flex;gap:9px;width:100%;border:none;border-bottom:1px solid #F7F7F5;background:{{ nt.bg }};padding:11px 14px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
+                  <span style="width:28px;height:28px;flex:none;border-radius:50%;background:{{ nt.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{{ nt.initial }}</span>
+                  <div style="flex:1;min-width:0"><div style="font-size:12px;color:#1A1A1A;line-height:1.5">{{ nt.text }}</div><div style="font-size:10.5px;color:#8A8A84;margin-top:2px">{{ nt.time }} · 슬라이드 {{ nt.slide }}</div></div>
+                  <sc-if value="{{ nt.unread }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;flex:none;border-radius:50%;background:#E5484D;margin-top:5px"></span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
       </div>
       <div style="position:relative">
         <button onClick="{{ ddToggleTheme }}" style="display:flex;align-items:center;gap:6px;border:1px solid {{ ddThemeBorder }};border-radius:8px;padding:7px 10px;background:#fff;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px;color:#55554F">palette</span><span style="width:10px;height:10px;flex:none;border-radius:3px;background:{{ tAccent }}"></span><span style="font-size:12px;font-weight:500;color:#1A1A1A">{{ themeName }}</span><span class="mi" style="font-size:13px;color:#8A8A84">keyboard_arrow_down</span></button>
@@ -451,7 +639,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ o.rowBg }};border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
                 <span style="width:12px;height:12px;flex:none;border-radius:3px;background:{{ o.swatch }};border:1px solid rgba(0,0,0,.1);box-sizing:border-box"></span>
                 <span style="flex:1;font-size:12.5px;font-weight:{{ o.weight }};color:#1A1A1A">{{ o.name }}</span>
-                <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ o.check }}</span>
+                <span class="mi" style="font-size:15px;color:#1A1A1A">{{ o.check }}</span>
               </button>
             </sc-for>
           </div>
@@ -472,6 +660,8 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </sc-for>
           </div>
           <button onClick="{{ doExport }}" style="width:100%;margin-top:12px;background:#1A1A1A;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px;margin-right:4px">download</span>{{ exportLabel }} 다운로드</button>
+          <div style="height:1px;background:#F0F0EE;margin:12px 0"></div>
+          <button onClick="{{ openTplSave }}" style="width:100%;background:#fff;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:10px;padding:10px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#FBFBFA"><span class="mi" style="font-size:15px;margin-right:4px;vertical-align:-3px">bookmark_add</span>이 덱을 템플릿으로 저장</button>
         </div>
       </sc-if>
     </div>
@@ -482,7 +672,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           <span style="font-size:15px;font-weight:700;color:#1A1A1A">슬라이드 개요</span>
           <span style="font-size:12px;color:#8A8A84">{{ count }}장 · 드래그로 순서 변경 · 클릭해서 편집으로 이동</span>
           <span style="flex:1"></span>
-          <button onClick="{{ toggleGrid }}" style="border:1px solid #E4E4E0;background:#FFFFFF;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;color:#1A1A1A;cursor:pointer">✕ 닫기</button>
+          <button onClick="{{ toggleGrid }}" style="display:inline-flex;align-items:center;gap:4px;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;color:#1A1A1A;cursor:pointer"><span class="mi" style="font-size:14px">close</span>닫기</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;padding:18px 28px 40px">
           <sc-for list="{{ thumbs }}" as="t">
@@ -496,8 +686,35 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             <div draggable="{{ true }}" onDragStart="{{ t.dragStart }}" onDragOver="{{ t.dragOver }}" onDrop="{{ t.drop }}" onDragEnd="{{ t.dragEnd }}" onClick="{{ t.gridSelect }}" style="cursor:grab;opacity:{{ t.dragOpacity }};border-top:{{ t.dropLine }};padding-top:4px">
               <div style="position:relative;aspect-ratio:16/9;border:{{ t.frame }};border-radius:10px;background:{{ t.thumbBg }};padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px;box-sizing:border-box;box-shadow:0 1px 5px rgba(0,0,0,.06)" style-hover="box-shadow:0 6px 18px rgba(26,26,26,.18)">
                 <sc-if value="{{ t.done }}" hint-placeholder-val="{{ true }}">
-                  <div style="width:14%;height:3px;background:{{ tAccent }}"></div>
-                  <div style="font-size:12px;font-weight:700;line-height:1.45;color:{{ tInk }}">{{ t.title }}</div>
+                  <sc-if value="{{ t.miniCover }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:16%;height:4px;background:{{ tAccent }};margin-bottom:4px"></div>
+                    <div style="font-size:13px;font-weight:800;line-height:1.35;color:{{ tInk }}">{{ t.title }}</div>
+                  </sc-if>
+                  <sc-if value="{{ t.miniBullets }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10.5px;font-weight:700;line-height:1.35;color:{{ tInk }};margin-bottom:5px">{{ t.title }}</div>
+                    <div style="display:flex;gap:9px">
+                      <sc-if value="{{ t.miniChart }}" hint-placeholder-val="{{ false }}">
+                        <div style="flex:none;width:38%;display:flex;flex-direction:column;gap:3px;justify-content:center">
+                          <div style="height:5px;width:85%;background:{{ tAccent }};border-radius:1px"></div>
+                          <div style="height:5px;width:60%;background:{{ tBar2 }};border-radius:1px"></div>
+                          <div style="height:5px;width:42%;background:{{ tBar3 }};border-radius:1px"></div>
+                        </div>
+                      </sc-if>
+                      <div style="flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center">
+                        <div style="height:3px;width:92%;background:rgba(128,128,128,.28);border-radius:2px"></div>
+                        <div style="height:3px;width:80%;background:rgba(128,128,128,.2);border-radius:2px"></div>
+                        <div style="height:3px;width:86%;background:rgba(128,128,128,.2);border-radius:2px"></div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ t.miniKpi }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10.5px;font-weight:700;color:{{ tInk }};margin-bottom:5px">{{ t.title }}</div>
+                    <div style="display:flex;gap:5px"><div style="flex:1;border:1px solid rgba(128,128,128,.2);border-radius:4px;padding:6px 4px;text-align:center;font-size:12px;font-weight:800;color:{{ tAccent }}">30%</div><div style="flex:1;border:1px solid rgba(128,128,128,.2);border-radius:4px;padding:6px 4px;text-align:center;font-size:12px;font-weight:800;color:{{ tInk }}">2x</div><div style="flex:1;border:1px solid rgba(128,128,128,.2);border-radius:4px;padding:6px 4px;text-align:center;font-size:12px;font-weight:800;color:{{ tInk }}">95%</div></div>
+                  </sc-if>
+                  <sc-if value="{{ t.miniTable }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10.5px;font-weight:700;color:{{ tInk }};margin-bottom:5px">{{ t.title }}</div>
+                    <div style="border:1px solid rgba(128,128,128,.2);border-radius:4px;overflow:hidden"><div style="height:8px;background:{{ tAccent }}"></div><div style="height:6px;border-top:1px solid rgba(128,128,128,.18)"></div><div style="height:6px;border-top:1px solid rgba(128,128,128,.18)"></div></div>
+                  </sc-if>
                 </sc-if>
                 <sc-if value="{{ t.gen }}" hint-placeholder-val="{{ false }}">
                   <div style="width:55%;height:7px;border-radius:4px;background:#EFEFEC;animation:dgPulse 1.4s infinite"></div>
@@ -564,11 +781,12 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           <div onClick="{{ t.select }}" draggable="{{ true }}" onDragStart="{{ t.dragStart }}" onDragOver="{{ t.dragOver }}" onDrop="{{ t.drop }}" onDragEnd="{{ t.dragEnd }}" style="display:flex;gap:7px;align-items:flex-start;cursor:grab;border-top:{{ t.dropLine }};padding-top:3px;opacity:{{ t.dragOpacity }}">
             <span style="font-size:11px;font-weight:700;color:{{ t.numColor }};width:13px;text-align:right;padding-top:2px">{{ t.num }}</span>
             <div style="flex:1;position:relative">
-              <div style="aspect-ratio:16/9;border:{{ t.frame }};border-radius:7px;background:{{ t.thumbBg }};padding:8px 9px;display:flex;flex-direction:column;justify-content:center;gap:3px;box-sizing:border-box">
+              <div style="aspect-ratio:16/9;border:{{ t.frame }};border-radius:7px;background:{{ t.thumbBg }};padding:8px 9px;display:flex;flex-direction:column;justify-content:center;gap:3px;box-sizing:border-box;opacity:{{ t.lockDim }}">
                 <sc-if value="{{ t.done }}" hint-placeholder-val="{{ true }}">
                   <div style="width:14%;height:2px;background:{{ tAccent }}"></div>
                   <div style="font-size:6.5px;font-weight:700;line-height:1.4;color:{{ tInk }}">{{ t.title }}</div>
                 </sc-if>
+                <sc-if value="{{ t.locked }}" hint-placeholder-val="{{ false }}"><span class="mi" title="잠긴 슬라이드" style="position:absolute;top:5px;left:5px;font-size:12px;color:#fff;background:rgba(26,26,26,.7);border-radius:50%;padding:2px">lock</span></sc-if>
                 <sc-if value="{{ t.gen }}" hint-placeholder-val="{{ false }}">
                   <div style="width:55%;height:4px;border-radius:2px;background:#EFEFEC;animation:dgPulse 1.4s infinite"></div>
                   <div style="width:80%;height:3px;border-radius:2px;background:#F3F3F0;animation:dgPulse 1.4s .2s infinite"></div>
@@ -577,7 +795,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <sc-if value="{{ t.gen }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:5px;right:5px;display:inline-flex;align-items:center;gap:4px;font-size:8.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:2px 6px"><span style="width:4px;height:4px;border-radius:50%;background:#1A1A1A;animation:dgPulse 1.2s infinite"></span>Generating</span></sc-if>
               <sc-if value="{{ t.queued }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:5px;right:5px;font-size:8.5px;font-weight:700;color:#8A8A84;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:99px;padding:2px 6px">Queued</span></sc-if>
               <sc-if value="{{ t.error }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:5px;right:5px;font-size:8.5px;font-weight:700;color:#E5484D;background:#FFF0F0;border:1px solid #F5C6C8;border-radius:99px;padding:2px 6px">오류</span></sc-if>
-              <div style="display:flex;align-items:center;gap:5px;margin-top:4px"><span style="font-size:10px;color:#8A8A84">{{ t.num }} · {{ t.layoutName }}</span><sc-if value="{{ t.hasNote }}" hint-placeholder-val="{{ false }}"><span class="mi" title="발표자 노트 있음" style="font-size:11px;color:#8A8A84">sticky_note_2</span></sc-if><sc-for list="{{ t.presence }}" as="pd"><span title="{{ pd.name }} 보는 중" style="width:7px;height:7px;border-radius:50%;background:{{ pd.color }};flex:none"></span></sc-for></div>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:4px"><span style="font-size:10px;color:#8A8A84">{{ t.num }} · {{ t.layoutName }}</span><sc-if value="{{ t.locked }}" hint-placeholder-val="{{ false }}"><span class="mi" title="잠김" style="font-size:11px;color:#8A8A84">lock</span></sc-if><sc-if value="{{ t.hasNote }}" hint-placeholder-val="{{ false }}"><span class="mi" title="발표자 노트 있음" style="font-size:11px;color:#8A8A84">sticky_note_2</span></sc-if><sc-for list="{{ t.presence }}" as="pd"><span title="{{ pd.name }} 보는 중" style="width:7px;height:7px;border-radius:50%;background:{{ pd.color }};flex:none"></span></sc-for></div>
               <sc-if value="{{ t.isCur }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;gap:5px;margin-top:5px">
                   <button onClick="{{ t.dup }}" style="flex:1;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:6px;padding:4px 0;font-size:10.5px;font-weight:600;color:#6B6B66;cursor:pointer">복제</button>
@@ -616,9 +834,9 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             <div style="position:absolute;top:{{ snapHCss }};left:0;right:0;height:0;border-top:1px dashed #1A1A1A;opacity:.55;z-index:8;pointer-events:none"></div>
           </sc-if>
           <sc-for list="{{ collabCursors }}" as="cc" hint-placeholder-count="0">
-            <div style="position:absolute;left:{{ cc.left }};top:{{ cc.top }};z-index:9;pointer-events:none;transition:left 2.2s cubic-bezier(.4,.1,.3,1),top 2.2s cubic-bezier(.4,.1,.3,1)">
+            <div style="position:absolute;left:{{ cc.left }};top:{{ cc.top }};z-index:9;pointer-events:none;transition:left .9s linear,top .9s linear">
               <svg viewBox="0 0 24 24" style="width:17px;height:17px;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))"><path d="M4 2l16 7.6-7.1 1.9L9 20z" fill="{{ cc.color }}" stroke="#fff" stroke-width="1.4"></path></svg>
-              <span style="display:inline-block;margin:2px 0 0 10px;background:{{ cc.color }};color:#fff;font-size:10px;font-weight:700;border-radius:99px 99px 99px 3px;padding:3px 8px;white-space:nowrap">{{ cc.label }}</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;margin:2px 0 0 10px;background:{{ cc.color }};color:#fff;font-size:10px;font-weight:700;border-radius:99px 99px 99px 3px;padding:3px 9px 3px 4px;white-space:nowrap"><span style="width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.28);display:inline-flex;align-items:center;justify-content:center;font-size:8.5px">{{ cc.initial }}</span>{{ cc.name }}<sc-if value="{{ cc.editing }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;gap:2px;margin-left:1px"><span style="width:3px;height:3px;border-radius:50%;background:#fff;animation:dgPulse 1s infinite"></span><span style="width:3px;height:3px;border-radius:50%;background:#fff;animation:dgPulse 1s .2s infinite"></span><span style="width:3px;height:3px;border-radius:50%;background:#fff;animation:dgPulse 1s .4s infinite"></span></span></sc-if></span>
             </div>
           </sc-for>
           <sc-for list="{{ insertedEls }}" as="ie" hint-placeholder-count="0">
@@ -701,7 +919,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <div style="font-size:16px;font-weight:700;color:{{ tInk }}">슬라이드 생성에 실패했어요</div>
               <div style="font-size:12.5px;color:{{ tSub }};line-height:1.6">차트 데이터 파싱 중 오류가 발생했습니다.<br>다시 시도하면 대부분 해결됩니다. 콘텐츠는 보존됩니다.</div>
               <div style="display:flex;gap:8px;margin-top:6px">
-                <button onClick="{{ retrySlide }}" style="background:#1A1A1A;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer">↻ 다시 생성</button>
+                <button onClick="{{ retrySlide }}" style="display:inline-flex;align-items:center;gap:5px;background:#1A1A1A;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:15px">refresh</span>다시 생성</button>
                 <button onClick="{{ skipErrorSlide }}" style="background:transparent;color:{{ tSub }};border:1px solid rgba(128,128,128,.35);border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer">이 슬라이드 건너뛰기</button>
               </div>
             </div>
@@ -717,15 +935,15 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           <sc-if value="{{ slideCover }}" hint-placeholder-val="{{ false }}">
             <div style="height:100%;display:flex;flex-direction:column;justify-content:center">
               <div style="width:36px;height:4px;background:{{ tAccent }};margin-bottom:18px"></div>
-              <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};line-height:1.3;letter-spacing:-.02em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ coverTitle1 }}<br>{{ coverTitle2 }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};line-height:1.3;letter-spacing:-.02em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+              <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};line-height:1.3;letter-spacing:-.02em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ coverTitle1 }}<br>{{ coverTitle2 }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};line-height:1.3;letter-spacing:-.02em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
               <div style="font-size:13px;margin-top:14px;color:{{ tSub }}">중소벤처기업부 산하 지원기관 · 2026. 07</div>
             </div>
           </sc-if>
           <sc-if value="{{ slideChart }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 18px"></div>
             <div style="display:flex;gap:26px">
-              <div onMouseDown="{{ dragBody }}" style="width:{{ chartWPct }};transform:{{ posBody }};cursor:grab">
+              <div onMouseDown="{{ dragBody }}" style="width:{{ chartWPct }};transform:{{ posBody }};cursor:grab;animation:{{ tlBody }}">
                 <div onClick="{{ selectChart }}" style="border:{{ chartFrame }};border-width:{{ chartStrokeCss }};border-radius:{{ chartRadiusCss }};background:{{ chartCardBg }};opacity:{{ chartOpacity }};box-shadow:{{ chartShadowCss }};padding:14px 16px;cursor:pointer">
                   <div style="font-size:12px;font-weight:700;margin-bottom:11px;color:{{ tInk }}">{{ chartCaption }}</div>
                   <sc-if value="{{ isLine }}" hint-placeholder-val="{{ false }}">
@@ -758,7 +976,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                   </sc-if>
                 </div>
               </div>
-              <div onMouseDown="{{ dragAux }}" style="flex:1;display:flex;flex-direction:column;gap:13px;padding-top:2px;transform:{{ posAux }};cursor:grab">
+              <div onMouseDown="{{ dragAux }}" style="flex:1;display:flex;flex-direction:column;gap:13px;padding-top:2px;transform:{{ posAux }};cursor:grab;animation:{{ tlAux }}">
                 <sc-for list="{{ diagBullets }}" as="b" hint-placeholder-count="4">
                   <div onClick="{{ b.pick }}" title="클릭해서 이 항목 편집" style="display:flex;gap:9px;cursor:pointer;border-radius:6px;outline:{{ b.ring }};outline-offset:4px"><span style="flex:none;width:17px;height:17px;border-radius:4px;background:{{ tAccent }};color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">{{ b.n }}</span><div><div style="font-size:13px;font-weight:700;color:{{ tInk }}">{{ b.h }}</div><div style="font-size:10.5px;margin-top:1px;color:{{ tSub }}">{{ b.d }}</div></div></div>
                 </sc-for>
@@ -766,27 +984,27 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </div>
           </sc-if>
           <sc-if value="{{ slideBullets }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 20px"></div>
-            <div onMouseDown="{{ dragBody }}" style="display:flex;flex-direction:column;gap:14px;transform:{{ posBody }};cursor:grab">
+            <div onMouseDown="{{ dragBody }}" style="display:flex;flex-direction:column;gap:14px;transform:{{ posBody }};cursor:grab;animation:{{ tlBody }}">
               <sc-for list="{{ solBullets }}" as="s" hint-placeholder-count="3">
                 <div onClick="{{ s.pick }}" title="클릭해서 이 항목 편집" style="display:flex;gap:12px;border:{{ s.frame }};border-radius:10px;padding:14px 16px;background:{{ tSurface }};cursor:pointer"><span style="flex:none;width:20px;height:20px;border-radius:5px;background:{{ tAccent }};color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">{{ s.n }}</span><div><div style="font-size:14px;font-weight:700;color:{{ tInk }}">{{ s.h }}</div><div style="font-size:11.5px;margin-top:2px;color:{{ tSub }}">{{ s.d }}</div></div></div>
               </sc-for>
             </div>
           </sc-if>
           <sc-if value="{{ slideKpi }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 26px"></div>
-            <div onMouseDown="{{ dragBody }}" style="display:flex;gap:16px;transform:{{ posBody }};cursor:grab">
+            <div onMouseDown="{{ dragBody }}" style="display:flex;gap:16px;transform:{{ posBody }};cursor:grab;animation:{{ tlBody }}">
               <sc-for list="{{ kpiCards }}" as="k" hint-placeholder-count="3">
                 <div onClick="{{ k.pick }}" title="클릭해서 이 카드 편집" style="flex:1;border:{{ k.frame }};border-radius:10px;padding:20px;text-align:center;background:{{ tSurface }};cursor:pointer"><div style="font-size:32px;font-weight:800;letter-spacing:-.02em;color:{{ k.vColor }}">{{ k.v }}</div><div style="font-size:11.5px;font-weight:600;margin-top:5px;color:{{ tSub }}">{{ k.l }}</div></div>
               </sc-for>
             </div>
           </sc-if>
           <sc-if value="{{ slidePlain }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 22px"></div>
-            <div onMouseDown="{{ dragBody }}" style="display:flex;flex-direction:column;gap:13px;transform:{{ posBody }};cursor:grab">
+            <div onMouseDown="{{ dragBody }}" style="display:flex;flex-direction:column;gap:13px;transform:{{ posBody }};cursor:grab;animation:{{ tlBody }}">
               <sc-for list="{{ plainBullets }}" as="p" hint-placeholder-count="2">
                 <div style="display:flex;gap:11px;align-items:baseline"><span style="width:7px;height:7px;border-radius:50%;background:{{ tAccent }};flex:none"></span><span style="font-size:15px;line-height:1.6;color:{{ tInk }}">{{ p.t }}</span></div>
               </sc-for>
@@ -794,7 +1012,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             <div style="position:absolute;bottom:20px;left:42px;font-size:11px;color:{{ tSub }}">속성 패널에서 제목을, 아웃라인 화면에서 본문을 수정할 수 있어요</div>
           </sc-if>
           <sc-if value="{{ slideTable }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 20px"></div>
             <div onMouseDown="{{ dragBody }}" style="border:1px solid rgba(128,128,128,.25);border-radius:10px;overflow:hidden;transform:{{ posBody }};cursor:grab;background:{{ tSurface }}">
               <div style="display:flex;background:{{ tAccent }}">
@@ -828,7 +1046,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </div>
           </sc-if>
           <sc-if value="{{ slideImage }}" hint-placeholder-val="{{ false }}">
-            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+            <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.01em;color:{{ titleColor }};text-align:{{ titleAlignCss }};background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
             <div style="width:100%;height:2px;background:{{ tAccent }};margin:10px 0 18px"></div>
             <div style="display:flex;gap:20px;align-items:stretch">
               <div style="width:55%;display:flex;flex-direction:column;gap:8px">
@@ -858,7 +1076,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                   </div>
                 </sc-if>
               </div>
-              <div onMouseDown="{{ dragAux }}" style="flex:1;display:flex;flex-direction:column;gap:12px;justify-content:center;transform:{{ posAux }};cursor:grab">
+              <div onMouseDown="{{ dragAux }}" style="flex:1;display:flex;flex-direction:column;gap:12px;justify-content:center;transform:{{ posAux }};cursor:grab;animation:{{ tlAux }}">
                 <sc-for list="{{ plainBullets }}" as="p" hint-placeholder-count="2">
                   <div style="display:flex;gap:11px;align-items:baseline"><span style="width:7px;height:7px;border-radius:50%;background:{{ tAccent }};flex:none"></span><span style="font-size:14px;line-height:1.6;color:{{ tInk }}">{{ p.t }}</span></div>
                 </sc-for>
@@ -868,7 +1086,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           <sc-if value="{{ slideSection }}" hint-placeholder-val="{{ false }}">
             <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
               <div style="width:36px;height:4px;background:{{ tAccent }};margin-bottom:18px"></div>
-              <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.02em;color:{{ titleColor }};cursor:text;border-radius:4px;transform:{{ posTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.02em;color:{{ titleColor }};text-align:center;background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
+              <sc-if value="{{ notEditingTitle }}" hint-placeholder-val="{{ true }}"><div onDoubleClick="{{ startTitleEdit }}" onMouseDown="{{ dragTitle }}" onClick="{{ selectTitle }}" title="클릭 선택 · 더블클릭 편집 · 드래그 이동" style="font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.02em;color:{{ titleColor }};cursor:text;border-radius:4px;transform:{{ posTitle }};animation:{{ tlTitle }}" style-hover="outline:1.5px dashed rgba(26,26,26,.55);outline-offset:3px">{{ curTitle }}</div></sc-if><sc-if value="{{ editingTitle }}" hint-placeholder-val="{{ false }}"><input value="{{ curTitleRaw }}" onChange="{{ onPropTitle }}" onBlur="{{ endTitleEdit }}" onKeyDown="{{ onTitleEditKey }}" autoFocus="{{ true }}" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:{{ titleSizeCss }};font-weight:{{ titleWeightCss }};opacity:{{ titleOpacity }};font-style:{{ titleFs }};text-decoration:{{ titleDeco }};letter-spacing:-.02em;color:{{ titleColor }};text-align:center;background:transparent;border:none;outline:2px solid #1A1A1A;border-radius:4px;padding:0"></input></sc-if>
               <div style="font-size:13px;margin-top:12px;color:{{ tSub }}">경영바우처 신청 · 지금 바로 가능합니다</div>
             </div>
           </sc-if>
@@ -884,6 +1102,37 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
         </div>
         <sc-if value="{{ notPresenting }}" hint-placeholder-val="{{ true }}">
           <button onClick="{{ setTabChat }}" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:11;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:99px;padding:8px 16px;font-size:12px;font-weight:500;color:#6B6B66;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.07)" style-hover="color:#1A1A1A;border-color:#D4D4CE"><span class="mi" style="font-size:14px;margin-right:5px">auto_awesome</span>영역을 드래그해 AI로 수정</button>
+          <sc-if value="{{ tlOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:13;width:min(560px,86%);background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:13px 15px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px">
+                <span class="mi" style="font-size:16px;color:#1A1A1A">movie</span>
+                <span style="font-size:13px;font-weight:700;color:#1A1A1A;flex:1">모션 타임라인</span>
+                <button onClick="{{ tlPlay }}" style="display:inline-flex;align-items:center;gap:4px;border:none;background:#1A1A1A;color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">play_arrow</span>재생</button>
+                <button onClick="{{ toggleTimeline }}" style="border:none;background:#F7F7F5;border-radius:7px;width:26px;height:26px;color:#6B6B66;cursor:pointer;padding:0"><span class="mi" style="font-size:13px">close</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px">
+                <span style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.05em">효과</span>
+                <div style="display:flex;border:1px solid #E4E4E0;border-radius:8px;overflow:hidden">
+                  <sc-for list="{{ tlEffects }}" as="te" hint-placeholder-count="3"><button onClick="{{ te.pick }}" style="border:none;border-left:1px solid #F0F0EE;padding:6px 12px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ te.bg }};color:{{ te.color }}">{{ te.name }}</button></sc-for>
+                </div>
+                <span style="flex:1"></span>
+                <span style="font-size:11px;color:#8A8A84">간격</span>
+                <input type="range" min="{{ 100 }}" max="{{ 600 }}" step="{{ 50 }}" value="{{ tlStagger }}" onChange="{{ onTlStagger }}" style="width:90px"></input>
+                <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;width:44px;text-align:right">{{ tlStagger }}ms</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ tlTracks }}" as="tk" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="width:26px;height:26px;flex:none;border-radius:7px;background:#1A1A1A;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">{{ tk.order }}</span>
+                    <span style="font-size:12.5px;font-weight:600;color:#1A1A1A;width:78px;flex:none">{{ tk.name }}</span>
+                    <div style="flex:1;height:22px;border-radius:6px;background:#F0F0EE;position:relative;overflow:hidden"><div style="position:absolute;left:{{ tk.barL }};width:{{ tk.barW }};top:0;bottom:0;background:#1A1A1A;border-radius:6px;opacity:.85"></div></div>
+                    <span style="font-size:10.5px;color:#8A8A84;width:46px;text-align:right">{{ tk.delay }}ms</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:10.5px;color:#8A8A84;margin-top:9px">등장 순서: 제목 → 본문 → 보조 요소 · 발표 모드 슬라이드 진입 시 자동 재생됩니다</div>
+            </div>
+          </sc-if>
           <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:12;display:flex;flex-direction:column;align-items:center;gap:8px">
             <sc-if value="{{ imgBarOpen }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;padding:5px 7px;box-shadow:0 6px 20px rgba(0,0,0,.12)">
@@ -895,7 +1144,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </sc-if>
             <sc-if value="{{ cropping }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;padding:6px 8px;box-shadow:0 6px 20px rgba(0,0,0,.12)">
-                <button onClick="{{ cropCancel }}" style="border:none;background:transparent;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:500;color:#6B6B66;cursor:pointer">✕ 취소</button>
+                <button onClick="{{ cropCancel }}" style="display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:500;color:#6B6B66;cursor:pointer"><span class="mi" style="font-size:14px">close</span>취소</button>
                 <button onClick="{{ cropApply }}" style="border:1px solid #E4E4E0;background:#F0F0EE;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;color:#1A1A1A;cursor:pointer">자르기 적용</button>
               </div>
             </sc-if>
@@ -957,9 +1206,9 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
           </div>
         </sc-if>
         <div style="position:absolute;bottom:12px;right:14px;display:flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:10px;padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.08);opacity:{{ navOpacity }}" style-hover="opacity:1">
-          <button onClick="{{ prevSlide }}" style="border:none;background:transparent;padding:5px 10px;font-size:12px;color:#6B6B66;cursor:pointer">←</button>
+          <button onClick="{{ prevSlide }}" style="border:none;background:transparent;padding:5px 9px;color:#6B6B66;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:16px">chevron_left</span></button>
           <span style="padding:5px 8px;font-size:12px;font-weight:600;color:#1A1A1A">{{ curNum }} / {{ count }}</span>
-          <button onClick="{{ nextSlide }}" style="border:none;background:transparent;padding:5px 10px;font-size:12px;color:#6B6B66;cursor:pointer">→</button>
+          <button onClick="{{ nextSlide }}" style="border:none;background:transparent;padding:5px 9px;color:#6B6B66;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:16px">chevron_right</span></button>
         </div>
         <sc-if value="{{ presenting }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ exitPresent }}" style="position:absolute;top:14px;right:16px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:rgba(255,255,255,.22)">✕ 발표 종료 (Esc)</button>
@@ -1010,8 +1259,15 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                   </div>
                 </sc-if>
                 <sc-if value="{{ cm.replying }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ mentionOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid #E4E4E0;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-top:8px;overflow:hidden">
+                      <sc-for list="{{ mentionList }}" as="mn" hint-placeholder-count="2">
+                        <button onClick="{{ mn.pick }}" style="display:flex;align-items:center;gap:8px;width:100%;border:none;border-bottom:1px solid #F7F7F5;background:#fff;padding:7px 10px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE"><span style="width:20px;height:20px;flex:none;border-radius:50%;background:{{ mn.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">{{ mn.initial }}</span><span style="font-size:11.5px;font-weight:600;color:#1A1A1A">{{ mn.name }}</span><span style="font-size:10px;color:#8A8A84">{{ mn.email }}</span></button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
                   <div style="display:flex;align-items:center;gap:6px;border:1px solid #E4E4E0;border-radius:9px;padding:5px 5px 5px 10px;margin-top:8px;background:#FBFBFA">
-                    <input value="{{ cm.replyText }}" onChange="{{ cm.onReplyText }}" onKeyDown="{{ cm.onReplyKey }}" autoFocus="{{ true }}" placeholder="답글 달기…" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:11.5px;color:#1A1A1A"></input>
+                    <input value="{{ cm.replyText }}" onChange="{{ cm.onReplyText }}" onKeyDown="{{ cm.onReplyKey }}" autoFocus="{{ true }}" placeholder="답글 달기… (@로 멘션)" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:11.5px;color:#1A1A1A"></input>
                     <button onClick="{{ cm.sendReply }}" style="border:none;border-radius:7px;background:#1A1A1A;color:#fff;width:24px;height:24px;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:13px">arrow_upward</span></button>
                   </div>
                 </sc-if>
@@ -1415,9 +1671,19 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <span style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:6px 11px">{{ obFocusBadge }}</span>
             </div>
           </div>
-          <div style="padding:20px 24px 22px">
-            <button onClick="{{ obFinish }}" style="width:100%;background:#1A1A1A;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">생성 시작하기</button>
-            <div style="font-size:11.5px;color:#8A8A84;text-align:center;margin-top:10px">설정에서 언제든지 기본 설정을 변경할 수 있습니다</div>
+          <div style="padding:18px 24px 22px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:#8A8A84;margin-bottom:9px">{{ obRecoLabel }} 추천 템플릿</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">
+              <sc-for list="{{ obRecos }}" as="rc" hint-placeholder-count="3">
+                <button onClick="{{ rc.pick }}" style="display:flex;align-items:center;gap:11px;width:100%;border:1px solid #E4E4E0;background:#fff;border-radius:11px;padding:10px 12px;cursor:pointer;text-align:left" style-hover="border-color:#1A1A1A;background:#FBFBFA">
+                  <span style="width:44px;height:30px;flex:none;border-radius:5px;background:{{ rc.bg }};border:1px solid #F0F0EE;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:4px 5px;box-sizing:border-box"><span style="width:40%;height:2px;background:{{ rc.accent }}"></span><span style="width:75%;height:2px;background:rgba(128,128,128,.3);border-radius:1px"></span></span>
+                  <span style="flex:1;min-width:0"><span style="display:block;font-size:12.5px;font-weight:700;color:#1A1A1A">{{ rc.name }}</span><span style="display:block;font-size:11px;color:#8A8A84">{{ rc.desc }}</span></span>
+                  <span class="mi" style="font-size:16px;color:#B4B4AE">arrow_forward</span>
+                </button>
+              </sc-for>
+            </div>
+            <button onClick="{{ obFinish }}" style="width:100%;background:#1A1A1A;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">빈 프롬프트로 시작</button>
+            <div style="font-size:11.5px;color:#8A8A84;text-align:center;margin-top:10px">템플릿을 고르면 주제·구성·테마가 미리 채워집니다</div>
           </div>
         </div>
       </sc-if>
@@ -1433,11 +1699,16 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
         <span style="font-size:16px;font-weight:700;color:#1A1A1A">단축키</span>
         <button onClick="{{ closeShortcuts }}" style="border:none;background:#F7F7F5;border-radius:8px;width:28px;height:28px;font-size:13px;color:#6B6B66;cursor:pointer"><span class="mi" style="font-size:14px">close</span></button>
       </div>
-      <div style="display:flex;flex-direction:column">
-        <sc-for list="{{ shortcuts }}" as="sk" hint-placeholder-count="6">
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F7F7F5">
-            <span style="flex:1;font-size:12.5px;color:#4A4A45">{{ sk.desc }}</span>
-            <span style="font-size:11px;font-weight:700;color:#1A1A1A;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:6px;padding:3px 8px;font-family:ui-monospace,Menlo,monospace">{{ sk.key }}</span>
+      <div style="display:flex;flex-direction:column;gap:14px;max-height:60vh;overflow:auto">
+        <sc-for list="{{ shortcutGroups }}" as="sg" hint-placeholder-count="3">
+          <div>
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#8A8A84;margin-bottom:4px">{{ sg.label }}</div>
+            <sc-for list="{{ sg.items }}" as="sk" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F7F7F5">
+                <span style="flex:1;font-size:12.5px;color:#4A4A45">{{ sk.desc }}</span>
+                <span style="font-size:11px;font-weight:700;color:#1A1A1A;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:6px;padding:3px 8px;font-family:inherit">{{ sk.key }}</span>
+              </div>
+            </sc-for>
           </div>
         </sc-for>
       </div>
@@ -1456,8 +1727,8 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
 
       <div style="display:flex;align-items:center;gap:12px;border:1px solid #E4E4E0;border-radius:12px;padding:13px 14px;margin-bottom:18px">
         <span style="width:38px;height:38px;flex:none;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">우</span>
-        <div style="flex:1"><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">우진</div><div style="font-size:11.5px;color:#8A8A84">woojin@example.com · Free 플랜</div></div>
-        <button onClick="{{ noop }}" style="border:1px solid #D4D4CE;background:#F7F7F5;color:#1A1A1A;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer">업그레이드</button>
+        <div style="flex:1"><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">우진</div><div style="font-size:11.5px;color:#8A8A84">woojin@example.com · {{ planLabel }} 플랜</div></div>
+        <button onClick="{{ openUpgrade }}" style="border:1px solid #D4D4CE;background:#F7F7F5;color:#1A1A1A;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer">업그레이드</button>
         <button onClick="{{ logout }}" style="border:1px solid #E4E4E0;background:#fff;color:#6B6B66;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer">로그아웃</button>
       </div>
 
@@ -1496,7 +1767,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                 <sc-for list="{{ langOptions }}" as="o">
                   <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ o.rowBg }};border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
                     <span style="flex:1;font-size:12.5px;font-weight:{{ o.weight }};color:#1A1A1A">{{ o.name }}</span>
-                    <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ o.check }}</span>
+                    <span class="mi" style="font-size:15px;color:#1A1A1A">{{ o.check }}</span>
                   </button>
                 </sc-for>
               </div>
@@ -1513,7 +1784,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                   <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:9px;width:100%;border:none;background:{{ o.rowBg }};border-radius:8px;padding:9px 11px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
                     <span style="width:12px;height:12px;flex:none;border-radius:3px;background:{{ o.swatch }};border:1px solid rgba(0,0,0,.1);box-sizing:border-box"></span>
                     <span style="flex:1;font-size:12.5px;font-weight:{{ o.weight }};color:#1A1A1A">{{ o.name }}</span>
-                    <span style="font-size:11px;font-weight:700;color:#1A1A1A">{{ o.check }}</span>
+                    <span class="mi" style="font-size:15px;color:#1A1A1A">{{ o.check }}</span>
                   </button>
                 </sc-for>
               </div>
@@ -1634,6 +1905,23 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
         <sc-if value="{{ noVersions }}" hint-placeholder-val="{{ false }}">
           <div style="font-size:12.5px;color:#8A8A84;text-align:center;padding:22px 0;line-height:1.6">아직 저장된 버전이 없어요.<br>슬라이드를 생성하거나 AI 수정을 하면 자동 저장됩니다.</div>
         </sc-if>
+        <sc-if value="{{ compareOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 13px;background:#FBFBFA;border-bottom:1px solid #F0F0EE"><span style="font-size:12.5px;font-weight:700;color:#1A1A1A;flex:1">{{ compareTitle }}</span><button onClick="{{ closeCompare }}" style="border:none;background:transparent;color:#6B6B66;cursor:pointer;padding:0;display:inline-flex"><span class="mi" style="font-size:15px">close</span></button></div>
+            <div style="display:flex;font-size:10.5px;font-weight:700;color:#8A8A84;padding:7px 13px;background:#FBFBFA;border-bottom:1px solid #F0F0EE"><span style="flex:1">이전 버전</span><span style="flex:1">현재</span></div>
+            <div style="max-height:260px;overflow:auto">
+              <sc-for list="{{ diffRows }}" as="dr" hint-placeholder-count="3">
+                <div style="display:flex;gap:8px;padding:9px 13px;border-bottom:1px solid #F7F7F5;background:{{ dr.bg }}">
+                  <span style="flex:none;width:22px;font-size:10px;font-weight:700;color:#B4B4AE">{{ dr.num }}</span>
+                  <span style="flex:1;min-width:0;font-size:11.5px;color:{{ dr.aColor }};text-decoration:{{ dr.aDeco }};overflow:hidden;text-overflow:ellipsis">{{ dr.a }}</span>
+                  <span class="mi" style="font-size:13px;color:{{ dr.markColor }}">{{ dr.mark }}</span>
+                  <span style="flex:1;min-width:0;font-size:11.5px;font-weight:{{ dr.bWeight }};color:#1A1A1A;overflow:hidden;text-overflow:ellipsis">{{ dr.b }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:9px 13px;font-size:11px;color:#8A8A84;background:#FBFBFA;border-top:1px solid #F0F0EE">{{ diffSummary }}</div>
+          </div>
+        </sc-if>
         <sc-for list="{{ versionList }}" as="v" hint-placeholder-count="2">
           <div style="display:flex;align-items:center;gap:12px;border:{{ v.frame }};border-radius:11px;padding:11px 13px;background:{{ v.bg }}">
             <span style="width:8px;height:8px;flex:none;border-radius:50%;background:{{ v.dot }}"></span>
@@ -1642,7 +1930,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               <div style="font-size:11.5px;color:#8A8A84;margin-top:2px">{{ v.meta }}</div>
             </div>
             <sc-if value="{{ v.isCurrent }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:3px 9px;flex:none">현재</span></sc-if>
-            <sc-if value="{{ v.notCurrent }}" hint-placeholder-val="{{ true }}"><button onClick="{{ v.restore }}" style="flex:none;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#1A1A1A;cursor:pointer" style-hover="border-color:#1A1A1A;color:#1A1A1A">복원</button></sc-if>
+            <sc-if value="{{ v.notCurrent }}" hint-placeholder-val="{{ true }}"><button onClick="{{ v.compare }}" style="flex:none;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;color:#1A1A1A;cursor:pointer;margin-right:5px">비교</button></sc-if><sc-if value="{{ v.notCurrent }}" hint-placeholder-val="{{ true }}"><button onClick="{{ v.restore }}" style="flex:none;border:1px solid #E4E4E0;background:#FFFFFF;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#1A1A1A;cursor:pointer" style-hover="border-color:#1A1A1A;color:#1A1A1A">복원</button></sc-if>
           </div>
         </sc-for>
       </div>
@@ -1834,8 +2122,38 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
   </div>
 </sc-if>
 
+<sc-if value="{{ hasRtToast }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ rtToastOpen }}" style="position:fixed;top:64px;right:18px;width:290px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;box-shadow:0 14px 40px rgba(0,0,0,.2);padding:12px 14px;z-index:80;cursor:pointer;animation:dgSlideL .3s ease both">
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="width:30px;height:30px;flex:none;border-radius:50%;background:{{ rtColor }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">{{ rtInitial }}</span>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#1A1A1A">{{ rtWho }} <span style="font-size:10px;font-weight:500;color:#8A8A84">· 방금</span></div><div style="font-size:11.5px;color:#4A4A45;line-height:1.5;margin-top:2px">{{ rtText }}</div></div>
+      <span class="mi" style="font-size:14px;color:#B4B4AE">notifications_active</span>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ tplSaveOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeTplSave }}" style="position:fixed;inset:0;background:rgba(20,20,26,.5);z-index:70;display:flex;align-items:center;justify-content:center">
+    <div onClick="{{ stopClick }}" style="width:380px;max-width:92vw;background:#FFFFFF;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.3);padding:22px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px"><span class="mi" style="font-size:20px;color:#1A1A1A">bookmark_add</span><span style="font-size:16px;font-weight:700;color:#1A1A1A">템플릿으로 저장</span></div>
+      <div style="font-size:12.5px;color:#6B6B66;margin-bottom:16px">현재 덱의 구성·테마·슬라이드 흐름을 재사용 가능한 템플릿으로 저장합니다.</div>
+      <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.04em;margin-bottom:6px">템플릿 이름</div>
+      <input value="{{ tplName }}" onChange="{{ onTplName }}" placeholder="예: 분기 실적 보고 표준" style="width:100%;box-sizing:border-box;border:1px solid #E4E4E0;border-radius:10px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#1A1A1A;margin-bottom:14px;outline:none"></input>
+      <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.04em;margin-bottom:6px">공개 범위</div>
+      <div style="display:flex;gap:8px;margin-bottom:18px">
+        <button onClick="{{ tplScopeMe }}" style="flex:1;border:{{ tplScopeMeFrame }};background:{{ tplScopeMeBg }};border-radius:10px;padding:10px;font-size:12.5px;font-weight:600;color:#1A1A1A;cursor:pointer"><span class="mi" style="font-size:15px;margin-right:4px;vertical-align:-3px">person</span>나만</button>
+        <button onClick="{{ tplScopeWs }}" style="flex:1;border:{{ tplScopeWsFrame }};background:{{ tplScopeWsBg }};border-radius:10px;padding:10px;font-size:12.5px;font-weight:600;color:#1A1A1A;cursor:pointer"><span class="mi" style="font-size:15px;margin-right:4px;vertical-align:-3px">groups</span>워크스페이스</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ closeTplSave }}" style="flex:1;border:1px solid #E4E4E0;background:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:600;color:#6B6B66;cursor:pointer">취소</button>
+        <button onClick="{{ saveTpl }}" style="flex:1.4;border:none;background:#1A1A1A;color:#fff;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer">템플릿 저장</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50">{{ toast }}</div>
+  <div style="position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50">{{ toast }}</div>
 </sc-if>
 
 </div>
@@ -1844,6 +2162,22 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
 class Component extends DCLogic {
   state = {
     screen: 'home',
+    wsMenuOpen: false,
+    savedTpls: [],
+    tplSaveOpen: false,
+    tplName: '',
+    tplScope: 'me',
+    wsId: 'team',
+    wsInvite: '',
+    wsInviteRole: 'editor',
+    wsMembersData: [
+      { id: 'me', name: '우진', email: 'woojin@deckgen.app', role: 'owner', color: '#1A1A1A' },
+      { id: 'kim', name: '김대리', email: 'kim@company.co.kr', role: 'admin', color: '#55554F' },
+      { id: 'lee', name: '이수민', email: 'lee@company.co.kr', role: 'editor', color: '#3A6EA5' },
+      { id: 'park', name: '박하늘', email: 'park@company.co.kr', role: 'editor', color: '#1E7F4F' },
+      { id: 'jung', name: '정예린', email: 'yerin@company.co.kr', role: 'viewer', color: '#B4632F' },
+      { id: 'inv', name: 'newbie', email: 'newbie@company.co.kr', role: 'editor', color: '#8A8A84', pending: true }
+    ],
     prompt: '소상공인 경영바우처 지원 제안서를 만들어줘',
     count: 5,
     themeIdx: 0,
@@ -1904,6 +2238,8 @@ class Component extends DCLogic {
     sbDragIdx: null,
     sbDropIdx: null,
     wfZoomIdx: null,
+    wfCat: 'all',
+    wfFavs: {},
     ratio: '16:9',
     model: 'DeckGen 1.1',
     webResearch: false,
@@ -1929,6 +2265,7 @@ class Component extends DCLogic {
     versions: [],
     historyOpen: false,
     curVersionId: null,
+    compareId: null,
     dd: null,
     brand: { logo: 'DECKGEN', accent: null, footer: true, footerText: '© 2026 우리회사 · 대외비' },
     shortcutsOpen: false,
@@ -1961,6 +2298,29 @@ class Component extends DCLogic {
     cmtReplyId: null,
     cmtReplyText: '',
     slideQuery: '',
+    tlOpen: false,
+    tlEffect: 'fade',
+    tlStagger: 200,
+    tlNonce: 0,
+    tlPlaying: false,
+    notifOpen: false,
+    rtToast: null,
+    followId: null,
+    favs: { 1: true },
+    folders: [{ id: 'proposal', name: '제안서' }, { id: 'report', name: '보고서' }],
+    deckFolder: { 1: 'proposal' },
+    folderSel: 'all',
+    folderMenuId: null,
+    dragDeckId: null,
+    deckCtxId: null,
+    deckCtxX: 0,
+    deckCtxY: 0,
+    trash: [],
+    notifs: [
+      { id: 1, who: '김대리', initial: '김', color: '#55554F', text: '@우진 42% 막대 색을 강조해 주세요', time: '10분 전', slide: 2, unread: true },
+      { id: 2, who: '박팀장', initial: '박', color: '#8A8A84', text: '슬라이드 1 표지 문구를 확정했어요', time: '1시간 전', slide: 1, unread: true },
+      { id: 3, who: 'DeckGen', initial: 'D', color: '#1A1A1A', text: '슬라이드 5장 생성이 완료됐어요', time: '2시간 전', slide: 1, unread: false }
+    ],
     tblData: {},
     tblEdit: null,
     barColors: {},
@@ -2417,6 +2777,23 @@ class Component extends DCLogic {
     this._onResize = () => this._measure();
     window.addEventListener('resize', this._onResize);
     this._measureIv = setInterval(this._measure, 400);
+    this._rtSeq = 0;
+    this._rtIv = setInterval(() => {
+      if (this.state.screen !== 'editor' || this.state.presenting) return;
+      const evs = [
+        { who: '김대리', initial: '김', color: '#55554F', text: '슬라이드 3 문구를 다듬었어요', slide: 3 },
+        { who: '박팀장', initial: '박', color: '#8A8A84', text: '@우진 KPI 카드 수치 확인 부탁해요', slide: 4 },
+        { who: '김대리', initial: '김', color: '#55554F', text: '표지 색상 어떤가요?', slide: 1 }
+      ];
+      const ev = evs[this._rtSeq % evs.length];
+      this._rtSeq++;
+      this.setState(st => ({
+        notifs: [{ id: Date.now(), who: ev.who, initial: ev.initial, color: ev.color, text: ev.text, time: '방금', slide: ev.slide, unread: true }, ...st.notifs],
+        rtToast: ev
+      }));
+      clearTimeout(this._rtDismiss);
+      this._rtDismiss = setTimeout(() => this.setState({ rtToast: null }), 4200);
+    }, 14000);
     this._onKey = (e) => {
       const tag = (e.target && e.target.tagName) || '';
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
@@ -2496,25 +2873,37 @@ class Component extends DCLogic {
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('keydown', this._onHelpKey);
     window.__proto = this;
-    this._onDocClick = () => { if (this.state.dd) this.setState({ dd: null }); };
+    this._onDocClick = () => { if (this.state.wsMenuOpen) this.setState({ wsMenuOpen: false }); if (this.state.dd) this.setState({ dd: null }); if (this.state.deckCtxId) this.setState({ deckCtxId: null }); if (this.state.folderMenuId) this.setState({ folderMenuId: null }); };
     document.addEventListener('click', this._onDocClick);
     this._collabIv = setInterval(() => {
       if (this.state.screen !== 'editor' || this.state.presenting) return;
       this.setState(st => ({
         collab: st.collab.map(c => {
-          const moveSlide = Math.random() < 0.14;
+          // 가끔 슬라이드 전환 / 목표 지점 재설정, 대부분은 목표를 향해 조금씩 이동 (실시간 글라이드)
+          const retarget = Math.random() < 0.25;
+          const moveSlide = Math.random() < 0.05;
           const slide = moveSlide ? Math.floor(Math.random() * Math.max(st.statuses.length, 1)) : c.slide;
+          const tx = retarget || c.tgX == null ? 80 + Math.random() * 640 : c.tgX;
+          const ty = retarget || c.tgY == null ? 70 + Math.random() * 320 : c.tgY;
+          const cx = c.x == null ? tx : c.x + (tx - c.x) * 0.4;
+          const cy = c.y == null ? ty : c.y + (ty - c.y) * 0.4;
           return {
             ...c,
             slide,
-            x: 80 + Math.random() * 640,
-            y: 70 + Math.random() * 320,
-            editing: !moveSlide && Math.random() < 0.22,
-            target: Math.random() < 0.45 ? 'title' : 'body'
+            x: moveSlide ? 80 + Math.random() * 640 : cx,
+            y: moveSlide ? 70 + Math.random() * 320 : cy,
+            tgX: tx, tgY: ty,
+            editing: !moveSlide && Math.random() < 0.28,
+            target: retarget ? (Math.random() < 0.45 ? 'title' : 'body') : c.target
           };
         })
-      }));
-    }, 2400);
+      }), () => {
+        if (this.state.followId) {
+          const f = this.state.collab.find(c => c.id === this.state.followId);
+          if (f && f.slide !== this.state.cur) this._goSlide(f.slide);
+        }
+      });
+    }, 900);
   }
   componentWillUnmount() {
     this._timers.forEach(clearTimeout);
@@ -2524,6 +2913,8 @@ class Component extends DCLogic {
     document.removeEventListener('click', this._onDocClick);
     clearInterval(this._measureIv);
     clearInterval(this._collabIv);
+    clearInterval(this._rtIv);
+    clearTimeout(this._rtDismiss);
   }
 
   _speed() { return (this.props.genSpeed ?? 1) * ([1.5, 1, 0.5][this.state.genSpeedIdx] ?? 1); }
@@ -2544,7 +2935,31 @@ class Component extends DCLogic {
     { id: 'table', name: '표 비교', viz: 'table', blocks: [[8, 12, 55, 10, 1], [8, 34, 84, 11, 1], [8, 49, 84, 10], [8, 63, 84, 10], [8, 77, 84, 10]] },
     { id: 'image', name: '이미지 + 캡션', viz: 'image', blocks: [[8, 12, 55, 10, 1], [8, 32, 48, 50], [62, 38, 30, 6], [62, 52, 26, 6], [62, 66, 28, 6]] },
     { id: 'compare', name: '2단 비교', viz: 'none', blocks: [[8, 12, 55, 10, 1], [8, 34, 40, 46], [52, 34, 40, 46], [12, 42, 32, 6, 1], [56, 42, 32, 6, 1], [12, 56, 28, 5], [56, 56, 28, 5], [12, 68, 30, 5], [56, 68, 30, 5]] },
-    { id: 'closing', name: '클로징 CTA', viz: 'none', blocks: [[34, 34, 32, 9, 1], [38, 50, 24, 6], [42, 64, 16, 8]] }
+    { id: 'closing', name: '클로징 CTA', viz: 'none', blocks: [[34, 34, 32, 9, 1], [38, 50, 24, 6], [42, 64, 16, 8]] },
+    { id: 'tri3col', name: '3단 비교 (이슈·해결·효과)', viz: 'none', blocks: [[24, 9, 52, 8, 1], [5, 23, 28, 9, 1], [5, 35, 28, 15], [5, 52, 28, 15], [5, 69, 28, 15], [36, 23, 28, 9, 1], [36, 35, 28, 15], [36, 52, 28, 15], [36, 69, 28, 15], [67, 23, 28, 9, 1], [67, 35, 28, 15], [67, 52, 28, 15], [67, 69, 28, 15]] },
+    { id: 'flow3', name: '기준 → 방안 → 점검', viz: 'none', blocks: [[24, 9, 52, 8, 1], [4, 23, 20, 9, 1], [4, 35, 20, 11], [4, 48, 20, 11], [4, 61, 20, 11], [4, 74, 20, 11], [28, 23, 40, 9, 1], [28, 35, 40, 50], [72, 23, 24, 9, 1], [72, 35, 24, 24], [72, 61, 24, 24]] },
+    { id: 'grid9', name: '9칸 매트릭스', viz: 'none', blocks: [[24, 9, 52, 8, 1], [6, 22, 27, 21], [37, 22, 27, 21], [68, 22, 27, 21], [6, 46, 27, 21], [37, 46, 27, 21], [68, 46, 27, 21], [6, 70, 27, 21], [37, 70, 27, 21], [68, 70, 27, 21]] },
+    { id: 'timeline', name: '연혁 타임라인', viz: 'none', blocks: [[24, 9, 52, 8, 1], [6, 49, 88, 4], [10, 44, 9, 13, 2], [30, 44, 9, 13, 2], [50, 44, 9, 13, 2], [70, 44, 9, 13, 2], [85, 44, 9, 13, 2], [8, 64, 14, 6], [28, 30, 14, 6], [48, 64, 14, 6], [68, 30, 14, 6]] },
+    { id: 'beforeafter', name: 'Before / After', viz: 'none', blocks: [[24, 9, 52, 8, 1], [5, 25, 38, 9, 1], [5, 37, 38, 45], [46, 47, 8, 12, 2], [57, 25, 38, 9, 1], [57, 37, 38, 45]] },
+    { id: 'org', name: '조직도', viz: 'none', blocks: [[8, 9, 40, 8, 1], [40, 22, 20, 12, 1], [12, 50, 20, 12, 1], [40, 50, 20, 12, 1], [68, 50, 20, 12, 1], [8, 74, 13, 11], [24, 74, 13, 11], [43, 74, 13, 11], [62, 74, 13, 11], [80, 74, 13, 11]] },
+    { id: 'triad', name: '3요소 다이어그램', viz: 'none', blocks: [[24, 9, 52, 8, 1], [40, 24, 20, 28, 2], [18, 58, 20, 28, 2], [62, 58, 20, 28, 2]] },
+    { id: 'bignum', name: '빅넘버 임팩트', viz: 'none', blocks: [[18, 20, 64, 15, 1], [17, 52, 19, 30, 2], [40.5, 52, 19, 30, 2], [64, 52, 19, 30, 2]] },
+    { id: 'chevron3', name: '화살표 3단계', viz: 'none', blocks: [[24, 8, 52, 8, 1], [4, 20, 29, 11, 1], [35, 20, 29, 11, 1], [66, 20, 29, 11, 1], [5, 34, 27, 15], [5, 51, 27, 15], [5, 68, 27, 15], [36, 34, 27, 24], [36, 61, 27, 22], [67, 34, 27, 15], [67, 51, 27, 15], [67, 68, 27, 15]] },
+    { id: 'cycle', name: '순환 다이어그램', viz: 'none', blocks: [[24, 8, 52, 8, 1], [42, 40, 16, 24, 2], [44, 20, 13, 19, 2], [68, 30, 13, 19, 2], [68, 55, 13, 19, 2], [44, 68, 13, 19, 2], [19, 55, 13, 19, 2], [19, 30, 13, 19, 2]] },
+    { id: 'hub', name: '중앙 허브 + 4요소', viz: 'none', blocks: [[24, 8, 52, 8, 1], [43, 44, 14, 22, 2], [9, 24, 32, 21], [59, 24, 32, 21], [9, 60, 32, 21], [59, 60, 32, 21]] },
+    { id: 'agenda', name: '목차 · 아젠다', viz: 'none', blocks: [[8, 9, 44, 9, 1], [6, 25, 43, 11], [6, 39, 43, 11], [6, 53, 43, 11], [6, 67, 43, 11], [52, 25, 43, 11], [52, 39, 43, 11], [52, 53, 43, 11], [52, 67, 43, 11]] },
+    { id: 'vsteps', name: '세로 4단계 + 상세', viz: 'none', blocks: [[8, 9, 50, 8, 1], [5, 23, 23, 14, 1], [5, 40, 23, 14, 1], [5, 57, 23, 14, 1], [5, 74, 23, 14, 1], [32, 23, 63, 65]] },
+    { id: 'gantt', name: '로드맵 간트', viz: 'none', blocks: [[8, 9, 50, 8, 1], [24, 20, 72, 9, 1], [4, 31, 18, 13, 1], [4, 47, 18, 13, 1], [4, 63, 18, 13, 1], [4, 79, 18, 13, 1], [24, 33, 38, 9], [36, 49, 46, 9], [28, 65, 54, 9], [50, 81, 40, 9]] },
+    { id: 'calendar', name: '월별 캘린더', viz: 'none', blocks: [[8, 9, 50, 8, 1], [6, 23, 42, 10, 1], [6, 34, 42, 18], [52, 23, 42, 10, 1], [52, 34, 42, 18], [6, 56, 42, 10, 1], [6, 67, 42, 18], [52, 56, 42, 10, 1], [52, 67, 42, 18]] },
+    { id: 'asistobe', name: 'AS-IS / TO-BE 비교', viz: 'none', blocks: [[24, 8, 52, 8, 1], [4, 24, 11, 20, 1], [17, 32, 79, 4], [22, 28, 7, 11, 2], [40, 28, 7, 11, 2], [58, 28, 7, 11, 2], [76, 28, 7, 11, 2], [4, 62, 11, 20, 1], [17, 70, 79, 4], [22, 66, 7, 11, 2], [40, 66, 7, 11, 2], [58, 66, 7, 11, 2], [76, 66, 7, 11, 2]] },
+    { id: 'phasematrix', name: '단계별 로드맵 매트릭스', viz: 'none', blocks: [[24, 8, 52, 8, 1], [4, 20, 14, 10, 1], [4, 32, 14, 15], [4, 49, 14, 15], [4, 66, 14, 19], [20, 20, 24, 10, 1], [20, 32, 24, 15], [20, 49, 24, 15], [20, 66, 24, 19], [46, 20, 24, 10, 1], [46, 32, 24, 15], [46, 49, 24, 15], [46, 66, 24, 19], [72, 20, 24, 10, 1], [72, 32, 24, 15], [72, 49, 24, 15], [72, 66, 24, 19]] },
+    { id: 'iconrow', name: '아이콘 5요소 + 사진', viz: 'none', blocks: [[24, 8, 52, 8, 1], [8, 26, 14, 22, 2], [26, 26, 14, 22, 2], [44, 26, 14, 22, 2], [62, 26, 14, 22, 2], [80, 26, 14, 22, 2], [6, 58, 21, 28], [29, 58, 21, 28], [52, 58, 21, 28], [75, 58, 21, 28]] },
+    { id: 'consortium', name: '컨소시엄 3사', viz: 'none', blocks: [[24, 8, 52, 8, 1], [38, 28, 24, 34, 2], [8, 38, 24, 30, 2], [68, 38, 24, 30, 2], [8, 80, 20, 8], [30, 80, 20, 8], [52, 80, 20, 8], [74, 80, 18, 8]] },
+    { id: 'persona', name: '페르소나 3인 인용', viz: 'none', blocks: [[24, 8, 52, 8, 1], [25, 20, 9, 14, 2], [56, 20, 9, 14, 2], [87, 20, 9, 14, 2], [5, 26, 28, 60], [36, 26, 28, 60], [67, 26, 28, 60]] },
+    { id: 'news', name: '보도자료 3단', viz: 'none', blocks: [[24, 8, 52, 8, 1], [5, 22, 28, 9, 1], [5, 33, 28, 30], [5, 65, 28, 18], [36, 22, 28, 9, 1], [36, 33, 28, 30], [36, 65, 28, 18], [67, 22, 28, 9, 1], [67, 33, 28, 30], [67, 65, 28, 18]] },
+    { id: 'swot', name: 'SWOT 4분면', viz: 'none', blocks: [[24, 8, 52, 8, 1], [6, 21, 43, 9, 1], [6, 31, 43, 32], [51, 21, 43, 9, 1], [51, 31, 43, 32], [6, 66, 43, 9, 1], [6, 76, 43, 16], [51, 66, 43, 9, 1], [51, 76, 43, 16]] },
+    { id: 'milestone', name: '마일스톤 로드맵', viz: 'none', blocks: [[24, 8, 52, 8, 1], [6, 50, 88, 5, 1], [11, 46, 7, 13, 2], [27, 46, 7, 13, 2], [43, 46, 7, 13, 2], [59, 46, 7, 13, 2], [75, 46, 7, 13, 2], [88, 44, 8, 17, 2], [8, 28, 18, 15], [40, 28, 18, 15], [72, 28, 18, 15], [24, 64, 18, 15], [56, 64, 18, 15]] },
+    { id: 'stackbar', name: '스택 막대 차트', viz: 'none', blocks: [[8, 12, 55, 10, 1], [10, 40, 13, 42], [10, 33, 13, 7, 1], [30, 48, 13, 34], [30, 40, 13, 8, 1], [50, 44, 13, 38], [50, 36, 13, 8, 1], [70, 52, 13, 30], [70, 42, 13, 10, 1], [8, 86, 84, 3]] }
   ];
 
   _wfBlocks(w) {
@@ -2786,14 +3201,179 @@ class Component extends DCLogic {
     this.setState(st => ({ versions: [{ id, label, time, snapshot }, ...st.versions].slice(0, 20), curVersionId: id }));
   }
 
+  _download(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  _crc32(bytes) {
+    let c, crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) {
+      c = (crc ^ bytes[i]) & 0xFF;
+      for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1;
+      crc = (crc >>> 8) ^ c;
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  _zip(files) {
+    const enc = new TextEncoder();
+    const chunks = [], central = [];
+    let offset = 0;
+    const u16 = (n) => [n & 255, (n >> 8) & 255];
+    const u32 = (n) => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >> 24) & 255];
+    files.forEach(f => {
+      const data = (f.data instanceof Uint8Array) ? f.data : enc.encode(f.data);
+      const crc = this._crc32(data);
+      const nameB = enc.encode(f.name);
+      const local = [].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(nameB.length), u16(0));
+      chunks.push(new Uint8Array(local), nameB, data);
+      const cen = [].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(nameB.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset));
+      central.push(new Uint8Array(cen), nameB);
+      offset += local.length + nameB.length + data.length;
+    });
+    let cenSize = 0; central.forEach(c => cenSize += c.length);
+    const end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(cenSize), u32(offset), u16(0)));
+    const all = [...chunks, ...central, end];
+    let total = 0; all.forEach(c => total += c.length);
+    const out = new Uint8Array(total); let p = 0;
+    all.forEach(c => { out.set(c, p); p += c.length; });
+    return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+  }
+  _slideCanvas(o, idx, total) {
+    const T = this.THEMES[this.state.themeIdx];
+    const W = 960, H = 720, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const x = cv.getContext('2d');
+    x.fillStyle = T.bg; x.fillRect(0, 0, W, H);
+    x.fillStyle = T.accent; x.fillRect(80, 90, 60, 8);
+    x.fillStyle = T.ink; x.font = '700 40px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    x.fillText(String(o.title || ''), 80, 160, W - 160);
+    x.font = '400 26px "Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+    x.fillStyle = T.sub;
+    String(o.bullets || '').split('\n').filter(Boolean).forEach((b, j) => {
+      x.fillText('•  ' + b, 80, 250 + j * 54, W - 160);
+    });
+    x.fillStyle = T.sub; x.font = '400 16px "Malgun Gothic",sans-serif';
+    x.fillText((idx + 1) + ' / ' + total, 80, 680);
+    return cv;
+  }
+  _buildPngZip() {
+    const outline = (this.state.outline.length ? this.state.outline : this.OUTLINE_DATA);
+    const jobs = outline.map((o, i) => new Promise(res => {
+      const cv = this._slideCanvas(o, i, outline.length);
+      cv.toBlob(b => b.arrayBuffer().then(ab => res({ name: 'slide-' + String(i + 1).padStart(2, '0') + '.png', data: new Uint8Array(ab) })), 'image/png');
+    }));
+    return Promise.all(jobs).then(files => this._zip(files));
+  }
+  _buildPdf() {
+    const outline = (this.state.outline.length ? this.state.outline : this.OUTLINE_DATA);
+    const W = 960, H = 720;
+    const parts = []; let len = 0;
+    const pushStr = (s) => { const b = new TextEncoder().encode(s); parts.push(b); len += b.length; return b.length; };
+    const pushBytes = (b) => { parts.push(b); len += b.length; };
+    const offsets = []; const mark = () => { offsets.push(len); };
+    pushStr('%PDF-1.4\n');
+    const N = outline.length;
+    // object ids: 1 catalog, 2 pages, then per slide: img(3+3k), content(4+3k), page(5+3k)
+    const pageIds = [];
+    mark(); pushStr('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    const kids = []; for (let k = 0; k < N; k++) kids.push((5 + 3 * k) + ' 0 R');
+    mark(); pushStr('2 0 obj\n<< /Type /Pages /Kids [' + kids.join(' ') + '] /Count ' + N + ' >>\nendobj\n');
+    for (let k = 0; k < N; k++) {
+      const cv = this._slideCanvas(outline[k], k, N);
+      const durl = cv.toDataURL('image/jpeg', 0.85);
+      const b64 = durl.split(',')[1];
+      const bin = atob(b64); const img = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
+      const imgId = 3 + 3 * k, contId = 4 + 3 * k, pageId = 5 + 3 * k;
+      mark(); pushStr(imgId + ' 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + W + ' /Height ' + H + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.length + ' >>\nstream\n');
+      pushBytes(img); pushStr('\nendstream\nendobj\n');
+      const content = 'q ' + W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do Q';
+      mark(); pushStr(contId + ' 0 obj\n<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream\nendobj\n');
+      mark(); pushStr(pageId + ' 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + '] /Resources << /XObject << /Im0 ' + imgId + ' 0 R >> >> /Contents ' + contId + ' 0 R >>\nendobj\n');
+      pageIds.push(pageId);
+    }
+    const xrefPos = len;
+    const totalObjs = 2 + 3 * N;
+    pushStr('xref\n0 ' + (totalObjs + 1) + '\n0000000000 65535 f \n');
+    for (let i = 0; i < offsets.length; i++) pushStr(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+    pushStr('trailer\n<< /Size ' + (totalObjs + 1) + ' /Root 1 0 R >>\nstartxref\n' + xrefPos + '\n%%EOF');
+    return new Blob(parts, { type: 'application/pdf' });
+  }
+  _buildFigSvgZip() {
+    const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const T = this.THEMES[this.state.themeIdx];
+    const outline = (this.state.outline.length ? this.state.outline : this.OUTLINE_DATA);
+    const files = outline.map((o, i) => {
+      const bullets = String(o.bullets || '').split('\n').filter(Boolean);
+      const lines = bullets.map((b, j) =>
+        '<text x="80" y="' + (250 + j * 54) + '" font-family="Malgun Gothic, Pretendard, sans-serif" font-size="26" fill="' + T.sub + '">•  ' + esc(b) + '</text>'
+      ).join('');
+      const svg = '<?xml version="1.0" encoding="UTF-8"?>' +
+        '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720">' +
+        '<rect width="960" height="720" fill="' + T.bg + '"/>' +
+        '<rect x="80" y="90" width="60" height="8" fill="' + T.accent + '"/>' +
+        '<text x="80" y="165" font-family="Malgun Gothic, Pretendard, sans-serif" font-size="40" font-weight="700" fill="' + T.ink + '">' + esc(o.title) + '</text>' +
+        lines +
+        '<text x="80" y="680" font-family="Malgun Gothic, sans-serif" font-size="16" fill="' + T.sub + '">' + (i + 1) + ' / ' + outline.length + '</text>' +
+        '</svg>';
+      return { name: 'slide-' + String(i + 1).padStart(2, '0') + '.svg', data: svg };
+    });
+    files.push({ name: 'README.txt', data: 'DeckGen → Figma\n\n각 .svg 파일을 Figma 캔버스로 드래그하면 편집 가능한 벡터/텍스트 레이어로 열립니다.\n슬라이드 순서는 파일명 번호를 따릅니다.' });
+    return this._zip(files);
+  }
+  _buildPptx() {
+    const esc = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const outline = (this.state.outline.length ? this.state.outline : this.OUTLINE_DATA);
+    const n = outline.length;
+    const rels = [], sldIds = [], ctOverrides = [], slides = [];
+    for (let i = 0; i < n; i++) {
+      const o = outline[i];
+      const bullets = String(o.bullets || '').split('\n').filter(Boolean);
+      const bodyPara = bullets.map(b => '<a:p><a:r><a:rPr lang="ko-KR" sz="1600" dirty="0"/><a:t>' + esc(b) + '</a:t></a:r></a:p>').join('') || '<a:p/>';
+      slides.push({ name: 'ppt/slides/slide' + (i + 1) + '.xml', data:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>' +
+        '<p:sp><p:nvSpPr><p:cNvPr id="2" name="Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="457200" y="274638"/><a:ext cx="8229600" cy="1143000"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="ko-KR" sz="3200" b="1" dirty="0"/><a:t>' + esc(o.title) + '</a:t></a:r></a:p></p:txBody></p:sp>' +
+        '<p:sp><p:nvSpPr><p:cNvPr id="3" name="Body"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="457200" y="1600200"/><a:ext cx="8229600" cy="4525963"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/>' + bodyPara + '</p:txBody></p:sp>' +
+        '</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sld>' });
+      slides.push({ name: 'ppt/slides/_rels/slide' + (i + 1) + '.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/></Relationships>' });
+      ctOverrides.push('<Override PartName="/ppt/slides/slide' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>');
+      rels.push('<Relationship Id="rId' + (i + 10) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide' + (i + 1) + '.xml"/>');
+      sldIds.push('<p:sldId id="' + (256 + i) + '" r:id="rId' + (i + 10) + '"/>');
+    }
+    const theme = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000"/></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1A1A1A"/></a:dk2><a:lt2><a:srgbClr val="EEEEEE"/></a:lt2><a:accent1><a:srgbClr val="1A1A1A"/></a:accent1><a:accent2><a:srgbClr val="55554F"/></a:accent2><a:accent3><a:srgbClr val="8A8A84"/></a:accent3><a:accent4><a:srgbClr val="B4B4AE"/></a:accent4><a:accent5><a:srgbClr val="D4D4CE"/></a:accent5><a:accent6><a:srgbClr val="6B6B66"/></a:accent6><a:hlink><a:srgbClr val="1A1A1A"/></a:hlink><a:folHlink><a:srgbClr val="8A8A84"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Malgun Gothic"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Malgun Gothic"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>';
+    const layout = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sldLayout xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" type="obj" preserve="1"><p:cSld name="Title and Content"><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sldLayout>';
+    const master = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sldMaster xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/></p:spTree></p:cSld><p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/><p:sldLayoutIdLst><p:sldLayoutId id="2147483649" r:id="rId1"/></p:sldLayoutIdLst></p:sldMaster>';
+    const files = [
+      { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slideMasters/slideMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml"/><Override PartName="/ppt/slideLayouts/slideLayout1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml"/><Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>' + ctOverrides.join('') + '</Types>' },
+      { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>' },
+      { name: 'ppt/presentation.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst>' + sldIds.join('') + '</p:sldIdLst><p:sldSz cx="9144000" cy="6858000" type="screen4x3"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>' },
+      { name: 'ppt/_rels/presentation.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>' + rels.join('') + '</Relationships>' },
+      { name: 'ppt/theme/theme1.xml', data: theme },
+      { name: 'ppt/slideLayouts/slideLayout1.xml', data: layout },
+      { name: 'ppt/slideLayouts/_rels/slideLayout1.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/></Relationships>' },
+      { name: 'ppt/slideMasters/slideMaster1.xml', data: master },
+      { name: 'ppt/slideMasters/_rels/slideMaster1.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme1.xml"/></Relationships>' }
+    ].concat(slides);
+    return this._zip(files);
+  }
+
   _restoreVersion(v) {
     this.setState({ ...JSON.parse(JSON.stringify(v.snapshot)), curVersionId: v.id, historyOpen: false, cur: 0, selEl: null });
     this._showToast("'" + v.label + "' 버전으로 복원했어요");
   }
 
+  _mentionCandidates() {
+    return [
+      { name: '우진 (나)', email: 'woojin@deckgen.app', initial: '우', color: '#1A1A1A' },
+      ...this.state.collab.map(c => ({ name: c.name, email: (c.name.replace(/\s.*/, '') || 'user') + '@company.co.kr', initial: c.initial, color: c.color }))
+    ];
+  }
   _sendPanelReply(cid) {
     const t = (this.state.cmtReplyText || '').trim();
     if (!t) return;
+    const mentioned = this._mentionCandidates().filter(m => t.indexOf('@' + m.name.replace(/\s.*/, '')) >= 0);
+    if (mentioned.length) this._after(400, () => this._showToast(mentioned.map(m => m.name.replace(/\s.*/, '')).join(', ') + '님에게 멘션 알림을 보냈어요'));
     this.setState(st => ({
       comments: st.comments.map(x => x.id === cid ? { ...x, replies: [...(x.replies || []), { author: '우진 (나)', initial: '우', text: t, time: '방금' }] } : x),
       cmtReplyId: null, cmtReplyText: ''
@@ -2934,6 +3514,19 @@ class Component extends DCLogic {
       cmtCount: String(unresolved.length),
       hasCmtBadge: unresolved.length > 0 && s.tab !== 'cmts',
       noCmts: slideCmts.length === 0,
+      ...(() => {
+        const m = (s.cmtReplyText || '').match(/@([^\s@]*)$/);
+        if (s.cmtReplyId === null || !m) return { mentionOpen: false, mentionList: [] };
+        const q = m[1].toLowerCase();
+        const list = this._mentionCandidates().filter(x => x.name.toLowerCase().indexOf(q) >= 0 || q === '').slice(0, 4);
+        return {
+          mentionOpen: list.length > 0,
+          mentionList: list.map(x => ({
+            name: x.name, email: x.email, initial: x.initial, color: x.color,
+            pick: () => this.setState(st => ({ cmtReplyText: st.cmtReplyText.replace(/@[^\s@]*$/, '@' + x.name.replace(/\s.*/, '') + ' ') }))
+          }))
+        };
+      })(),
       cmtList: slideCmts.map((c, idx) => ({
         num: String(idx + 1),
         author: c.author, initial: c.initial, time: c.time, text: c.text,
@@ -2942,7 +3535,7 @@ class Component extends DCLogic {
         replying: s.cmtReplyId === c.id,
         replyText: s.cmtReplyText || '',
         onReplyText: (e) => this.setState({ cmtReplyText: e.target.value }),
-        onReplyKey: (e) => { if (e.key === 'Enter') this._sendPanelReply(c.id); if (e.key === 'Escape') this.setState({ cmtReplyId: null, cmtReplyText: '' }); },
+        onReplyKey: (e) => { if (e.key === 'Enter' && !this.state.cmtReplyText.match(/@[^\s]*$/)) this._sendPanelReply(c.id); if (e.key === 'Escape') this.setState({ cmtReplyId: null, cmtReplyText: '' }); },
         sendReply: () => this._sendPanelReply(c.id),
         startReply: () => this.setState(st => ({ cmtReplyId: st.cmtReplyId === c.id ? null : c.id, cmtReplyText: '' })),
         avatarBg: c.initial === '우' ? '#1A1A1A' : '#1A1A1A',
@@ -3013,7 +3606,7 @@ class Component extends DCLogic {
         swatch: t.accent,
         rowBg: s.themeIdx === i ? '#F0F0EE' : 'transparent',
         weight: s.themeIdx === i ? 700 : 500,
-        check: s.themeIdx === i ? '✓' : '',
+        check: s.themeIdx === i ? 'check' : '',
         pick: (e) => { e.stopPropagation(); this.setState({ themeIdx: i, dd: null }); }
       })),
       ddToggleLang: (e) => { e.stopPropagation(); this.setState(st => ({ dd: st.dd === 'lang' ? null : 'lang' })); },
@@ -3022,7 +3615,7 @@ class Component extends DCLogic {
         name: l,
         rowBg: s.setLang === l ? '#F0F0EE' : 'transparent',
         weight: s.setLang === l ? 700 : 500,
-        check: s.setLang === l ? '✓' : '',
+        check: s.setLang === l ? 'check' : '',
         pick: (e) => { e.stopPropagation(); this.setState({ setLang: l, dd: null }); this._showToast('생성 언어: ' + l); }
       })),
       onThemeSelect: (e) => {
@@ -3061,19 +3654,76 @@ class Component extends DCLogic {
       })),
       goHome: () => this.setState({ screen: 'home' }),
       goOutlineBack: () => this.setState({ screen: 'outline' }),
+      ...(() => {
+        const WS = {
+          team: { name: '우진의 팀', initial: 'W', color: '#1A1A1A', plan: 'Team', seats: 10, creditUsed: 640, creditTotal: 1000, meta: '멤버 6명 · Team' },
+          personal: { name: '개인 워크스페이스', initial: 'P', color: '#3A6EA5', plan: 'Free', seats: 1, creditUsed: 12, creditTotal: 30, meta: '나만 사용 · Free' }
+        };
+        const cur = WS[s.wsId] || WS.team;
+        const roleName = { owner: '소유자', admin: '관리자', editor: '편집자', viewer: '뷰어' };
+        const members = s.wsId === 'team' ? s.wsMembersData : [s.wsMembersData[0]];
+        const active = members.filter(m => !m.pending);
+        return {
+          isWorkspace: s.screen === 'workspace',
+          wsMenuOpen: s.wsMenuOpen,
+          toggleWsMenu: (e) => { e.stopPropagation(); this.setState(st => ({ wsMenuOpen: !st.wsMenuOpen })); },
+          openWorkspace: () => this.setState({ screen: 'workspace', wsMenuOpen: false }),
+          createWs: () => { this.setState({ wsMenuOpen: false }); this._showToast('새 워크스페이스 만들기 (시뮬레이션)'); },
+          wsName: cur.name, wsInitial: cur.initial, wsColor: cur.color,
+          wsPlanLabel: cur.plan + ' 플랜', wsMemberCount: String(members.length),
+          wsList: Object.keys(WS).map(id => ({
+            name: WS[id].name, initial: WS[id].initial, color: WS[id].color, meta: WS[id].meta,
+            active: id === s.wsId,
+            bg: id === s.wsId ? '#F7F7F5' : 'transparent',
+            pick: () => this.setState({ wsId: id, wsMenuOpen: false })
+          })),
+          wsStats: [
+            { name: '전체 덱', value: '38', sub: '워크스페이스 공유' },
+            { name: '이번 주 편집', value: '124', sub: '멤버 전체 활동' },
+            { name: '활성 멤버', value: String(active.length), sub: '최근 7일 접속' },
+            { name: 'AI 생성', value: cur.creditUsed + '건', sub: '이번 달' }
+          ],
+          wsInvite: s.wsInvite,
+          onWsInvite: (e) => this.setState({ wsInvite: e.target.value }),
+          wsInviteRole: s.wsInviteRole,
+          onWsInviteRole: (e) => this.setState({ wsInviteRole: e.target.value }),
+          wsInviteSend: () => {
+            const em = (s.wsInvite || '').trim();
+            if (!em || em.indexOf('@') < 1) { this._showToast('올바른 이메일을 입력하세요'); return; }
+            this.setState(st => ({ wsMembersData: [...st.wsMembersData, { id: 'i' + Date.now(), name: em.split('@')[0], email: em, role: st.wsInviteRole, color: '#8A8A84', pending: true }], wsInvite: '' }));
+            this._showToast(em + '을(를) ' + roleName[s.wsInviteRole] + '(으)로 초대했어요');
+          },
+          wsMembers: members.map(m => ({
+            name: m.name, email: m.email, initial: m.name.slice(0, 1), avColor: m.color,
+            isYou: m.id === 'me', isOwner: m.role === 'owner', pending: !!m.pending,
+            canEditRole: m.role !== 'owner',
+            role: m.role,
+            onRole: (e) => this.setState(st => ({ wsMembersData: st.wsMembersData.map(x => x.id === m.id ? { ...x, role: e.target.value } : x) })),
+            remove: () => { this.setState(st => ({ wsMembersData: st.wsMembersData.filter(x => x.id !== m.id) })); this._showToast(m.name + ' 멤버를 제거했어요'); }
+          })),
+          wsDecks: [
+            { title: '경영바우처 지원 제안서', meta: '5장 · 우진 · 10분 전', bg: '#FFFFFF', accent: '#2563EB', avatars: [{ initial: '우', color: '#1A1A1A' }, { initial: '김', color: '#55554F' }] },
+            { title: '2026 상반기 제품 로드맵', meta: '8장 · 김대리 · 어제', bg: '#14141A', accent: '#7C9CFF', avatars: [{ initial: '김', color: '#55554F' }, { initial: '이', color: '#3A6EA5' }, { initial: '박', color: '#1E7F4F' }] },
+            { title: '로컬 브랜드 협업 제안', meta: '6장 · 이수민 · 3일 전', bg: '#FAF6EF', accent: '#C25E3A', avatars: [{ initial: '이', color: '#3A6EA5' }] }
+          ],
+          wsCreditUsed: cur.creditUsed.toLocaleString(), wsCreditTotal: cur.creditTotal.toLocaleString(),
+          wsCreditPct: Math.round(cur.creditUsed / cur.creditTotal * 100) + '%',
+          wsSeatTotal: String(cur.seats), wsSeatPct: Math.min(100, Math.round(members.length / cur.seats * 100)) + '%'
+        };
+      })(),
       templates: [
         { name: '지원사업 제안서', meta: '5장 · Clean Light · Presentation', prompt: '소상공인 경영바우처 지원 제안서를 만들어줘', count: 5, theme: 0, style: 'presentation', coverTitle: '소상공인 경영바우처 지원 제안' },
         { name: '스타트업 피치덱', meta: '8장 · Violet Bold · Keynote', prompt: '헬스케어 AI 스타트업 투자자 피치덱을 만들어줘: 문제, 솔루션, 트랙션, 팀, 투자 유치 포함', count: 8, theme: 3, style: 'keynote', coverTitle: '헬스케어 AI 피치덱' },
         { name: '분기 실적 보고', meta: '6장 · Ink Dark · Report', prompt: '2026년 2분기 실적 보고서를 만들어줘: 매출, 핵심 지표, 이슈, 다음 분기 계획', count: 6, theme: 1, style: 'report', coverTitle: '2026 Q2 실적 보고' },
         { name: '브랜드 협업 제안', meta: '6장 · Warm Craft · Standard', prompt: '로컬 브랜드 협업 제안서를 만들어줘: 브랜드 소개, 협업 아이디어, 기대 효과', count: 6, theme: 2, style: 'standard', coverTitle: '로컬 브랜드 협업 제안' }
-      ].map(t => {
-        const th = this.THEMES[t.theme];
+      ].concat((s.savedTpls || []).map(t => ({ ...t, mine: true }))).map(t => {
+        const th = this.THEMES[t.theme] || this.THEMES[0];
         return {
-          name: t.name, meta: t.meta, coverTitle: t.coverTitle,
+          name: t.name, meta: t.meta, coverTitle: t.coverTitle, mine: !!t.mine,
           bg: th.bg, ink: th.ink, accent: th.accent,
           blockBg: th.id === 'clean-light' || th.id === 'warm-craft' ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.12)',
           pick: () => {
-            this.setState({ prompt: t.prompt, count: t.count, themeIdx: t.theme, styleId: t.style, screen: 'setup' });
+            this.setState({ prompt: t.prompt, count: t.count, themeIdx: t.theme, styleId: t.style || 'presentation', screen: 'setup' });
             this._showToast("'" + t.name + "' 템플릿 적용 — 스타일·테마를 확인하세요");
           }
         };
@@ -3081,17 +3731,43 @@ class Component extends DCLogic {
       openSample: () => this._openSample(),
       ...(() => {
         const q = s.deckQuery.trim().toLowerCase();
+        const fav = s.favs || {};
+        const dfolder = s.deckFolder || {};
         const filtered = s.decks.filter(d =>
-          (s.deckFilter === 'all' || d.status === s.deckFilter) &&
+          (s.deckFilter === 'all' || (s.deckFilter === 'fav' ? fav[d.id] : d.status === s.deckFilter)) &&
+          (s.folderSel === 'all' || (dfolder[d.id] || 'none') === s.folderSel) &&
           (!q || d.title.toLowerCase().includes(q) || d.cover.toLowerCase().includes(q))
-        );
+        ).slice().sort((a, b) => (fav[b.id] ? 1 : 0) - (fav[a.id] ? 1 : 0));
         return {
           deckQuery: s.deckQuery,
           onDeckQuery: (e) => this.setState({ deckQuery: e.target.value }),
           hasQuery: !!q,
           clearQuery: () => this.setState({ deckQuery: '', deckFilter: 'all' }),
+          folderChips: [{ id: 'all', name: '전체' }, { id: 'none', name: '미분류' }, ...s.folders, { id: 'trash', name: '🗑 휴지통' }].map(f => ({
+            name: f.name,
+            count: String(f.id === 'all' ? s.decks.length : f.id === 'trash' ? s.trash.length : s.decks.filter(d => (dfolder[d.id] || 'none') === f.id).length),
+            border: s.folderSel === f.id ? '#1A1A1A' : '#E4E4E0',
+            dropBorder: (s.dragDeckId && f.id !== 'all') ? '1.5px dashed #1A1A1A' : (s.folderSel === f.id ? '1px solid #1A1A1A' : '1px solid #E4E4E0'),
+            bg: s.folderSel === f.id ? '#F0F0EE' : '#FFFFFF',
+            color: s.folderSel === f.id ? '#1A1A1A' : '#6B6B66',
+            pick: () => this.setState({ folderSel: f.id }),
+            dragOver: (e) => { if (s.dragDeckId && f.id !== 'all') e.preventDefault(); },
+            drop: (e) => {
+              e.preventDefault();
+              const id = this.state.dragDeckId;
+              if (!id || f.id === 'all') return;
+              const dk = this.state.decks.find(x => x.id === id);
+              this.setState(st => ({ deckFolder: { ...st.deckFolder, [id]: f.id }, dragDeckId: null }));
+              this._showToast("'" + (dk ? dk.title : '덱') + "' → " + f.name);
+            }
+          })),
+          addFolder: () => {
+            const n = s.folders.length + 1;
+            this.setState(st => ({ folders: [...st.folders, { id: 'f' + Date.now(), name: '폴더 ' + (st.folders.length + 1) }] }));
+            this._showToast('새 폴더를 만들었어요');
+          },
           deckFilters: [
-            { id: 'all', label: '전체' }, { id: 'done', label: '완료' }, { id: 'generating', label: '생성 중' }
+            { id: 'all', label: '전체' }, { id: 'fav', label: '★ 즐겨찾기' }, { id: 'done', label: '완료' }, { id: 'generating', label: '생성 중' }
           ].map(f => ({
             label: f.label,
             border: s.deckFilter === f.id ? '#1A1A1A' : '#E4E4E0',
@@ -3099,6 +3775,20 @@ class Component extends DCLogic {
             color: s.deckFilter === f.id ? '#1A1A1A' : '#8A8A84',
             pick: () => this.setState({ deckFilter: f.id })
           })),
+          trashView: s.folderSel === 'trash',
+          notTrashView: s.folderSel !== 'trash',
+          hasTrash: s.trash.length > 0,
+          trashEmpty: s.trash.length === 0,
+          emptyTrash: () => { this.setState({ trash: [] }); this._showToast('휴지통을 비웠어요'); },
+          trashCards: s.trash.map(d => {
+            const th = this.THEMES[d.theme];
+            return {
+              title: d.title, cover: d.cover, delAt: d.delAt,
+              bg: th.bg, ink: th.ink, accent: th.accent,
+              restore: () => { this.setState(st => ({ trash: st.trash.filter(x => x.id !== d.id), decks: [{ ...d, time: '방금 복원' }, ...st.decks] })); this._showToast("'" + d.title + "' 복원됨"); },
+              purge: () => { this.setState(st => ({ trash: st.trash.filter(x => x.id !== d.id) })); this._showToast("'" + d.title + "' 영구 삭제됨"); }
+            };
+          }),
           deckCards: filtered.map(d => {
             const th = this.THEMES[d.theme];
             return {
@@ -3106,11 +3796,42 @@ class Component extends DCLogic {
               meta: d.count + '장 · ' + th.name + ' · ' + d.time,
               bg: th.bg, ink: th.ink, accent: th.accent,
               generating: d.status === 'generating',
+              faved: !!fav[d.id],
+              dragOpacity: s.dragDeckId === d.id ? 0.4 : 1,
+              dragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; this.setState({ dragDeckId: d.id }); },
+              dragEnd: () => this.setState({ dragDeckId: null }),
+              ctx: (e) => { e.preventDefault(); e.stopPropagation(); this.setState({ deckCtxId: d.id, deckCtxX: Math.min(e.offsetX, 120), deckCtxY: Math.min(e.offsetY, 70) }); },
+              ctxOpen: s.deckCtxId === d.id,
+              ctxX: (s.deckCtxId === d.id ? s.deckCtxX : 0) + 'px',
+              ctxY: (s.deckCtxId === d.id ? s.deckCtxY : 0) + 'px',
+              ctxItems: (() => {
+                const mk = (icon, name, fn, color) => ({ isItem: true, divider: false, icon, name, color: color || '#1A1A1A', pick: (e) => { e.stopPropagation(); this.setState({ deckCtxId: null }); fn(); } });
+                const div = { isItem: false, divider: true, icon: '', name: '', color: '', pick: () => {} };
+                return [
+                  mk('open_in_new', '열기', () => { if (d.openable) this._openSample(); else this._showToast('프로토타입에서는 예시 덱만 열 수 있어요'); }),
+                  mk(fav[d.id] ? 'star' : 'star_border', fav[d.id] ? '즐겨찾기 해제' : '즐겨찾기', () => this.setState(st => ({ favs: { ...st.favs, [d.id]: !((st.favs || {})[d.id]) } }))),
+                  mk('drive_file_rename_outline', '이름 변경', () => this._showToast('이름 변경 (프로토타입)')),
+                  mk('content_copy', '복제', () => { this.setState(st => ({ decks: [...st.decks, { ...d, id: Date.now(), title: d.title + ' 사본', time: '방금' }] })); this._showToast("'" + d.title + "' 복제됨"); }),
+                  mk('drive_file_move', '폴더로 이동', () => this.setState({ folderMenuId: d.id })),
+                  div,
+                  mk('delete', '삭제', () => { this.setState(st => ({ decks: st.decks.filter(x => x.id !== d.id), trash: [{ ...d, delAt: '방금' }, ...st.trash] })); this._showToast("'" + d.title + "' 휴지통으로 이동"); }, '#E5484D')
+                ];
+              })(),
+              folderMenuOpen: s.folderMenuId === d.id,
+              folderToggle: (e) => { e.stopPropagation(); this.setState(st => ({ folderMenuId: st.folderMenuId === d.id ? null : d.id })); },
+              folderOpts: [{ id: 'none', name: '미분류' }, ...s.folders].map(f => ({
+                name: f.name,
+                bg: (dfolder[d.id] || 'none') === f.id ? '#F0F0EE' : 'transparent',
+                pick: (e) => { e.stopPropagation(); this.setState(st => ({ deckFolder: { ...st.deckFolder, [d.id]: f.id }, folderMenuId: null })); this._showToast("'" + d.title + "' → " + f.name); }
+              })),
+              favIcon: fav[d.id] ? 'star' : 'star_border',
+              favColor: fav[d.id] ? '#1A1A1A' : '#B4B4AE',
+              toggleFav: (e) => { e.stopPropagation(); this.setState(st => ({ favs: { ...st.favs, [d.id]: !((st.favs || {})[d.id]) } })); this._showToast((fav[d.id] ? '즐겨찾기 해제: ' : '즐겨찾기: ') + d.title); },
               open: () => {
                 if (d.openable) this._openSample();
                 else this._showToast('프로토타입에서는 예시 덱만 열 수 있어요');
               },
-              del: (e) => { e.stopPropagation(); this.setState(st => ({ decks: st.decks.filter(x => x.id !== d.id) })); this._showToast("'" + d.title + "' 삭제됨"); }
+              del: (e) => { e.stopPropagation(); this.setState(st => ({ decks: st.decks.filter(x => x.id !== d.id), trash: [{ ...d, delAt: '방금' }, ...st.trash] })); this._showToast("'" + d.title + "' 휴지통으로 이동"); }
             };
           }),
           showNewTile: filtered.length > 0 || (!q && s.deckFilter === 'all'),
@@ -3126,7 +3847,10 @@ class Component extends DCLogic {
           })
         };
       })(),
-      focusNothing: () => this._showToast('프로토타입에서는 예시 덱 1개만 제공됩니다'),
+      focusNothing: () => {
+        this.setState({ prompt: '', refFileName: '', sbFrames: [] });
+        this._showToast('새 덱 — 위 프롬프트에 주제를 입력하거나 스토리보드를 구성하세요');
+      },
       streaming: s.streaming,
       outlineDone: s.outlineDone,
       notOutlineDone: !s.outlineDone,
@@ -3153,7 +3877,7 @@ class Component extends DCLogic {
           name: opt.l,
           rowBg: o.viz === opt.v ? '#F0F0EE' : 'transparent',
           weight: o.viz === opt.v ? 700 : 500,
-          check: o.viz === opt.v ? '✓' : '',
+          check: o.viz === opt.v ? 'check' : '',
           pick: (e) => {
             e.stopPropagation();
             this.setState(st => { const arr = [...st.outline]; arr[i] = { ...arr[i], viz: opt.v }; return { outline: arr, dd: null }; });
@@ -3174,6 +3898,11 @@ class Component extends DCLogic {
         return {
           num: String(i + 1),
           layoutName: layNames[lay] || lay,
+          miniBullets: lay === 'chart' || lay === 'bullets' || lay === 'plain',
+          miniChart: lay === 'chart',
+          miniKpi: lay === 'kpi',
+          miniTable: lay === 'table',
+          miniCover: lay === 'cover' || lay === 'section',
           title: o.title || '',
           done: st === 'done',
           gen: st === 'generating',
@@ -3189,6 +3918,7 @@ class Component extends DCLogic {
           del: (e) => { e.stopPropagation(); this._delSlide(i); },
           lock: (e) => { e.stopPropagation(); this._toggleLock(i); },
           locked: !!o.locked,
+          lockDim: o.locked ? '0.75' : '1',
           presence: s.collab.filter(c => c.slide === i).map(c => ({ name: c.name, color: c.color })),
           gridSelect: () => { this._goSlide(i); this.setState({ gridView: false }); },
           hasSection: !!o.section,
@@ -3217,7 +3947,52 @@ class Component extends DCLogic {
       cur: s.cur, curNum: String(s.cur + 1),
       prevSlide: () => this._goSlide(s.cur - 1),
       nextSlide: () => this._goSlide(s.cur + 1),
-      slideAnimKey: 'slide-' + s.cur + '-' + (s.animNonce || 0),
+      slideAnimKey: 'slide-' + s.cur + '-' + (s.animNonce || 0) + '-' + (s.tlNonce || 0),
+      hasRtToast: !!s.rtToast,
+      rtWho: s.rtToast ? s.rtToast.who : '',
+      rtInitial: s.rtToast ? s.rtToast.initial : '',
+      rtColor: s.rtToast ? s.rtToast.color : '#1A1A1A',
+      rtText: s.rtToast ? s.rtToast.text : '',
+      rtToastOpen: () => { const ev = this.state.rtToast; if (ev) this._goSlide(ev.slide - 1); this.setState({ rtToast: null, notifOpen: true }); },
+      notifOpen: s.notifOpen,
+      toggleNotif: () => this.setState(st => ({ notifOpen: !st.notifOpen })),
+      unreadCount: String(s.notifs.filter(n => n.unread).length),
+      hasUnread: s.notifs.some(n => n.unread),
+      noNotif: s.notifs.length === 0,
+      markAllRead: (e) => { e.stopPropagation(); this.setState(st => ({ notifs: st.notifs.map(n => ({ ...n, unread: false })) })); },
+      notifList: s.notifs.map(n => ({
+        text: n.text, time: n.time, slide: String(n.slide), initial: n.initial, color: n.color, unread: n.unread,
+        bg: n.unread ? '#FBFBFA' : '#FFFFFF',
+        open: () => { this._goSlide(n.slide - 1); this.setState(st => ({ notifs: st.notifs.map(x => x.id === n.id ? { ...x, unread: false } : x), notifOpen: false, tab: 'cmts' })); }
+      })),
+      tlOpen: s.tlOpen,
+      toggleTimeline: () => this.setState(st => ({ tlOpen: !st.tlOpen })),
+      tlBtnBg: s.tlOpen ? '#1A1A1A' : '#FFFFFF',
+      tlBtnColor: s.tlOpen ? '#FFFFFF' : '#1A1A1A',
+      tlBtnBorder: s.tlOpen ? '#1A1A1A' : '#E4E4E0',
+      tlStagger: String(s.tlStagger || 200),
+      onTlStagger: (e) => this.setState({ tlStagger: parseInt(e.target.value, 10) }),
+      tlEffects: [{ id: 'fade', n: '페이드' }, { id: 'rise', n: '떠오름' }, { id: 'pop', n: '팝' }].map(f => ({
+        name: f.n,
+        bg: (s.tlEffect || 'fade') === f.id ? '#F0F0EE' : '#FFFFFF',
+        color: (s.tlEffect || 'fade') === f.id ? '#1A1A1A' : '#8A8A84',
+        pick: () => this.setState({ tlEffect: f.id })
+      })),
+      tlTracks: (() => {
+        const st = s.tlStagger || 200;
+        return [['제목', 0], ['본문', 1], ['보조 요소', 2]].map(([n, i]) => ({
+          name: n, order: String(i + 1), delay: String(i * st),
+          barL: Math.round(i * st / (2 * st + 500) * 100) + '%',
+          barW: Math.round(500 / (2 * st + 500) * 100) + '%'
+        }));
+      })(),
+      tlPlay: () => { this.setState(st => ({ tlNonce: (st.tlNonce || 0) + 1, tlPlaying: true })); this._showToast('모션 타임라인 재생'); this._after(2000, () => this.setState({ tlPlaying: false })); },
+      ...(() => {
+        const kf = { fade: 'dgFade', rise: 'tlRise', pop: 'tlPop' }[s.tlEffect || 'fade'];
+        const st = s.tlStagger || 200;
+        const mk = (i) => s.tlPlaying ? kf + ' .5s both ' + (i * st) + 'ms' : 'none';
+        return { tlTitle: mk(0), tlBody: mk(1), tlAux: mk(2) };
+      })(),
       previewTrans: () => {
         if (this.state.transition === 'none') { this._showToast("전환 효과가 '없음'이에요 — 먼저 효과를 선택하세요"); return; }
         this.setState(st => ({ animNonce: (st.animNonce || 0) + 1 }));
@@ -3569,7 +4344,7 @@ class Component extends DCLogic {
         name: m.n, icon: m.icon, isPlus: m.plus,
         weight: s.model === m.n ? 700 : 400,
         rowBg: s.model === m.n ? '#F7F7F5' : 'transparent',
-        check: s.model === m.n ? '✓' : '',
+        check: s.model === m.n ? 'check' : '',
         opacity: m.plus ? 0.6 : 1,
         pick: () => {
           if (m.plus) { this._showToast(m.n + '은(는) Plus 플랜부터 사용할 수 있어요'); return; }
@@ -3856,9 +4631,18 @@ class Component extends DCLogic {
       }),
       presenting: s.presenting,
       notPresenting: !s.presenting,
+      following: !!s.followId,
+      notFollowing: !s.followId,
+      followName: (() => { const f = s.collab.find(c => c.id === s.followId); return f ? f.name.replace(/\s.*/, '') : ''; })(),
+      stopFollow: () => this.setState({ followId: null }),
       collabAvatars: s.collab.map(c => ({
         initial: c.initial,
         color: c.color,
+        ring: s.followId === c.id ? '2px solid #1A1A1A' : '2px solid #fff',
+        follow: () => {
+          if (this.state.followId === c.id) { this.setState({ followId: null }); this._showToast(c.name + ' 팔로우 해제'); }
+          else { this.setState({ followId: c.id }); this._goSlide(c.slide); this._showToast(c.name + ' 팔로우 시작 — 이동을 따라갑니다'); }
+        },
         tooltip: c.name + ' — 슬라이드 ' + (c.slide + 1) + ' 보는 중'
       })),
       collabCount: String(s.collab.length + 1),
@@ -3890,7 +4674,9 @@ class Component extends DCLogic {
         left: Math.round(c.x) + 'px',
         top: Math.round(c.y) + 'px',
         color: c.color,
-        label: c.editing ? c.name + ' · 편집 중…' : c.name
+        initial: c.initial,
+        editing: c.editing,
+        name: c.name
       })),
       brandLogo: s.brand.logo,
       onBrandLogo: (e) => this.setState(st => ({ brand: { ...st.brand, logo: e.target.value } })),
@@ -3911,20 +4697,36 @@ class Component extends DCLogic {
         pick: () => { this.setState(st => ({ brand: { ...st.brand, accent: b.id } })); this._showToast('브랜드 색: ' + b.name + ' — 전체 슬라이드에 적용됨'); }
       })),
       shortcutsOpen: s.shortcutsOpen,
+      openShortcuts: () => this.setState({ shortcutsOpen: true }),
       closeShortcuts: () => this.setState({ shortcutsOpen: false }),
-      shortcuts: [
-        { key: '← / →', desc: '이전 / 다음 슬라이드' },
-        { key: 'Space · Enter', desc: '다음 슬라이드 (발표 모드)' },
-        { key: 'Esc', desc: '발표 종료 · 편집 취소' },
-        { key: 'N', desc: '발표자 노트 표시/숨김' },
-        { key: '더블클릭', desc: '제목·텍스트 즉석 편집' },
-        { key: '드래그', desc: '요소 이동 · 썸네일 순서 변경' },
-        { key: '?', desc: '이 단축키 목록' }
+      shortcutGroups: [
+        { label: '탐색', items: [
+          { key: '← / →', desc: '이전 / 다음 슬라이드' },
+          { key: 'F', desc: '슬라이드 검색' },
+          { key: '?', desc: '이 단축키 목록' }
+        ] },
+        { label: '요소 편집', items: [
+          { key: '더블클릭', desc: '제목·텍스트 즉석 편집' },
+          { key: '드래그', desc: '요소 이동 (스냅 가이드)' },
+          { key: '⌘/Ctrl C', desc: '선택 요소 복사' },
+          { key: '⌘/Ctrl V', desc: '붙여넣기' },
+          { key: '⌘/Ctrl D', desc: '복제' },
+          { key: '⌘/Ctrl G', desc: '그룹화 (Shift+G 해제)' },
+          { key: '[ / ]', desc: '뒤로 / 앞으로 (z-order)' },
+          { key: 'Delete', desc: '선택 요소 삭제' }
+        ] },
+        { label: '발표', items: [
+          { key: 'Space · Enter', desc: '다음 슬라이드' },
+          { key: 'N', desc: '발표자 노트 표시/숨김' },
+          { key: 'Esc', desc: '발표 종료 · 편집 취소' }
+        ] }
       ],
       settingsOpen: s.settingsOpen,
       openSettings: () => this.setState({ settingsOpen: true }),
       closeSettings: () => this.setState({ settingsOpen: false }),
       noop: () => this._showToast('프로토타입 — 결제는 연결되어 있지 않아요'),
+      planLabel: ({ free: 'Free', beginner: 'Beginner', plus: 'Plus', pro: 'Pro' })[s.userPlan] || 'Free',
+      openUpgrade: () => this.setState({ upgradeOpen: true, settingsOpen: false }),
       logout: () => {
         this.setState({ settingsOpen: false, authed: false, authMode: 'login', authPw: '', screen: 'home' });
         this._showToast('로그아웃됐어요');
@@ -4099,9 +4901,38 @@ class Component extends DCLogic {
       obBack: () => this.setState(st => ({ obStep: Math.max(0, st.obStep - 1) })),
       obSkip: () => this.setState({ onboardDone: true }),
       obFinish: () => { this.setState({ onboardDone: true }); this._showToast(s.obLang + ' · ' + (s.obFocus.join(', ') || '자유 주제') + ' 기준으로 설정됐어요'); },
+      ...(() => {
+        const focus = s.obFocus[0] || 'Other';
+        const RECO = {
+          'Startup Pitch': [
+            { name: '시드 투자 피치덱', desc: '문제·솔루션·시장·트랙션 10장', prompt: '우리 스타트업 시드 투자 피치덱을 만들어줘', theme: 3, count: 10 },
+            { name: '제품 데모데이', desc: '제품 중심 8장', prompt: '데모데이 발표용 제품 소개 덱', theme: 0, count: 8 },
+            { name: 'IR 업데이트', desc: '투자자 분기 업데이트', prompt: '투자자 대상 분기 실적 IR 덱', theme: 1, count: 6 }
+          ],
+          'Business Report': [
+            { name: '분기 실적 보고', desc: 'KPI·차트 중심 6장', prompt: '2026 상반기 분기 실적 보고서', theme: 1, count: 6 },
+            { name: '시장 분석 리포트', desc: '경쟁·트렌드 분석', prompt: '시장 및 경쟁 분석 리포트', theme: 0, count: 8 },
+            { name: '전략 제안서', desc: '문제진단·전략·기대효과', prompt: '소상공인 경영바우처 지원 제안서를 만들어줘', theme: 0, count: 5 }
+          ],
+          'Sales Deck': [
+            { name: '영업 제안서', desc: '고객 맞춤 제안 6장', prompt: '고객사 대상 영업 제안 덱', theme: 0, count: 6 },
+            { name: '제품 소개서', desc: '기능·가치 중심', prompt: '신제품 소개 세일즈 덱', theme: 3, count: 7 },
+            { name: '경영바우처 제안서', desc: '지원사업 제안 5장', prompt: '소상공인 경영바우처 지원 제안서를 만들어줘', theme: 0, count: 5 }
+          ]
+        };
+        const list = RECO[focus] || RECO['Sales Deck'];
+        return {
+          obRecoLabel: focus,
+          obRecos: list.map(r => ({
+            name: r.name, desc: r.desc,
+            bg: this.THEMES[r.theme].bg, accent: this.THEMES[r.theme].accent,
+            pick: () => { this.setState({ onboardDone: true, prompt: r.prompt, themeIdx: r.theme, count: r.count }); this._showToast("'" + r.name + "' 템플릿으로 아웃라인 생성 중…"); this._after(400, () => this._goOutline()); }
+          }))
+        };
+      })(),
       historyOpen: s.historyOpen,
       openHistory: () => this.setState({ historyOpen: true, exportOpen: false }),
-      closeHistory: () => this.setState({ historyOpen: false }),
+      closeHistory: () => this.setState({ historyOpen: false, compareId: null }),
       saveVersion: () => { this._snap('수동 저장'); this._showToast('현재 상태가 버전으로 저장됐어요'); },
       noVersions: s.versions.length === 0,
       versionList: s.versions.map(v => ({
@@ -4112,8 +4943,35 @@ class Component extends DCLogic {
         dot: v.id === s.curVersionId ? '#1A1A1A' : '#C9C9C4',
         frame: v.id === s.curVersionId ? '1.5px solid #D4D4CE' : '1px solid #E4E4E0',
         bg: v.id === s.curVersionId ? '#F7FBF8' : '#FFFFFF',
-        restore: () => this._restoreVersion(v)
+        restore: () => this._restoreVersion(v),
+        compare: () => this.setState({ compareId: v.id })
       })),
+      ...(() => {
+        const v = s.versions.find(x => x.id === s.compareId);
+        if (!v) return { compareOpen: false, diffRows: [] };
+        const oldO = v.snapshot.outline || [];
+        const curO = s.outline || [];
+        const n = Math.max(oldO.length, curO.length);
+        const rows = [];
+        let added = 0, removed = 0, changed = 0;
+        for (let i = 0; i < n; i++) {
+          const a = oldO[i], b = curO[i];
+          const at = a ? a.title : '', bt = b ? b.title : '';
+          let mark = 'remove', markColor = '#C9C9C4', bg = 'transparent', aColor = '#6B6B66', aDeco = 'none', bWeight = 400;
+          if (a && !b) { mark = 'arrow_forward'; markColor = '#E5484D'; aDeco = 'line-through'; bg = '#FFF8F8'; removed++; }
+          else if (!a && b) { mark = 'add'; markColor = '#1A1A1A'; bg = '#FBFBFA'; bWeight = 700; added++; }
+          else if (at !== bt) { mark = 'arrow_forward'; markColor = '#1A1A1A'; bg = '#FBFBFA'; bWeight = 700; changed++; }
+          rows.push({ num: String(i + 1), a: at || '—', b: bt || '—', mark, markColor, bg, aColor, aDeco, bWeight });
+        }
+        const themeChg = this.THEMES[v.snapshot.themeIdx].name !== this.THEMES[s.themeIdx].name;
+        return {
+          compareOpen: true,
+          compareTitle: "'" + v.label + "' ↔ 현재 비교",
+          closeCompare: () => this.setState({ compareId: null }),
+          diffRows: rows,
+          diffSummary: '추가 ' + added + ' · 삭제 ' + removed + ' · 변경 ' + changed + (themeChg ? ' · 테마 변경(' + this.THEMES[v.snapshot.themeIdx].name + '→' + this.THEMES[s.themeIdx].name + ')' : '')
+        };
+      })(),
       shareOpen: s.shareOpen,
       openShare: () => this.setState({ shareOpen: true, copied: false, exportOpen: false }),
       closeShare: () => this.setState({ shareOpen: false }),
@@ -4161,9 +5019,52 @@ class Component extends DCLogic {
           this.setState(st => ({ sbFrames: [...(st.sbFrames || []), w] }));
         }
       })),
+      wireLibGroups: (() => {
+        const CATS = [
+          { key: '기본 · 텍스트', ids: ['cover', 'section', 'bullets', 'agenda', 'closing'] },
+          { key: '차트 · 데이터', ids: ['bar', 'stackbar', 'pie', 'kpi', 'table', 'bignum', 'gantt', 'calendar'] },
+          { key: '다이어그램 · 관계', ids: ['process', 'chevron3', 'cycle', 'hub', 'triad', 'compare', 'flow3', 'grid9', 'swot', 'phasematrix', 'asistobe'] },
+          { key: '조직 · 타임라인', ids: ['org', 'timeline', 'milestone', 'vsteps', 'consortium'] },
+          { key: '콘텐츠 · 미디어', ids: ['image', 'iconrow', 'beforeafter', 'persona', 'news'] }
+        ];
+        const idxOf = {};
+        this.WIRE_LIB.forEach((w, i) => { idxOf[w.id] = i; });
+        const sel = s.wfCat || 'all';
+        const favs = s.wfFavs || {};
+        const mkItem = (id) => {
+          const i = idxOf[id];
+          const w = this.WIRE_LIB[i];
+          return {
+            name: w.name,
+            blocks: this._wfBlocks(w),
+            fav: !!favs[id],
+            favIcon: favs[id] ? 'star' : 'star_border',
+            favColor: favs[id] ? '#1A1A1A' : '#B4B4AE',
+            toggleFav: (e) => { e.stopPropagation(); this.setState(st => { const f = { ...st.wfFavs }; if (f[id]) delete f[id]; else f[id] = true; return { wfFavs: f }; }); },
+            zoom: (e) => { e.stopPropagation(); this.setState({ wfZoomIdx: i }); },
+            add: () => { this.setState(st => ({ sbFrames: [...(st.sbFrames || []), w] })); }
+          };
+        };
+        const groups = [];
+        const favIds = this.WIRE_LIB.map(w => w.id).filter(id => favs[id]);
+        if (favIds.length && sel === 'all') {
+          groups.push({ cat: '★ 즐겨찾기', count: String(favIds.length), items: favIds.map(mkItem) });
+        }
+        CATS.filter(c => sel === 'all' || c.key === sel).forEach(c => {
+          groups.push({ cat: c.key, count: String(c.ids.length), items: c.ids.filter(id => idxOf[id] !== undefined).map(mkItem) });
+        });
+        return groups;
+      })(),
+      wfCatTabs: ['all', '기본 · 텍스트', '차트 · 데이터', '다이어그램 · 관계', '조직 · 타임라인', '콘텐츠 · 미디어'].map(k => ({
+        label: k === 'all' ? '전체' : k,
+        bg: (s.wfCat || 'all') === k ? '#1A1A1A' : '#FFFFFF',
+        color: (s.wfCat || 'all') === k ? '#FFFFFF' : '#4A4A45',
+        border: (s.wfCat || 'all') === k ? '#1A1A1A' : '#E4E4E0',
+        pick: () => this.setState({ wfCat: k })
+      })),
       wfZoomOpen: s.wfZoomIdx !== null,
       wfZoomName: s.wfZoomIdx !== null ? this.WIRE_LIB[s.wfZoomIdx].name : '',
-      wfZoomDesc: s.wfZoomIdx !== null ? ({ cover: '덱의 첫 장 — 제목·발표자·날짜', section: '파트 전환용 브릿지 슬라이드', bullets: '가장 기본적인 본문 구성', bar: '좌측 차트 + 우측 핵심 포인트', pie: '비중·구성비를 보여줄 때', kpi: '핵심 수치 3개를 크게 강조', process: '단계별 흐름·절차 설명', table: '항목별 before/after 비교', image: '스크린샷·사진 중심 장표', compare: '두 대안을 나란히 대조', closing: '마지막 장 — 행동 촉구' })[this.WIRE_LIB[s.wfZoomIdx].id] || '' : '',
+      wfZoomDesc: s.wfZoomIdx !== null ? ({ cover: '덱의 첫 장 — 제목·발표자·날짜', section: '파트 전환용 브릿지 슬라이드', bullets: '가장 기본적인 본문 구성', bar: '좌측 차트 + 우측 핵심 포인트', pie: '비중·구성비를 보여줄 때', kpi: '핵심 수치 3개를 크게 강조', process: '단계별 흐름·절차 설명', table: '항목별 before/after 비교', image: '스크린샷·사진 중심 장표', compare: '두 대안을 나란히 대조', closing: '마지막 장 — 행동 촉구', tri3col: '이슈·해결방안·기대효과 3단 대조', flow3: '기준→방안→점검 흐름형 매트릭스', grid9: '9개 영역을 3×3 카드로 정리', timeline: '연혁·로드맵 시간축 흐름', beforeafter: '도입 전/후 개선 효과 대비', org: '사업 수행 조직도·역할 구성', triad: '3요소 상호관계 다이어그램', bignum: '핵심 성과 수치를 임팩트 있게', chevron3: '3단계 흐름을 화살표 헤더로 강조', cycle: '순환·반복 프로세스 원형 배치', hub: '중앙 허브 + 4방향 구성요소', agenda: '목차·아젠다 2열 번호 리스트', vsteps: '좌측 4단계 + 우측 상세 설명', gantt: '월별 로드맵·추진 일정 간트', calendar: '월별 캘린더·작업 집중도 표시', asistobe: 'AS-IS / TO-BE 개선 전후 비교', phasematrix: '단계(1·2·3)별 분야 로드맵 매트릭스', iconrow: '아이콘 요소 5개 + 하단 사진 근거', consortium: '주관사 중심 컨소시엄 3사 구성', persona: '이해관계자 3인의 목소리·요구', news: '보도자료·언론 인용 3단 카드', swot: '강점·약점·기회·위협 2×2 분석', milestone: '주요 마일스톤을 시간축에 배치', stackbar: '항목별 누적 구성을 스택 막대로 비교' })[this.WIRE_LIB[s.wfZoomIdx].id] || '' : '',
       wfZoomBlocks: s.wfZoomIdx !== null ? this._wfBlocks(this.WIRE_LIB[s.wfZoomIdx]) : [],
       wfZoomClose: () => this.setState({ wfZoomIdx: null }),
       wfZoomPrev: () => this.setState(st => ({ wfZoomIdx: (st.wfZoomIdx + this.WIRE_LIB.length - 1) % this.WIRE_LIB.length })),
@@ -4550,6 +5451,41 @@ class Component extends DCLogic {
       undoColor: s.history.length ? '#1A1A1A' : '#C9C9C4',
       exportOpen: s.exportOpen,
       toggleExport: () => this.setState(st => ({ exportOpen: !st.exportOpen })),
+      hasSavedTpl: (s.savedTpls || []).length > 0,
+      savedTplCards: (s.savedTpls || []).map(t => {
+        const th = this.THEMES[t.theme] || this.THEMES[0];
+        return {
+          name: t.name, meta: t.meta, coverTitle: t.coverTitle,
+          bg: th.bg, ink: th.ink, accent: th.accent,
+          pick: () => { this.setState({ prompt: t.prompt, count: t.count, themeIdx: t.theme, styleId: t.style || 'presentation', screen: 'setup' }); this._showToast("'" + t.name + "' 템플릿 적용 — 스타일·테마를 확인하세요"); },
+          del: () => { this.setState(st => ({ savedTpls: st.savedTpls.filter(x => x.id !== t.id) })); this._showToast("'" + t.name + "' 템플릿을 삭제했어요"); }
+        };
+      }),
+      tplSaveOpen: s.tplSaveOpen,
+      openTplSave: () => this.setState({ exportOpen: false, tplSaveOpen: true, tplName: '경영바우처 지원 제안서 템플릿', tplScope: 'me' }),
+      closeTplSave: () => this.setState({ tplSaveOpen: false }),
+      tplName: s.tplName,
+      onTplName: (e) => this.setState({ tplName: e.target.value }),
+      tplScopeMe: () => this.setState({ tplScope: 'me' }),
+      tplScopeWs: () => this.setState({ tplScope: 'ws' }),
+      tplScopeMeFrame: s.tplScope === 'me' ? '1.5px solid #1A1A1A' : '1px solid #E4E4E0',
+      tplScopeMeBg: s.tplScope === 'me' ? '#F0F0EE' : '#FFFFFF',
+      tplScopeWsFrame: s.tplScope === 'ws' ? '1.5px solid #1A1A1A' : '1px solid #E4E4E0',
+      tplScopeWsBg: s.tplScope === 'ws' ? '#F0F0EE' : '#FFFFFF',
+      saveTpl: () => {
+        const nm = (s.tplName || '').trim();
+        if (!nm) { this._showToast('템플릿 이름을 입력하세요'); return; }
+        const th = this.THEMES[s.themeIdx] || this.THEMES[0];
+        const cover = (s.outline[0] || this.OUTLINE_DATA[0]).title;
+        const styleName = { presentation: 'Presentation', keynote: 'Keynote', report: 'Report', standard: 'Standard' }[s.styleId] || 'Presentation';
+        const tpl = {
+          id: 'tpl' + Date.now(), name: nm, coverTitle: cover,
+          meta: s.count + '장 · ' + th.name + ' · ' + (s.tplScope === 'ws' ? '워크스페이스' : '나만'),
+          prompt: s.prompt, count: s.count, theme: s.themeIdx, style: s.styleId
+        };
+        this.setState(st => ({ savedTpls: [...st.savedTpls, tpl], tplSaveOpen: false }));
+        this._showToast("'" + nm + "' 템플릿으로 저장됐어요 — 홈 '내 템플릿'에서 사용하세요");
+      },
       exportFmts: [
         { id: 'png', name: 'Images (.png)', desc: '슬라이드마다 PNG 이미지로 저장' },
         { id: 'pdf', name: 'PDF (.pdf)', desc: '공유나 인쇄에 적합한 고정 레이아웃' },
@@ -4573,11 +5509,43 @@ class Component extends DCLogic {
       exportLabel: s.exportFmt.toUpperCase(),
       doExport: () => {
         const fmt = s.exportFmt;
-        const ext = fmt === 'png' ? 'zip' : fmt;
         this.setState({ exportOpen: false });
-        this._showToast(fmt === 'fig'
-          ? '경영바우처 지원 제안서.fig 다운로드 — Figma에서 Import하면 슬라이드가 Frame으로 열립니다'
-          : '경영바우처 지원 제안서.' + ext + ' 다운로드 시작 (시뮬레이션)');
+        if (fmt === 'pptx') {
+          try {
+            const blob = this._buildPptx();
+            this._download('경영바우처 지원 제안서.pptx', blob);
+            this._showToast('경영바우처 지원 제안서.pptx 다운로드 완료 — PowerPoint·Keynote에서 열립니다');
+          } catch (err) {
+            this._showToast('PPTX 생성 오류: ' + err.message);
+          }
+          return;
+        }
+        if (fmt === 'fig') {
+          try {
+            const blob = this._buildFigSvgZip();
+            this._download('경영바우처 지원 제안서 (Figma SVG).zip', blob);
+            this._showToast('Figma용 SVG 묶음 다운로드 완료 — Figma 캔버스에 드래그하면 편집 가능한 벡터 레이어로 열립니다');
+          } catch (err) { this._showToast('내보내기 오류: ' + err.message); }
+          return;
+        }
+        if (fmt === 'pdf') {
+          try {
+            const blob = this._buildPdf();
+            this._download('경영바우처 지원 제안서.pdf', blob);
+            this._showToast('경영바우처 지원 제안서.pdf 다운로드 완료 — 슬라이드별 1페이지');
+          } catch (err) { this._showToast('PDF 생성 오류: ' + err.message); }
+          return;
+        }
+        if (fmt === 'png') {
+          try {
+            this._buildPngZip().then(blob => {
+              this._download('경영바우처 지원 제안서 (PNG).zip', blob);
+              this._showToast('슬라이드 PNG 이미지 묶음 다운로드 완료');
+            });
+          } catch (err) { this._showToast('PNG 생성 오류: ' + err.message); }
+          return;
+        }
+        this._showToast('경영바우처 지원 제안서.zip 다운로드 시작');
       },
       upgradeOpen: s.upgradeOpen,
       upgradeClose: () => this.setState({ upgradeOpen: false }),

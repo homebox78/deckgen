@@ -1,7 +1,7 @@
 // AI 응답 zod 검증 — 클라이언트 schema.ts(§3)와 동일 구조
 import { z } from "zod";
 
-export const vizTypeSchema = z.enum(["bar", "line", "pie", "kpi-cards", "process"]);
+export const vizTypeSchema = z.enum(["bar", "line", "pie", "kpi-cards", "process", "image", "table"]);
 
 export const outlineSlideSchema = z.object({
   index: z.number().int().nonnegative(),
