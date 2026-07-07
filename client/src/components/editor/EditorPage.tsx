@@ -12,6 +12,7 @@ import { aspectDims, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
 import { addSavedTemplate } from "../../store/savedTemplateStore";
+import { useComments } from "../../store/commentStore";
 import {
   CLIENT_ID,
   MY_COLOR,
@@ -407,6 +408,7 @@ export function EditorPage() {
   const zoom = useUiStore((s) => s.zoom);
 
   const [tab, setTab] = useState<RightTab>("chat");
+  const allComments = useComments(deck?.id ?? "");
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
@@ -540,6 +542,7 @@ export function EditorPage() {
   const dims = aspectDims(deck.aspect);
   const slideIndex = Math.min(currentSlideIndex, deck.slides.length - 1);
   const slide = deck.slides[slideIndex];
+  const unresolvedComments = allComments.filter((c) => c.slideId === slide?.id && !c.resolved).length;
   const selectedElement =
     slide.elements.find((el) => el.id === selectedElementId) ?? null;
 
@@ -1279,13 +1282,18 @@ export function EditorPage() {
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`px-3 py-2 text-[13px] font-semibold ${
+                className={`flex items-center gap-1 px-3 py-2 text-[13px] font-semibold ${
                   tab === key
                     ? "border-b-2 border-app-accent text-app-text"
                     : "border-b-2 border-transparent text-app-faint hover:text-app-text"
                 }`}
               >
                 {label}
+                {key === "comments" && unresolvedComments > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
+                    {unresolvedComments}
+                  </span>
+                )}
               </button>
             ))}
           </div>

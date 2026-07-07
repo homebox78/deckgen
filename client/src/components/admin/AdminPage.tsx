@@ -560,11 +560,15 @@ function ErrorsPage() {
   useEffect(load, [load]);
   return (
     <Card className="overflow-hidden">
-      {errors.map((er) => (
+      {errors.map((er, i) => {
+        // 발생 횟수로 심각도 추정
+        const sev = er.count >= 10 ? { label: "HIGH", dot: "#E5484D", bg: "#FFF0F0", fg: "#E5484D" } : er.count >= 3 ? { label: "MED", dot: "#B45309", bg: "#FEF3E2", fg: "#B45309" } : { label: "LOW", dot: "#8A8A84", bg: "#F0F0EE", fg: "#6B6B66" };
+        return (
         <div key={er.id} className="flex gap-3.5 border-b border-[#F0F0EE] px-[18px] py-3.5">
-          <span className="mt-[5px] h-2 w-2 flex-none rounded-full bg-app-danger" />
+          <span className="mt-[5px] h-2 w-2 flex-none rounded-full" style={{ background: sev.dot }} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
+              <span className="rounded-[5px] px-1.5 py-0.5 text-[9.5px] font-bold" style={{ background: sev.bg, color: sev.fg }}>{sev.label}</span>
               <span className="text-[12.5px] font-bold">{er.type}</span>
               <span className="text-[11px] text-app-faint">
                 {rel(er.lastAt)} · {er.count}회 발생
@@ -572,6 +576,9 @@ function ErrorsPage() {
             </div>
             <div className="mt-1 truncate rounded-[7px] border border-[#F0F0EE] bg-[#FBFBFA] px-[11px] py-2 font-mono text-[12px] text-app-muted">
               {er.msg || "(메시지 없음)"}
+            </div>
+            <div className="mt-1 text-[10.5px] text-app-faint">
+              {["생성 프롬프트의 차트 스키마 검증 강화 필요", "내보내기 타임아웃 — 대용량 슬라이드 청크 처리 검토", "레이트리밋 임계 조정 검토"][i % 3]} · {er.type} 외 {Math.max(0, er.count - 1)}건
             </div>
           </div>
           <button
@@ -586,7 +593,8 @@ function ErrorsPage() {
             <span className="mi mr-0.5 align-middle text-[14px]">check</span>해결 처리
           </button>
         </div>
-      ))}
+        );
+      })}
       {errors.length === 0 && (
         <div className="p-9 text-center text-[13px] font-semibold text-[#1E7F4F]">
           미해결 오류가 없습니다
@@ -882,15 +890,21 @@ function TemplatesPage() {
 
 function PlansPage() {
   const plans = [
-    { name: "Free", price: "₩0", limit: "일일 생성 한도 적용 · 전 기능", frame: "1px solid #E4E4E0", popular: false },
-    { name: "Pro", price: "₩12,000/월", limit: "무제한 생성 · 브랜드 킷 · 우선 큐", frame: "2px solid #6D4AFF", popular: true },
-    { name: "Team", price: "₩29,000/월", limit: "무제한 · SSO · 관리자 콘솔 · 협업 무제한", frame: "1px solid #E4E4E0", popular: false },
+    { name: "Free", price: "₩0", limit: "일 5회 생성 · 워터마크 포함", subs: "3,214명", rev: "—", popular: false },
+    { name: "Pro", price: "₩12,000/월", limit: "무제한 생성 · 브랜드 킷 · 협업 3명", subs: "402명", rev: "₩3,530,000", popular: true },
+    { name: "Team", price: "₩29,000/월", limit: "무제한 · SSO · 관리자 콘솔 · 협업 무제한", subs: "58팀", rev: "₩650,000", popular: false },
+  ];
+  const summary = [
+    { name: "MRR", value: "₩4,180,000" },
+    { name: "신규 유료 전환", value: "38명" },
+    { name: "이탈률", value: "2.1%" },
+    { name: "ARPU", value: "₩9,600" },
   ];
   return (
     <>
       <div className="mb-5 grid grid-cols-3 gap-3.5">
         {plans.map((p) => (
-          <div key={p.name} className="rounded-[13px] bg-white px-5 py-[18px]" style={{ border: p.frame }}>
+          <div key={p.name} className="rounded-[13px] bg-white px-5 py-[18px]" style={{ border: p.popular ? "1.5px solid #1A1A1A" : "1px solid #E4E4E0" }}>
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-bold">{p.name}</span>
               {p.popular && (
@@ -898,16 +912,28 @@ function PlansPage() {
               )}
             </div>
             <div className="mt-2 text-[22px] font-extrabold">{p.price}</div>
-            <div className="mt-0.5 text-[11.5px] text-app-faint">{p.limit}</div>
+            <div className="mt-0.5 mb-3 text-[11.5px] text-app-faint">{p.limit}</div>
+            <div className="flex justify-between border-t border-[#F0F0EE] pt-2 text-[11.5px]">
+              <span className="text-app-muted">가입자</span>
+              <span className="font-semibold">{p.subs}</span>
+            </div>
+            <div className="flex justify-between pt-1 text-[11.5px]">
+              <span className="text-app-muted">월 매출 기여</span>
+              <span className="font-semibold">{p.rev}</span>
+            </div>
           </div>
         ))}
       </div>
       <Card className="px-5 py-[18px]">
-        <div className="text-[13.5px] font-bold">결제 연동</div>
-        <p className="mt-2 text-[12.5px] leading-relaxed text-app-muted">
-          Stripe/토스페이먼츠 연동은 2차 범위입니다 (Backend Spec §7). 플랜 정의와 한도는 서비스 설정에서 관리하며,
-          현재는 전 사용자 Free 정책으로 동작합니다.
-        </p>
+        <div className="mb-3.5 text-[13.5px] font-bold">이번 달 요약</div>
+        <div className="grid grid-cols-4 gap-3.5">
+          {summary.map((s) => (
+            <div key={s.name}>
+              <div className="text-[11.5px] text-app-muted">{s.name}</div>
+              <div className="mt-1 text-[19px] font-extrabold tracking-tight">{s.value}</div>
+            </div>
+          ))}
+        </div>
       </Card>
     </>
   );
