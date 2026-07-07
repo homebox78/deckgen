@@ -86,7 +86,17 @@ export interface TextElement extends ElementBase {
   strike?: boolean;
 }
 
-export type ShapeKind = "rect" | "roundRect" | "ellipse" | "line" | "arrow" | "pie";
+export type ShapeKind =
+  | "rect"
+  | "roundRect"
+  | "ellipse"
+  | "line"
+  | "arrow"
+  | "pie"
+  | "triangle"
+  | "diamond"
+  | "star"
+  | "pill";
 
 export interface ShapeElement extends ElementBase {
   type: "shape";

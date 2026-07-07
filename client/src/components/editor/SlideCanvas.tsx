@@ -1,5 +1,5 @@
 import { Canvas, FabricObject, Point } from "fabric";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
 import { attachSync, consumeInternalUpdate } from "../../engine/fabricSync";
@@ -28,11 +28,13 @@ export function SlideCanvas({
   theme,
   readOnly = false,
   dims = { w: SLIDE_W, h: SLIDE_H },
+  onInsertAt,
 }: {
   slide: Slide;
   theme: Theme;
   readOnly?: boolean;
   dims?: SlideDims;
+  onInsertAt?: (kind: string) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
@@ -41,6 +43,10 @@ export function SlideCanvas({
   slideRef.current = slide;
   const themeRef = useRef(theme);
   themeRef.current = theme;
+  const clipboardRef = useRef<SlideElement | null>(null);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; elementId: string | null } | null>(
+    null,
+  );
 
   useEffect(() => {
     const host = hostRef.current!;
@@ -151,6 +157,22 @@ export function SlideCanvas({
       showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
     });
 
+    // --- 우클릭 컨텍스트 메뉴 (Demo Act 5.5) ---
+    const onCtx = (ev: MouseEvent) => {
+      if (readOnly) return;
+      ev.preventDefault();
+      const target = fc.findTarget(ev as unknown as Parameters<typeof fc.findTarget>[0]);
+      const id = target ? (getElementData(target)?.elementId ?? null) : null;
+      if (target) {
+        fc.setActiveObject(target);
+        fc.requestRenderAll();
+        if (id) useUiStore.getState().setSelectedElementId(id);
+      }
+      setCtxMenu({ x: ev.clientX, y: ev.clientY, elementId: id });
+    };
+    const canvasEl = fc.upperCanvasEl;
+    canvasEl.addEventListener("contextmenu", onCtx);
+
     // --- 단축키 ---
     const activeElement = (): { obj: FabricObject; el: SlideElement } | null => {
       const objs = fc.getActiveObjects();
@@ -185,16 +207,23 @@ export function SlideCanvas({
       }
 
       if (e.key === "Delete" || e.key === "Backspace") {
-        const a = activeElement();
-        if (!a) return;
-        if (a.el.locked) {
-          showToast("잠긴 요소예요 — 속성 패널에서 잠금을 해제하세요");
+        // 다중 선택 삭제 지원 (마퀴로 여러 개 선택 시)
+        const objs = fc.getActiveObjects();
+        if (objs.length === 0) return;
+        const ids = objs
+          .map((o) => getElementData(o)?.elementId)
+          .filter((id): id is string => !!id);
+        const els = ids
+          .map((id) => slideRef.current.elements.find((x) => x.id === id))
+          .filter((x): x is SlideElement => !!x);
+        if (els.some((el) => el.locked)) {
+          showToast("잠긴 요소가 포함돼 있어요 — 잠금을 해제하세요");
           e.preventDefault();
           return;
         }
         fc.discardActiveObject();
         ui.setSelectedElementId(null);
-        store.removeElement(slideRef.current.id, a.el.id);
+        els.forEach((el) => store.removeElement(slideRef.current.id, el.id));
         e.preventDefault();
         return;
       }
@@ -204,6 +233,22 @@ export function SlideCanvas({
         if (!a) return;
         e.preventDefault();
         const copy = { ...a.el, id: uid(), x: a.el.x + 24, y: a.el.y + 24 };
+        store.addElement(slideRef.current.id, copy);
+        ui.setSelectedElementId(copy.id);
+        return;
+      }
+
+      // 복사 / 붙여넣기 (서식 아닌 요소 자체)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+        const a = activeElement();
+        if (a) clipboardRef.current = a.el;
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+        const src = clipboardRef.current;
+        if (!src) return;
+        e.preventDefault();
+        const copy = { ...src, id: uid(), x: src.x + 32, y: src.y + 32 };
         store.addElement(slideRef.current.id, copy);
         ui.setSelectedElementId(copy.id);
         return;
@@ -236,6 +281,7 @@ export function SlideCanvas({
       registerCanvasApi(null);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      canvasEl.removeEventListener("contextmenu", onCtx);
       detachSync();
       ro.disconnect();
       fcRef.current = null;
@@ -271,9 +317,106 @@ export function SlideCanvas({
     };
   }, [slide, theme, readOnly, dims]);
 
+  // 컨텍스트 메뉴 액션
+  const ctxTarget = ctxMenu?.elementId
+    ? slide.elements.find((el) => el.id === ctxMenu.elementId)
+    : null;
+  const closeCtx = () => setCtxMenu(null);
+  const ctxItems: { label: string; shortcut?: string; danger?: boolean; act: () => void }[] = [];
+  if (ctxTarget) {
+    const st = useDeckStore.getState();
+    ctxItems.push(
+      {
+        label: ctxTarget.locked ? "잠금 해제" : "요소 잠금",
+        act: () =>
+          st.updateElement(slide.id, ctxTarget.id, {
+            locked: !ctxTarget.locked || undefined,
+          } as Partial<SlideElement>),
+      },
+      {
+        label: "복사",
+        shortcut: "Ctrl+C",
+        act: () => {
+          clipboardRef.current = ctxTarget;
+        },
+      },
+      {
+        label: "복제",
+        shortcut: "Ctrl+D",
+        act: () => {
+          const copy = { ...ctxTarget, id: uid(), x: ctxTarget.x + 24, y: ctxTarget.y + 24 };
+          st.addElement(slide.id, copy);
+          useUiStore.getState().setSelectedElementId(copy.id);
+        },
+      },
+      { label: "맨 앞으로", act: () => st.reorderElement(slide.id, ctxTarget.id, "front") },
+      { label: "앞으로", shortcut: "]", act: () => st.reorderElement(slide.id, ctxTarget.id, "forward") },
+      { label: "뒤로", shortcut: "[", act: () => st.reorderElement(slide.id, ctxTarget.id, "backward") },
+      { label: "맨 뒤로", act: () => st.reorderElement(slide.id, ctxTarget.id, "back") },
+      {
+        label: "삭제",
+        shortcut: "Del",
+        danger: true,
+        act: () => {
+          if (ctxTarget.locked) {
+            showToast("잠긴 요소예요 — 잠금을 해제하세요");
+            return;
+          }
+          useUiStore.getState().setSelectedElementId(null);
+          st.removeElement(slide.id, ctxTarget.id);
+        },
+      },
+    );
+  } else if (ctxMenu) {
+    const st = useDeckStore.getState();
+    ctxItems.push(
+      {
+        label: "붙여넣기",
+        shortcut: "Ctrl+V",
+        act: () => {
+          const src = clipboardRef.current;
+          if (!src) return showToast("복사한 요소가 없어요");
+          const copy = { ...src, id: uid(), x: src.x + 32, y: src.y + 32 };
+          st.addElement(slide.id, copy);
+          useUiStore.getState().setSelectedElementId(copy.id);
+        },
+      },
+      { label: "텍스트 상자 추가", act: () => onInsertAt?.("text") },
+      { label: "사각형 추가", act: () => onInsertAt?.("rect") },
+    );
+  }
+
   return (
-    <div ref={hostRef} className="h-full w-full overflow-hidden bg-app-canvas">
+    <div ref={hostRef} className="relative h-full w-full overflow-hidden bg-app-canvas">
       <canvas ref={canvasElRef} />
+      {ctxMenu && ctxItems.length > 0 && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={closeCtx} onContextMenu={(e) => { e.preventDefault(); closeCtx(); }} />
+          <div
+            className="fixed z-50 min-w-[196px] rounded-xl border border-app-border bg-white p-1.5 shadow-[0_14px_40px_rgba(0,0,0,.14)]"
+            style={{
+              left: Math.min(ctxMenu.x, window.innerWidth - 210),
+              top: Math.min(ctxMenu.y, window.innerHeight - ctxItems.length * 36 - 12),
+            }}
+          >
+            {ctxItems.map((it, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  it.act();
+                  closeCtx();
+                }}
+                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium hover:bg-app-bg ${
+                  it.danger ? "text-app-danger" : "text-app-text"
+                }`}
+              >
+                {it.label}
+                {it.shortcut && <span className="text-[10.5px] text-app-faint">{it.shortcut}</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

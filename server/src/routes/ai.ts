@@ -267,6 +267,45 @@ async function streamSlides(
   return true;
 }
 
+// ===== POST /api/ai-image (Demo Act 5.5 AI 이미지) =====
+// config.php openai_api_key/openai_model 사용. 키 없거나 실패 시 501 → 클라가 그라디언트 대체.
+aiRouter.post("/ai-image", async (req: Request, res: Response) => {
+  const { prompt, size } = (req.body ?? {}) as { prompt?: unknown; size?: unknown };
+  if (typeof prompt !== "string" || !prompt.trim()) {
+    res.status(400).json({ error: "prompt가 필요합니다." });
+    return;
+  }
+  const key = (process.env.OPENAI_API_KEY ?? "").trim();
+  const model = (process.env.OPENAI_MODEL ?? "").trim();
+  if (!key || !model) {
+    res.status(501).json({ error: "AI 이미지 키가 설정되지 않았습니다." });
+    return;
+  }
+  try {
+    const r = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        prompt: prompt.trim(),
+        n: 1,
+        size: typeof size === "string" ? size : "1024x1024",
+        response_format: "b64_json",
+      }),
+    });
+    if (!r.ok) throw new Error(`OpenAI ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    const j = (await r.json()) as { data?: { b64_json?: string; url?: string }[] };
+    const item = j.data?.[0];
+    const image = item?.b64_json ? `data:image/png;base64,${item.b64_json}` : item?.url;
+    if (!image) throw new Error("이미지 응답이 비었습니다.");
+    logEvent({ ts: Date.now(), kind: "regen", ok: true, ms: 0, meta: `AI 이미지 · ${prompt.trim().slice(0, 40)}` });
+    res.json({ image });
+  } catch (e) {
+    console.warn("[ai-image] 실패:", e);
+    res.status(502).json({ error: "이미지 생성에 실패했습니다." });
+  }
+});
+
 // ===== ③ POST /api/edit (Magic Edit / 슬라이드 재생성) =====
 interface EditBody {
   instruction?: unknown;

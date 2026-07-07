@@ -7,10 +7,12 @@ import {
   Group,
   Line,
   Path,
+  Polygon,
   Rect,
   Shadow,
   StaticCanvas,
   Textbox,
+  Triangle,
 } from "fabric";
 import type {
   ChartElement,
@@ -101,9 +103,44 @@ function buildShape(el: ShapeElement, theme: Theme): FabricObject {
       obj = new Rect({ ...common, width: el.w, height: el.h, rx: r, ry: r });
       break;
     }
+    case "pill": {
+      // 알약: 라운드가 높이 절반
+      const r = Math.min(el.w, el.h) / 2;
+      obj = new Rect({ ...common, width: el.w, height: el.h, rx: r, ry: r });
+      break;
+    }
     case "ellipse":
       obj = new Ellipse({ ...common, rx: el.w / 2, ry: el.h / 2 });
       break;
+    case "triangle":
+      obj = new Triangle({ ...common, width: el.w, height: el.h });
+      break;
+    case "diamond":
+      obj = new Polygon(
+        [
+          { x: el.w / 2, y: 0 },
+          { x: el.w, y: el.h / 2 },
+          { x: el.w / 2, y: el.h },
+          { x: 0, y: el.h / 2 },
+        ],
+        { ...common },
+      );
+      break;
+    case "star": {
+      // 5각 별 (외/내 반지름)
+      const cx = el.w / 2;
+      const cy = el.h / 2;
+      const rO = Math.min(el.w, el.h) / 2;
+      const rI = rO * 0.4;
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? rO : rI;
+        const a = (Math.PI / 5) * i - Math.PI / 2;
+        pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+      }
+      obj = new Polygon(pts, { ...common });
+      break;
+    }
     case "line": {
       // slope 지정 시 대각선 (차트 분해 선분용): down=좌상→우하, up=좌하→우상
       const [y1, y2] = el.slope

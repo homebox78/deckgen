@@ -25,6 +25,7 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
+import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { RegenerateLayer } from "./RegenerateLayer";
@@ -41,54 +42,29 @@ interface ContextMenuState {
   slideId: string;
 }
 
-const INSERT_ITEMS = [
-  { key: "text", name: "텍스트 상자" },
-  { key: "rect", name: "사각형" },
-  { key: "ellipse", name: "원" },
-  { key: "badge", name: "라운드 배지" },
-];
-
 function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
   const cx = dims.w / 2;
   const cy = dims.h / 2;
+  const base = { id: uid(), x: cx - 150, y: cy - 150, w: 300, h: 300, fill: "@accent", opacity: 0.22 };
   switch (kind) {
     case "rect":
-      return {
-        id: uid(),
-        type: "shape",
-        shape: "rect",
-        x: cx - 200,
-        y: cy - 150,
-        w: 400,
-        h: 300,
-        fill: "@accent",
-        opacity: 0.22,
-      };
+      return { ...base, type: "shape", shape: "rect", x: cx - 200, w: 400 };
     case "ellipse":
-      return {
-        id: uid(),
-        type: "shape",
-        shape: "ellipse",
-        x: cx - 110,
-        y: cy - 110,
-        w: 220,
-        h: 220,
-        fill: "@accent",
-        opacity: 0.22,
-      };
+      return { ...base, type: "shape", shape: "ellipse", x: cx - 110, y: cy - 110, w: 220, h: 220 };
+    case "triangle":
+      return { ...base, type: "shape", shape: "triangle" };
+    case "diamond":
+      return { ...base, type: "shape", shape: "diamond" };
+    case "star":
+      return { ...base, type: "shape", shape: "star" };
+    case "pill":
+      return { ...base, type: "shape", shape: "pill", x: cx - 190, y: cy - 48, w: 380, h: 96, opacity: 0.16 };
+    case "line":
+      return { id: uid(), type: "shape", shape: "line", x: cx - 250, y: cy, w: 500, h: 0, stroke: "@accent", strokeWidth: 4 };
+    case "arrow":
+      return { id: uid(), type: "shape", shape: "arrow", x: cx - 250, y: cy - 20, w: 500, h: 40, stroke: "@accent", strokeWidth: 4 };
     case "badge":
-      return {
-        id: uid(),
-        type: "shape",
-        shape: "roundRect",
-        x: cx - 190,
-        y: cy - 48,
-        w: 380,
-        h: 96,
-        radius: 48,
-        fill: "@accent",
-        opacity: 0.16,
-      };
+      return { ...base, type: "shape", shape: "roundRect", x: cx - 190, y: cy - 48, w: 380, h: 96, radius: 48, opacity: 0.16 };
     default:
       return {
         id: uid(),
@@ -279,6 +255,7 @@ export function EditorPage() {
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [mediaPicker, setMediaPicker] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -385,14 +362,25 @@ export function EditorPage() {
   const selectedElement =
     slide.elements.find((el) => el.id === selectedElementId) ?? null;
 
+  const SHAPE_LABEL: Record<string, string> = {
+    rect: "사각형",
+    ellipse: "원",
+    triangle: "삼각형",
+    diamond: "다이아몬드",
+    star: "별",
+    pill: "알약",
+    line: "선",
+    arrow: "화살표",
+    badge: "라운드 배지",
+    text: "텍스트 상자",
+  };
+
   const insertElement = (kind: string) => {
     const el = buildInsertElement(kind, aspectDims(deck.aspect));
     useUiStore.getState().setSelectedElementId(el.id);
     addElement(slide.id, el);
     setTab("props");
-    showToast(
-      `${INSERT_ITEMS.find((i) => i.key === kind)?.name ?? "요소"}가 추가됐어요 — 드래그로 배치하세요`,
-    );
+    showToast(`${SHAPE_LABEL[kind] ?? "요소"}가 추가됐어요 — 드래그로 배치하세요`);
   };
 
   const removeSlide = (slideId: string) => {
@@ -534,6 +522,17 @@ export function EditorPage() {
             theme={theme}
             startIndex={slideIndex}
             onExit={() => setPresenting(false)}
+          />
+        )}
+        {mediaPicker && (
+          <MediaPicker
+            dims={dims}
+            onInsert={(el) => {
+              addElement(slide.id, el);
+              useUiStore.getState().setSelectedElementId(el.id);
+              setTab("props");
+            }}
+            onClose={() => setMediaPicker(false)}
           />
         )}
         {regen &&
@@ -689,28 +688,44 @@ export function EditorPage() {
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
-          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} dims={dims} />
+          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} dims={dims} onInsertAt={insertElement} />
           {/* 하단 중앙 툴바 (스냅덱 배치) — 도구 · undo/redo · 줌 */}
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             {!readOnly && (
               <>
-                {(
-                  [
-                    ["text", "T", "텍스트 상자"],
-                    ["rect", "▭", "사각형"],
-                    ["ellipse", "○", "원"],
-                    ["badge", "◖◗", "라운드 배지"],
-                  ] as const
-                ).map(([kind, glyph, title]) => (
-                  <button
-                    key={kind}
-                    onClick={() => insertElement(kind)}
-                    title={title}
-                    className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
-                  >
-                    {glyph}
-                  </button>
-                ))}
+                <button
+                  onClick={() => insertElement("text")}
+                  title="텍스트 상자"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  T
+                </button>
+                {/* 도형 드롭다운 (Demo Act 5.5) */}
+                <Dropdown
+                  items={[
+                    { key: "rect", name: "▭ 사각형" },
+                    { key: "ellipse", name: "○ 원" },
+                    { key: "triangle", name: "△ 삼각형" },
+                    { key: "diamond", name: "◇ 다이아몬드" },
+                    { key: "star", name: "★ 별" },
+                    { key: "pill", name: "▢ 알약" },
+                    { key: "line", name: "— 선" },
+                    { key: "arrow", name: "→ 화살표" },
+                  ]}
+                  onSelect={(key) => insertElement(key)}
+                  triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  title="도형"
+                >
+                  ▭<span className="text-[8px]">▾</span>
+                </Dropdown>
+                {/* 미디어 삽입 (YouTube/이미지/Pexels/GIPHY/아이콘/AI) */}
+                <button
+                  onClick={() => setMediaPicker(true)}
+                  title="미디어 삽입 — 이미지·YouTube·Pexels·GIPHY·아이콘·AI"
+                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                >
+                  ⊞
+                </button>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
                 <button
                   onClick={() => useDeckStore.temporal.getState().undo()}
