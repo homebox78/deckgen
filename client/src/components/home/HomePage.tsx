@@ -434,6 +434,7 @@ export function HomePage() {
   const [dragDeckId, setDragDeckId] = useState<string | null>(null);
   const [deckCtx, setDeckCtx] = useState<{ id: string; x: number; y: number } | null>(null);
   const [genModel, setGenModel] = useState("deckgen-1.1");
+  const [wsMenuOpen, setWsMenuOpen] = useState(false);
   const savedTemplates = useSavedTemplates();
 
   const refreshMeta = () => {
@@ -614,8 +615,62 @@ export function HomePage() {
           <span className="rounded-[5px] bg-app-border-soft px-1.5 py-0.5 text-[10px] font-bold text-app-faint">
             Prototype
           </span>
+          <span className="mx-1 h-4 w-px bg-app-border" />
+          {/* 워크스페이스 전환 */}
+          <span className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setWsMenuOpen((v) => !v);
+              }}
+              className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-2.5 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
+            >
+              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-[4px] text-[10px] font-bold text-white" style={{ background: "#1A1A1A" }}>W</span>
+              우진의 팀
+              <span className="mi text-[15px] text-app-faint">unfold_more</span>
+            </button>
+            {wsMenuOpen && (
+              <>
+                <span className="fixed inset-0 z-40" onClick={() => setWsMenuOpen(false)} />
+                <div className="absolute top-[38px] left-0 z-50 w-[250px] rounded-xl border border-app-border bg-white p-1.5 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
+                  <div className="px-2.5 py-1 text-[10px] font-bold tracking-wide text-app-faint uppercase">워크스페이스 전환</div>
+                  {[
+                    { id: "team", name: "우진의 팀", meta: "멤버 6명 · Team", initial: "W", color: "#1A1A1A", active: true },
+                    { id: "personal", name: "개인 워크스페이스", meta: "나만 사용 · Free", initial: "P", color: "#3A6EA5", active: false },
+                  ].map((w) => (
+                    <button
+                      key={w.id}
+                      onClick={() => { setWsMenuOpen(false); showToast(`'${w.name}'(으)로 전환했어요`); }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-app-bg"
+                      style={{ background: w.active ? "#F7F7F5" : "transparent" }}
+                    >
+                      <span className="flex h-6 w-6 items-center justify-center rounded-[6px] text-[11px] font-bold text-white" style={{ background: w.color }}>{w.initial}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[12.5px] font-semibold">{w.name}</span>
+                        <span className="block text-[11px] text-app-faint">{w.meta}</span>
+                      </span>
+                      {w.active && <span className="mi text-[16px]">check</span>}
+                    </button>
+                  ))}
+                  <div className="my-1 border-t border-app-border-soft" />
+                  <button onClick={() => { setWsMenuOpen(false); navigate("/workspace"); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] hover:bg-app-bg">
+                    <span className="mi text-[16px] text-app-muted">groups</span>팀 워크스페이스 관리
+                  </button>
+                  <button onClick={() => { setWsMenuOpen(false); showToast("새 워크스페이스 만들기 (시뮬레이션)"); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] hover:bg-app-bg">
+                    <span className="mi text-[16px] text-app-muted">add</span>새 워크스페이스
+                  </button>
+                </div>
+              </>
+            )}
+          </span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/workspace")}
+            className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
+          >
+            <span className="mi text-[15px]">groups</span>워크스페이스
+          </button>
           <button
             onClick={() => setSettingsOpen(true)}
             className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
