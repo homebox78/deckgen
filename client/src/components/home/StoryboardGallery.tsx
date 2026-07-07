@@ -161,9 +161,9 @@ export function StoryboardGallery({
   return (
     <div className="mx-auto w-[880px] max-w-[92vw] pb-12">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-[16px] font-semibold">와이어프레임으로 시작</h2>
+        <h2 className="text-[16px] font-semibold">스토리보드로 시작</h2>
         <span className="text-[12px] text-app-faint">
-          골격을 골라 담고, 순서를 정해 스토리보드를 만들어요
+          와이어프레임을 조합해 장표 흐름을 먼저 설계하세요
         </span>
       </div>
 

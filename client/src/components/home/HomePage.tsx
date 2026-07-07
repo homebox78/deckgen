@@ -1007,16 +1007,13 @@ export function HomePage() {
         </div>
       )}
 
-      {/* 스토리보드 템플릿 (§13) — 완성 장표가 아니라 팀이 함께 채우는 와이어프레임 */}
+      {/* 캐러셀(4:5) 스타일 — 멀티프레임 캐러셀 라이브러리 (16:9/4:3은 아래 와이어프레임 갤러리) */}
+      {isCarousel && (
       <div className="mx-auto w-[880px] max-w-[92vw] pb-12">
         <div className="mb-3.5 flex items-baseline justify-between">
-          <h2 className="text-[16px] font-semibold">
-            {isCarousel ? "캐러셀 스타일로 시작" : "스토리보드로 시작"}
-          </h2>
+          <h2 className="text-[16px] font-semibold">캐러셀 스타일로 시작</h2>
           <span className="text-[12px] text-app-faint">
-            {isCarousel
-              ? "피드에서 멈추고 · 넘기고 · 저장되는 4:5 골격"
-              : "와이어프레임 골격을 만들고, 공유해서 팀이 함께 채워요"}
+            피드에서 멈추고 · 넘기고 · 저장되는 4:5 골격
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
@@ -1072,9 +1069,10 @@ export function HomePage() {
           ))}
         </div>
       </div>
+      )}
 
-      {/* 와이어프레임 갤러리 (§13) — 35종 단일 골격을 카테고리별로 탐색·담기 */}
-      <StoryboardGallery themeId={themeId} aspect={aspect} />
+      {/* 스토리보드로 시작 (§13) — 35종 와이어프레임 갤러리 (16:9/4:3) */}
+      {!isCarousel && <StoryboardGallery themeId={themeId} aspect={aspect} />}
 
       {/* 내 덱 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-16">
