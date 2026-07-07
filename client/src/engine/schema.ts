@@ -4,12 +4,29 @@
 export const SLIDE_W = 1920;
 export const SLIDE_H = 1080;
 
+// ===== 비율 (16:9 발표 · 4:5 카드뉴스 캐러셀) =====
+export type DeckAspect = "16:9" | "4:5";
+
+export interface SlideDims {
+  w: number;
+  h: number;
+}
+
+export const ASPECT_DIMS: Record<DeckAspect, SlideDims> = {
+  "16:9": { w: 1920, h: 1080 },
+  "4:5": { w: 1080, h: 1350 }, // 인스타그램 캐러셀 기준 캔버스
+};
+
+export function aspectDims(aspect: DeckAspect | undefined): SlideDims {
+  return ASPECT_DIMS[aspect ?? "16:9"] ?? ASPECT_DIMS["16:9"];
+}
+
 // ===== 최상위 =====
 export interface Deck {
   id: string;
   title: string;
   themeId: string;
-  aspect: "16:9";
+  aspect: DeckAspect;
   slides: Slide[];
   createdAt: number;
   updatedAt: number;

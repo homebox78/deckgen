@@ -290,7 +290,7 @@ export function OutlinePage() {
     startedRef.current = true;
     store.setStatus("streaming");
     void streamOutline(
-      { prompt: store.prompt, slideCount: store.slideCount },
+      { prompt: store.prompt, slideCount: store.slideCount, format: store.aspect },
       {
         onSlide: (slide) => useOutlineStore.getState().appendSlide(slide),
         onDone: () => useOutlineStore.getState().setStatus("done"),

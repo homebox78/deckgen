@@ -124,7 +124,7 @@ export interface SlidesStreamHandlers {
 }
 
 export async function streamSlides(
-  req: { outline: OutlineSlide[]; themeId: string },
+  req: { outline: OutlineSlide[]; themeId: string; format?: string },
   h: SlidesStreamHandlers,
 ): Promise<void> {
   let finished = false;
@@ -154,7 +154,7 @@ export async function streamSlides(
 }
 
 export async function streamOutline(
-  req: { prompt: string; slideCount: number },
+  req: { prompt: string; slideCount: number; format?: string },
   h: OutlineStreamHandlers,
 ): Promise<void> {
   let finished = false;

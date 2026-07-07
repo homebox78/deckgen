@@ -2,7 +2,7 @@ import { Canvas, FabricObject, Point } from "fabric";
 import { useEffect, useRef } from "react";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
 import { attachSync, consumeInternalUpdate } from "../../engine/fabricSync";
-import type { Slide, SlideElement } from "../../engine/schema";
+import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
 import { SLIDE_H, SLIDE_W, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
@@ -25,10 +25,12 @@ export function SlideCanvas({
   slide,
   theme,
   readOnly = false,
+  dims = { w: SLIDE_W, h: SLIDE_H },
 }: {
   slide: Slide;
   theme: Theme;
   readOnly?: boolean;
+  dims?: SlideDims;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
@@ -56,14 +58,14 @@ export function SlideCanvas({
       const ch = host.clientHeight;
       if (cw === 0 || ch === 0) return;
       fc.setDimensions({ width: cw, height: ch });
-      const s = Math.min(cw / (SLIDE_W + FIT_PADDING), ch / (SLIDE_H + FIT_PADDING));
+      const s = Math.min(cw / (dims.w + FIT_PADDING), ch / (dims.h + FIT_PADDING));
       fc.setViewportTransform([
         s,
         0,
         0,
         s,
-        (cw - SLIDE_W * s) / 2,
-        (ch - SLIDE_H * s) / 2,
+        (cw - dims.w * s) / 2,
+        (ch - dims.h * s) / 2,
       ]);
       fc.requestRenderAll();
       reportZoom();
@@ -216,7 +218,7 @@ export function SlideCanvas({
       fcRef.current = null;
       void fc.dispose();
     };
-  }, [readOnly]);
+  }, [readOnly, dims]);
 
   // 슬라이드/테마 변경 시 재렌더 (Fabric 발 갱신은 스킵 — 값만 이미 동기화됨)
   useEffect(() => {
@@ -227,7 +229,7 @@ export function SlideCanvas({
     // clear() 시 selection:cleared가 선택 상태를 지우므로 렌더 전에 캡처
     const selectedId = useUiStore.getState().selectedElementId;
     void (async () => {
-      await renderSlide(fc, slide, theme);
+      await renderSlide(fc, slide, theme, { dims });
       if (cancelled) return;
       // 재렌더 후 기존 선택 복원
       if (selectedId) {
@@ -244,7 +246,7 @@ export function SlideCanvas({
     return () => {
       cancelled = true;
     };
-  }, [slide, theme, readOnly]);
+  }, [slide, theme, readOnly, dims]);
 
   return (
     <div ref={hostRef} className="h-full w-full overflow-hidden bg-app-canvas">

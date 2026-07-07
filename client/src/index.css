@@ -1,7 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+  /* 토스 조합 — Headline: sf 700 / Body: Basier Square 400.
+     두 폰트 모두 로컬에 없으면 SD Gothic Neo → Pretendard 순으로 대체된다. */
+  --font-sans:
+    "Basier Square", "Toss Product Sans", "SD Gothic Neo", "Pretendard Variable",
+    Pretendard, "Noto Sans KR", sans-serif;
+  --font-display:
+    "sf", "SF Pro Display", -apple-system, "SD Gothic Neo", "Basier Square",
+    "Pretendard Variable", Pretendard, sans-serif;
   /* §6.1 앱 UI 팔레트 + 디자인 시안(1a) 확장 토큰 */
   --color-app-bg: #f7f7f5;
   --color-app-surface: #ffffff;
@@ -41,9 +48,20 @@ body,
 
 body {
   font-family: var(--font-sans);
+  font-weight: 400;
   font-size: 13.5px;
   background: var(--color-app-bg);
   color: var(--color-app-text);
+}
+
+/* 헤드라인 계열(제목·굵은 라벨)은 sf 볼드 — 본문(Basier Square 400)과 페어링 */
+h1,
+h2,
+h3,
+.font-bold,
+.font-extrabold,
+.font-semibold {
+  font-family: var(--font-display);
 }
 
 textarea:focus,

@@ -6,7 +6,12 @@ import {
   getModel,
   hasApiKey,
 } from "../ai/anthropic.js";
-import { EDIT_SYSTEM, OUTLINE_SYSTEM, SLIDES_SYSTEM } from "../ai/prompts.js";
+import {
+  CAROUSEL_RULES,
+  EDIT_SYSTEM,
+  OUTLINE_SYSTEM,
+  SLIDES_SYSTEM,
+} from "../ai/prompts.js";
 import type { OutlineSlide, ServerSlide, SlideSpec } from "../ai/validate.js";
 import { outlineSlideSchema, slideSchema, slideSpecSchema } from "../ai/validate.js";
 import { endSSE, initSSE, sendEvent, sendSSEError } from "../sse.js";
@@ -49,10 +54,15 @@ function inactivityTimer(onTimeout: () => void) {
 interface OutlineBody {
   prompt?: unknown;
   slideCount?: unknown;
+  format?: unknown; // "16:9" | "4:5"
+}
+
+function isCarousel(format: unknown): boolean {
+  return format === "4:5";
 }
 
 aiRouter.post("/outline", (req: Request, res: Response) => {
-  const { prompt, slideCount } = (req.body ?? {}) as OutlineBody;
+  const { prompt, slideCount, format } = (req.body ?? {}) as OutlineBody;
   if (typeof prompt !== "string" || !prompt.trim()) {
     res.status(400).json({ error: "prompt가 필요합니다." });
     return;
@@ -60,13 +70,18 @@ aiRouter.post("/outline", (req: Request, res: Response) => {
   const count = Math.min(12, Math.max(3, Number(slideCount) || 5));
 
   if (!hasApiKey()) {
-    void streamMockOutline(res, prompt.trim(), count);
+    void streamMockOutline(res, prompt.trim(), count, isCarousel(format));
     return;
   }
-  void streamOutline(res, prompt.trim(), count);
+  void streamOutline(res, prompt.trim(), count, isCarousel(format));
 });
 
-async function streamOutline(res: Response, prompt: string, count: number) {
+async function streamOutline(
+  res: Response,
+  prompt: string,
+  count: number,
+  carousel: boolean,
+) {
   initSSE(res);
   let emitted = 0;
   let buffer = "";
@@ -86,7 +101,7 @@ async function streamOutline(res: Response, prompt: string, count: number) {
   const stream = getClient().messages.stream({
     model: getModel(),
     max_tokens: 2000,
-    system: OUTLINE_SYSTEM,
+    system: OUTLINE_SYSTEM + (carousel ? CAROUSEL_RULES : ""),
     messages: [
       {
         role: "user",
@@ -130,10 +145,12 @@ async function streamOutline(res: Response, prompt: string, count: number) {
 interface SlidesBody {
   outline?: unknown;
   themeId?: unknown;
+  format?: unknown;
 }
 
 aiRouter.post("/slides", (req: Request, res: Response) => {
-  const { outline } = (req.body ?? {}) as SlidesBody;
+  const { outline, format } = (req.body ?? {}) as SlidesBody;
+  const carousel = isCarousel(format);
   let items: OutlineSlide[];
   try {
     items = outlineSlideSchema
@@ -151,20 +168,25 @@ aiRouter.post("/slides", (req: Request, res: Response) => {
     void streamMockSlides(res, items);
     return;
   }
-  void streamSlides(res, items);
+  void streamSlides(res, items, carousel);
 });
 
-async function streamSlides(res: Response, outline: OutlineSlide[]) {
+async function streamSlides(res: Response, outline: OutlineSlide[], carousel: boolean) {
   initSSE(res);
   const outlineJson = JSON.stringify(outline);
   let emitted = 0;
+  const system =
+    SLIDES_SYSTEM +
+    (carousel
+      ? "\n\n[4:5 카드뉴스] 세로 캔버스다. title-bullets/kpi-cards/section을 우선하고, 텍스트는 짧게, 페이지 번호·발표자 정보는 절대 넣지 마라. 마지막 장은 section 레이아웃의 CTA로."
+      : "");
 
   for (const item of outline) {
     if (res.writableEnded) return;
     try {
       const spec = await completeValidatedJson(
         {
-          system: SLIDES_SYSTEM,
+          system,
           maxTokens: 1500,
           user: `전체 아웃라인(맥락 참고용):\n${outlineJson}\n\n이번에 처리할 항목 (index ${item.index}):\n${JSON.stringify(item)}\n\n전체 슬라이드 수: ${outline.length} (index ${item.index}는 ${item.index === 0 ? "첫" : item.index === outline.length - 1 ? "마지막" : "중간"} 슬라이드)`,
         },
@@ -361,10 +383,45 @@ async function streamMockSlides(res: Response, outline: OutlineSlide[]) {
   endSSE(res);
 }
 
-async function streamMockOutline(res: Response, prompt: string, count: number) {
+async function streamMockOutline(
+  res: Response,
+  prompt: string,
+  count: number,
+  carousel = false,
+) {
   console.warn("[outline] ANTHROPIC_API_KEY 미설정 — 모의 아웃라인으로 응답합니다.");
   initSSE(res);
   const topic = prompt.length > 24 ? prompt.slice(0, 24) + "…" : prompt;
+
+  if (carousel) {
+    // 카드뉴스: 훅 → 긴장 → 아이디어 → 체크리스트 → CTA
+    for (let i = 0; i < count; i++) {
+      await sleep(400);
+      const isFirst = i === 0;
+      const isLast = i === count - 1;
+      const isSecond = i === 1;
+      sendEvent(res, "slide", {
+        index: i,
+        title: isFirst
+          ? `아직도 이렇게 하세요? ${topic}`
+          : isLast
+            ? "저장하고 오늘 하나만 해보세요"
+            : isSecond
+              ? "대부분 여기서 실수합니다"
+              : `핵심 아이디어 ${i - 1}`,
+        bullets: isFirst
+          ? [`${topic} — 3장이면 감 잡힙니다`]
+          : isLast
+            ? ["지금 바로: 첫 번째 항목부터", "팔로우하면 다음 편도 받아요"]
+            : isSecond
+              ? ["흔한 실수 하나", "그 실수의 진짜 비용"]
+              : ["한 줄 포인트", "바로 써먹는 팁"],
+        viz: !isFirst && !isLast && i === count - 2 ? { type: "kpi-cards", note: "저장용 체크 카드" } : null,
+      });
+    }
+    endSSE(res);
+    return;
+  }
   const vizPool = [
     null,
     { type: "bar" as const, note: "연도별 시장 규모 성장 추이를 막대로 비교" },

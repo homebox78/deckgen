@@ -14,12 +14,13 @@ export function beginSlideGeneration(): string | null {
   if (!o.deckId || o.slides.length === 0) return null;
 
   const theme = getTheme(o.themeId);
+  const aspect = o.aspect;
   const now = Date.now();
   const deck: Deck = {
     id: o.deckId,
     title: o.slides[0]?.title.trim() || o.prompt.slice(0, 40),
     themeId: o.themeId,
-    aspect: "16:9",
+    aspect,
     slides: o.slides.map(() => ({
       id: uid(),
       layout: "title-bullets" as const,
@@ -33,13 +34,13 @@ export function beginSlideGeneration(): string | null {
   useGenerationStore.getState().start(deck.id, o.slides.length);
 
   void streamSlides(
-    { outline: o.slides, themeId: o.themeId },
+    { outline: o.slides, themeId: o.themeId, format: aspect },
     {
       onSpec: (spec) => {
         const st = useDeckStore.getState();
         const target = st.deck?.slides[spec.index];
         if (!target || st.deck?.id !== deck.id) return;
-        const composed = composeSlide(spec.layout, spec.content, theme);
+        const composed = composeSlide(spec.layout, spec.content, theme, aspect);
         st.replaceSlide(target.id, { ...composed, id: target.id });
         useGenerationStore.getState().markDone(spec.index);
       },

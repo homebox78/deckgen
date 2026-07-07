@@ -5,8 +5,8 @@
 import { StaticCanvas } from "fabric";
 import JSZip from "jszip";
 import { renderSlide } from "./fabricRenderer";
-import type { Deck, Slide } from "./schema";
-import { SLIDE_H, SLIDE_W } from "./schema";
+import type { Deck, Slide, SlideDims } from "./schema";
+import { aspectDims } from "./schema";
 import { getTheme } from "./themes";
 
 function sanitize(name: string): string {
@@ -25,11 +25,11 @@ function frameName(slide: Slide, i: number): string {
 }
 
 /** 슬라이드 1장 → SVG 문자열 (Fabric 렌더 트리 그대로 벡터화) */
-async function slideToSvg(slide: Slide, themeId: string): Promise<string> {
+async function slideToSvg(slide: Slide, themeId: string, dims: SlideDims): Promise<string> {
   const el = document.createElement("canvas");
-  const sc = new StaticCanvas(el, { width: SLIDE_W, height: SLIDE_H });
+  const sc = new StaticCanvas(el, { width: dims.w, height: dims.h });
   try {
-    await renderSlide(sc, slide, getTheme(themeId), { shadow: false });
+    await renderSlide(sc, slide, getTheme(themeId), { shadow: false, dims });
     return sc.toSVG();
   } finally {
     void sc.dispose();
@@ -49,8 +49,9 @@ const README = `DeckGen → Figma 핸드오프
 /** 덱 전체 → Figma용 SVG 묶음(.zip) 다운로드 */
 export async function exportDeckToFigmaZip(deck: Deck): Promise<void> {
   const zip = new JSZip();
+  const dims = aspectDims(deck.aspect);
   for (let i = 0; i < deck.slides.length; i++) {
-    const svg = await slideToSvg(deck.slides[i], deck.themeId);
+    const svg = await slideToSvg(deck.slides[i], deck.themeId, dims);
     zip.file(`${frameName(deck.slides[i], i)}.svg`, svg);
   }
   zip.file("README.txt", README);

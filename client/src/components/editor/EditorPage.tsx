@@ -5,8 +5,8 @@ import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
-import type { Slide, SlideElement } from "../../engine/schema";
-import { uid } from "../../engine/schema";
+import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
+import { aspectDims, uid } from "../../engine/schema";
 import { getTheme, themes } from "../../engine/themes";
 import {
   MY_COLOR,
@@ -45,15 +45,17 @@ const INSERT_ITEMS = [
   { key: "badge", name: "라운드 배지" },
 ];
 
-function buildInsertElement(kind: string): SlideElement {
+function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
+  const cx = dims.w / 2;
+  const cy = dims.h / 2;
   switch (kind) {
     case "rect":
       return {
         id: uid(),
         type: "shape",
         shape: "rect",
-        x: 760,
-        y: 390,
+        x: cx - 200,
+        y: cy - 150,
         w: 400,
         h: 300,
         fill: "@accent",
@@ -64,8 +66,8 @@ function buildInsertElement(kind: string): SlideElement {
         id: uid(),
         type: "shape",
         shape: "ellipse",
-        x: 850,
-        y: 430,
+        x: cx - 110,
+        y: cy - 110,
         w: 220,
         h: 220,
         fill: "@accent",
@@ -76,8 +78,8 @@ function buildInsertElement(kind: string): SlideElement {
         id: uid(),
         type: "shape",
         shape: "roundRect",
-        x: 770,
-        y: 476,
+        x: cx - 190,
+        y: cy - 48,
         w: 380,
         h: 96,
         radius: 48,
@@ -90,8 +92,8 @@ function buildInsertElement(kind: string): SlideElement {
         type: "text",
         text: "텍스트를 입력하세요",
         role: "body",
-        x: 710,
-        y: 500,
+        x: cx - 250,
+        y: cy - 40,
         w: 500,
         h: 80,
       };
@@ -326,9 +328,12 @@ export function EditorPage() {
       saveDeck(deck);
       const first = deck.slides[0];
       if (first) {
-        void renderSlideToDataURL(first, getTheme(deck.themeId), 320).then((url) =>
-          saveDeckThumbnail(deck.id, url),
-        );
+        void renderSlideToDataURL(
+          first,
+          getTheme(deck.themeId),
+          320,
+          aspectDims(deck.aspect),
+        ).then((url) => saveDeckThumbnail(deck.id, url));
       }
     }, 1000);
     return () => window.clearTimeout(saveTimer.current);
@@ -369,13 +374,14 @@ export function EditorPage() {
   }
 
   const theme = getTheme(deck.themeId);
+  const dims = aspectDims(deck.aspect);
   const slideIndex = Math.min(currentSlideIndex, deck.slides.length - 1);
   const slide = deck.slides[slideIndex];
   const selectedElement =
     slide.elements.find((el) => el.id === selectedElementId) ?? null;
 
   const insertElement = (kind: string) => {
-    const el = buildInsertElement(kind);
+    const el = buildInsertElement(kind, aspectDims(deck.aspect));
     useUiStore.getState().setSelectedElementId(el.id);
     addElement(slide.id, el);
     setTab("props");
@@ -431,26 +437,6 @@ export function EditorPage() {
           onChange={(e) => setDeckTitle(e.target.value)}
           title={readOnly ? "보기 전용" : "덱 제목 (클릭해서 수정)"}
         />
-        {!readOnly && (
-          <div className="ml-1 flex items-center gap-1">
-            <button
-              onClick={() => useDeckStore.temporal.getState().undo()}
-              disabled={temporal.pastStates.length === 0}
-              className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
-              title="실행 취소 (Ctrl+Z)"
-            >
-              ↺
-            </button>
-            <button
-              onClick={() => useDeckStore.temporal.getState().redo()}
-              disabled={temporal.futureStates.length === 0}
-              className="flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-app-border text-[13px] hover:bg-app-bg disabled:text-[#C9C9C4]"
-              title="다시 실행 (Ctrl+Shift+Z)"
-            >
-              ↻
-            </button>
-          </div>
-        )}
         {gen.active && genStatuses && (
           <StatusBadge status="generating">
             생성 중 {genDone}/{genStatuses.length}
@@ -487,16 +473,6 @@ export function EditorPage() {
               {collab.connected ? `● ${peers.length + 1}명 접속` : "연결 중…"}
             </span>
           </div>
-        )}
-        {!readOnly && (
-          <Dropdown
-            items={INSERT_ITEMS}
-            onSelect={insertElement}
-            triggerClassName="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent data-open:border-app-accent"
-            title="요소 삽입"
-          >
-            + 삽입 <span className="text-[9px] text-app-faint">▾</span>
-          </Dropdown>
         )}
         {!readOnly && (
           <Dropdown
@@ -567,7 +543,7 @@ export function EditorPage() {
                         : "border-transparent hover:border-app-border"
                     }`}
                   >
-                    <SlideThumbnail slide={s} theme={theme} />
+                    <SlideThumbnail slide={s} theme={theme} dims={dims} />
                     {badge && (
                       <span className="absolute top-1 right-1">
                         <StatusBadge status={badge.status} size="sm">
@@ -615,22 +591,72 @@ export function EditorPage() {
             );
           })}
           {!readOnly && (
-            <button
-              onClick={() => {
-                addSlide(slideIndex);
-                setCurrentSlideIndex(slideIndex + 1);
+            <Dropdown
+              items={[
+                { key: "blank", name: "+ 빈 슬라이드" },
+                { key: "dup", name: "⧉ 현재 슬라이드 복제" },
+              ]}
+              onSelect={(key) => {
+                if (key === "blank") {
+                  addSlide(slideIndex);
+                  setCurrentSlideIndex(slideIndex + 1);
+                } else {
+                  duplicateSlide(slide.id);
+                  setCurrentSlideIndex(slideIndex + 1);
+                }
               }}
-              className="mt-0.5 rounded-lg border border-dashed border-[#D4D4CE] bg-white py-2 text-[12px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
+              triggerClassName="mt-0.5 w-full rounded-lg border border-dashed border-[#D4D4CE] bg-white py-2 text-[12px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
+              title="새 슬라이드"
             >
-              + 슬라이드 추가
-            </button>
+              New slide <span className="text-[9px] text-app-faint">▾</span>
+            </Dropdown>
           )}
         </aside>
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
-          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} />
-          <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[10px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
+          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} dims={dims} />
+          {/* 하단 중앙 툴바 (스냅덱 배치) — 도구 · undo/redo · 줌 */}
+          <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
+            {!readOnly && (
+              <>
+                {(
+                  [
+                    ["text", "T", "텍스트 상자"],
+                    ["rect", "▭", "사각형"],
+                    ["ellipse", "○", "원"],
+                    ["badge", "◖◗", "라운드 배지"],
+                  ] as const
+                ).map(([kind, glyph, title]) => (
+                  <button
+                    key={kind}
+                    onClick={() => insertElement(kind)}
+                    title={title}
+                    className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-[13px] text-app-muted hover:bg-app-bg hover:text-app-text"
+                  >
+                    {glyph}
+                  </button>
+                ))}
+                <span className="mx-0.5 h-4 w-px bg-app-border" />
+                <button
+                  onClick={() => useDeckStore.temporal.getState().undo()}
+                  disabled={temporal.pastStates.length === 0}
+                  title="실행 취소 (Ctrl+Z)"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[13px] text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+                >
+                  ↺
+                </button>
+                <button
+                  onClick={() => useDeckStore.temporal.getState().redo()}
+                  disabled={temporal.futureStates.length === 0}
+                  title="다시 실행 (Ctrl+Shift+Z)"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[13px] text-app-muted hover:bg-app-bg disabled:text-[#D4D4CE]"
+                >
+                  ↻
+                </button>
+                <span className="mx-0.5 h-4 w-px bg-app-border" />
+              </>
+            )}
             <button
               onClick={() => canvasApi()?.zoomOut()}
               className="rounded-md px-2.5 py-1 text-[12px] text-app-muted hover:bg-app-bg"
@@ -689,6 +715,7 @@ export function EditorPage() {
                   slideIndex={slideIndex}
                   theme={theme}
                   deckId={deck.id}
+                  dims={dims}
                 />
               ))}
             {tab === "props" &&
@@ -699,6 +726,7 @@ export function EditorPage() {
                   slideId={slide.id}
                   element={selectedElement}
                   theme={theme}
+                  dims={dims}
                 />
               ))}
             {tab === "notes" && (

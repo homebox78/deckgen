@@ -18,6 +18,7 @@ import type {
   ImageElement,
   ShapeElement,
   Slide,
+  SlideDims,
   SlideElement,
   TextElement,
 } from "./schema";
@@ -384,12 +385,12 @@ export async function buildElement(
 export type AnyCanvas = Canvas | StaticCanvas;
 
 /** 슬라이드 배경 종이(선택 불가) — 캔버스 주변(#EDEDEA) 위에 떠 보이게 그림자 처리 */
-function buildBackground(theme: Theme, shadow: boolean): Rect {
+function buildBackground(theme: Theme, shadow: boolean, dims: SlideDims): Rect {
   return new Rect({
     left: 0,
     top: 0,
-    width: SLIDE_W,
-    height: SLIDE_H,
+    width: dims.w,
+    height: dims.h,
     fill: theme.bg,
     selectable: false,
     evented: false,
@@ -400,17 +401,20 @@ function buildBackground(theme: Theme, shadow: boolean): Rect {
   });
 }
 
+const DEFAULT_DIMS: SlideDims = { w: SLIDE_W, h: SLIDE_H };
+
 /** 슬라이드 → 축소 PNG dataURL (썸네일용) */
 export async function renderSlideToDataURL(
   slide: Slide,
   theme: Theme,
   width = 240,
+  dims: SlideDims = DEFAULT_DIMS,
 ): Promise<string> {
   const el = document.createElement("canvas");
-  const s = width / SLIDE_W;
-  const sc = new StaticCanvas(el, { width, height: Math.round(SLIDE_H * s) });
+  const s = width / dims.w;
+  const sc = new StaticCanvas(el, { width, height: Math.round(dims.h * s) });
   sc.viewportTransform = [s, 0, 0, s, 0, 0];
-  await renderSlide(sc, slide, theme, { shadow: false });
+  await renderSlide(sc, slide, theme, { shadow: false, dims });
   sc.renderAll();
   const url = sc.toDataURL({ format: "png", multiplier: 1 });
   void sc.dispose();
@@ -422,11 +426,11 @@ export async function renderSlide(
   canvas: AnyCanvas,
   slide: Slide,
   theme: Theme,
-  opts: { shadow?: boolean } = {},
+  opts: { shadow?: boolean; dims?: SlideDims } = {},
 ): Promise<void> {
   const objects = await Promise.all(slide.elements.map((el) => buildElement(el, theme)));
   canvas.clear();
-  canvas.add(buildBackground(theme, opts.shadow ?? true));
+  canvas.add(buildBackground(theme, opts.shadow ?? true, opts.dims ?? DEFAULT_DIMS));
   objects.forEach((obj) => canvas.add(obj));
   canvas.requestRenderAll();
 }

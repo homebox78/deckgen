@@ -1,4 +1,5 @@
-import type { SlideElement } from "../../engine/schema";
+import type { SlideDims, SlideElement } from "../../engine/schema";
+import { SLIDE_H, SLIDE_W } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { resolveColor, resolveRoleColor } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
@@ -7,6 +8,7 @@ interface Props {
   slideId: string;
   element: SlideElement | null;
   theme: Theme;
+  dims?: SlideDims;
 }
 
 function SectionLabel({ children }: { children: string }) {
@@ -47,7 +49,12 @@ const TARGET_LABEL: Record<SlideElement["type"], string> = {
   image: "IMAGE",
 };
 
-export function PropertiesPanel({ slideId, element, theme }: Props) {
+export function PropertiesPanel({
+  slideId,
+  element,
+  theme,
+  dims = { w: SLIDE_W, h: SLIDE_H },
+}: Props) {
   const updateElement = useDeckStore((s) => s.updateElement);
 
   if (!element) {
@@ -90,7 +97,29 @@ export function PropertiesPanel({ slideId, element, theme }: Props) {
       </div>
 
       <div className="border-b border-app-border-soft px-4 py-3.5">
-        <SectionLabel>위치 · 크기 (1920 기준)</SectionLabel>
+        <SectionLabel>Position</SectionLabel>
+        {/* 슬라이드 기준 정렬 6종 (스냅덱 Design 패널) */}
+        <div className="mb-2 grid grid-cols-6 gap-1.5">
+          {(
+            [
+              ["⇤", "왼쪽 정렬", { x: 0 }],
+              ["⇹", "가로 중앙", { x: Math.round((dims.w - element.w) / 2) }],
+              ["⇥", "오른쪽 정렬", { x: dims.w - element.w }],
+              ["⤒", "위 정렬", { y: 0 }],
+              ["⇳", "세로 중앙", { y: Math.round((dims.h - element.h) / 2) }],
+              ["⤓", "아래 정렬", { y: dims.h - element.h }],
+            ] as const
+          ).map(([glyph, title, p]) => (
+            <button
+              key={title}
+              title={title}
+              onClick={() => patch(p as Partial<SlideElement>)}
+              className="rounded-md border border-app-border bg-white py-1 text-[12px] text-app-muted hover:border-app-accent hover:text-app-accent"
+            >
+              {glyph}
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <ValueRow label="X" value={element.x} onChange={(x) => patch({ x })} />
           <ValueRow label="Y" value={element.y} onChange={(y) => patch({ y })} />
@@ -101,6 +130,26 @@ export function PropertiesPanel({ slideId, element, theme }: Props) {
             value={element.rotation ?? 0}
             onChange={(rotation) => patch({ rotation })}
           />
+        </div>
+      </div>
+
+      <div className="border-b border-app-border-soft px-4 py-3.5">
+        <SectionLabel>Appearance</SectionLabel>
+        <div className="grid grid-cols-2 gap-2">
+          <ValueRow
+            label="투명도 %"
+            value={Math.round((element.opacity ?? 1) * 100)}
+            onChange={(v) =>
+              patch({ opacity: Math.max(0, Math.min(100, v)) / 100 })
+            }
+          />
+          {element.type === "shape" && element.shape === "roundRect" && (
+            <ValueRow
+              label="라운드"
+              value={element.radius ?? 16}
+              onChange={(radius) => patch({ radius: Math.max(0, radius) } as Partial<SlideElement>)}
+            />
+          )}
         </div>
       </div>
 
@@ -127,7 +176,34 @@ export function PropertiesPanel({ slideId, element, theme }: Props) {
 
       {element.type === "text" && (
         <div className="border-b border-app-border-soft px-4 py-3.5">
-          <SectionLabel>텍스트</SectionLabel>
+          <SectionLabel>Typography</SectionLabel>
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <button
+              onClick={() =>
+                patch({
+                  fontWeight:
+                    (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600
+                      ? 400
+                      : 700,
+                } as Partial<SlideElement>)
+              }
+              className={`rounded-lg border py-1.5 text-[13px] font-bold ${
+                (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600
+                  ? "border-app-accent bg-app-accent-soft text-app-accent"
+                  : "border-app-border bg-white text-app-faint hover:bg-app-bg"
+              }`}
+              title="굵게"
+            >
+              B
+            </button>
+            <ValueRow
+              label="행간 %"
+              value={Math.round((element.lineHeight ?? 1.4) * 100)}
+              onChange={(v) =>
+                patch({ lineHeight: Math.max(80, Math.min(300, v)) / 100 } as Partial<SlideElement>)
+              }
+            />
+          </div>
           <div className="flex gap-2">
             <div className="flex flex-1 items-center overflow-hidden rounded-lg border border-app-border">
               <button

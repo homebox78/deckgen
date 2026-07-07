@@ -1,20 +1,35 @@
 // §5 레이아웃 엔진 — LLM은 레이아웃 ID + 콘텐츠만 정하고, 좌표는 이 모듈이 계산한다.
+// 16:9(1920×1080)와 4:5 카드뉴스(1080×1350, 안전영역 여백·세로 스택)를 모두 지원.
 import type {
+  DeckAspect,
   LayoutId,
   Slide,
   SlideContent,
   SlideElement,
   TextElement,
 } from "./schema";
-import { SLIDE_H, SLIDE_W, uid } from "./schema";
+import { aspectDims, uid } from "./schema";
 import type { Theme } from "./themes";
 
-// 공통 여백 96px, 제목 영역 160px
-const MARGIN = 96;
-const TITLE_H = 160;
-const CONTENT_W = SLIDE_W - MARGIN * 2; // 1728
-const BODY_Y = MARGIN + TITLE_H; // 256
-const BODY_H = SLIDE_H - MARGIN - BODY_Y; // 728
+interface Geo {
+  W: number;
+  H: number;
+  M: number; // 공통 여백 (4:5는 SNS 크롭 안전영역 겸용)
+  TITLE_H: number;
+  BODY_Y: number;
+  BODY_H: number;
+  CW: number; // 콘텐츠 폭
+  vertical: boolean; // 4:5 — 좌우 분할 대신 세로 스택
+}
+
+function geoOf(aspect: DeckAspect): Geo {
+  const { w: W, h: H } = aspectDims(aspect);
+  const vertical = aspect === "4:5";
+  const M = vertical ? 84 : 96;
+  const TITLE_H = vertical ? 190 : 160;
+  const BODY_Y = M + TITLE_H;
+  return { W, H, M, TITLE_H, BODY_Y, BODY_H: H - M - BODY_Y, CW: W - M * 2, vertical };
+}
 
 const BULLET_PREFIX = "•  ";
 const MAX_BULLET_LINES = 6;
@@ -57,14 +72,16 @@ function bulletsBlock(
   };
 }
 
-function titleBar(title: string): TextElement {
+function titleBar(g: Geo, title: string): TextElement {
   return text({
-    x: MARGIN,
-    y: MARGIN + 16,
-    w: CONTENT_W,
-    h: TITLE_H - 32,
+    x: g.M,
+    y: g.M + 16,
+    w: g.CW,
+    h: g.TITLE_H - 32,
     text: title,
     role: "heading",
+    // 4:5 카드뉴스는 폭이 좁아 제목을 살짝 줄인다
+    ...(g.vertical ? { fontSize: 52 } : {}),
   });
 }
 
@@ -72,38 +89,42 @@ function composeElements(
   layout: LayoutId,
   content: SlideContent,
   _theme: Theme,
+  g: Geo,
 ): { elements: SlideElement[]; notes?: string } {
   const els: SlideElement[] = [];
   let notes: string | undefined;
 
   switch (layout) {
     case "cover": {
+      const barY = Math.round(g.H * 0.33);
+      const titleY = Math.round(g.H * 0.39);
       els.push({
         id: uid(),
         type: "shape",
         shape: "rect",
-        x: MARGIN,
-        y: 360,
+        x: g.M,
+        y: barY,
         w: 160,
         h: 12,
         fill: "@accent",
       });
       els.push(
         text({
-          x: MARGIN,
-          y: 420,
-          w: CONTENT_W,
-          h: 240,
+          x: g.M,
+          y: titleY,
+          w: g.CW,
+          h: Math.round(g.H * 0.24),
           text: content.title ?? "",
           role: "title",
+          ...(g.vertical ? { fontSize: 64 } : {}),
         }),
       );
       if (content.subtitle) {
         els.push(
           text({
-            x: MARGIN,
-            y: 680,
-            w: CONTENT_W,
+            x: g.M,
+            y: Math.round(g.H * 0.66),
+            w: g.CW,
             h: 100,
             text: content.subtitle,
             role: "subtitle",
@@ -113,9 +134,9 @@ function composeElements(
       if (content.presenter) {
         els.push(
           text({
-            x: MARGIN,
-            y: SLIDE_H - MARGIN - 40,
-            w: CONTENT_W,
+            x: g.M,
+            y: g.H - g.M - 40,
+            w: g.CW,
             h: 40,
             text: content.presenter,
             role: "caption",
@@ -128,21 +149,22 @@ function composeElements(
     case "section": {
       els.push(
         text({
-          x: MARGIN,
-          y: SLIDE_H / 2 - 120,
-          w: CONTENT_W,
+          x: g.M,
+          y: g.H / 2 - 120,
+          w: g.CW,
           h: 180,
           text: content.title ?? "",
           role: "title",
           align: "center",
+          ...(g.vertical ? { fontSize: 60 } : {}),
         }),
       );
       if (content.subtitle) {
         els.push(
           text({
-            x: MARGIN,
-            y: SLIDE_H / 2 + 80,
-            w: CONTENT_W,
+            x: g.M,
+            y: g.H / 2 + 80,
+            w: g.CW,
             h: 80,
             text: content.subtitle,
             role: "subtitle",
@@ -154,13 +176,13 @@ function composeElements(
     }
 
     case "title-bullets": {
-      if (content.title) els.push(titleBar(content.title));
+      if (content.title) els.push(titleBar(g, content.title));
       if (content.bullets?.length) {
         const { element, overflowNotes } = bulletsBlock(content.bullets, {
-          x: MARGIN,
-          y: BODY_Y,
-          w: CONTENT_W,
-          h: BODY_H,
+          x: g.M,
+          y: g.BODY_Y,
+          w: g.CW,
+          h: g.BODY_H,
         });
         els.push(element);
         notes = overflowNotes;
@@ -169,44 +191,72 @@ function composeElements(
     }
 
     case "title-bullets-chart": {
-      if (content.title) els.push(titleBar(content.title));
-      const gap = 48;
-      const leftW = Math.round(CONTENT_W * 0.55) - gap / 2;
-      const rightW = CONTENT_W - leftW - gap;
-      if (content.bullets?.length) {
-        const { element, overflowNotes } = bulletsBlock(content.bullets, {
-          x: MARGIN,
-          y: BODY_Y,
-          w: leftW,
-          h: BODY_H,
-        });
-        els.push(element);
-        notes = overflowNotes;
-      }
-      if (content.chart) {
-        els.push({
-          id: uid(),
-          type: "chart",
-          x: MARGIN + leftW + gap,
-          y: BODY_Y,
-          w: rightW,
-          h: BODY_H,
-          ...content.chart,
-        });
+      if (content.title) els.push(titleBar(g, content.title));
+      if (g.vertical) {
+        // 4:5 — 불릿 위 / 차트 아래 세로 스택
+        const gap = 40;
+        const bulletsH = Math.round(g.BODY_H * 0.38);
+        if (content.bullets?.length) {
+          const { element, overflowNotes } = bulletsBlock(content.bullets, {
+            x: g.M,
+            y: g.BODY_Y,
+            w: g.CW,
+            h: bulletsH,
+          });
+          els.push(element);
+          notes = overflowNotes;
+        }
+        if (content.chart) {
+          els.push({
+            id: uid(),
+            type: "chart",
+            x: g.M,
+            y: g.BODY_Y + bulletsH + gap,
+            w: g.CW,
+            h: g.BODY_H - bulletsH - gap,
+            ...content.chart,
+          });
+        }
+      } else {
+        const gap = 48;
+        const leftW = Math.round(g.CW * 0.55) - gap / 2;
+        const rightW = g.CW - leftW - gap;
+        if (content.bullets?.length) {
+          const { element, overflowNotes } = bulletsBlock(content.bullets, {
+            x: g.M,
+            y: g.BODY_Y,
+            w: leftW,
+            h: g.BODY_H,
+          });
+          els.push(element);
+          notes = overflowNotes;
+        }
+        if (content.chart) {
+          els.push({
+            id: uid(),
+            type: "chart",
+            x: g.M + leftW + gap,
+            y: g.BODY_Y,
+            w: rightW,
+            h: g.BODY_H,
+            ...content.chart,
+          });
+        }
       }
       break;
     }
 
     case "chart-focus": {
-      if (content.title) els.push(titleBar(content.title));
+      if (content.title) els.push(titleBar(g, content.title));
       if (content.chart) {
+        const inset = g.vertical ? 0 : 120;
         els.push({
           id: uid(),
           type: "chart",
-          x: MARGIN + 120,
-          y: BODY_Y,
-          w: CONTENT_W - 240,
-          h: BODY_H,
+          x: g.M + inset,
+          y: g.BODY_Y,
+          w: g.CW - inset * 2,
+          h: g.BODY_H,
           ...content.chart,
         });
       }
@@ -214,15 +264,22 @@ function composeElements(
     }
 
     case "kpi-cards": {
-      if (content.title) els.push(titleBar(content.title));
+      if (content.title) els.push(titleBar(g, content.title));
       const kpis = (content.kpis ?? []).slice(0, 4);
       if (kpis.length >= 2) {
         const gap = 32;
-        const cardW = (CONTENT_W - gap * (kpis.length - 1)) / kpis.length;
-        const cardH = 320;
-        const cardY = BODY_Y + (BODY_H - cardH) / 2;
+        // 4:5는 2열 그리드로 감싼다 (좁은 폭에서 카드가 뭉개지지 않게)
+        const cols = g.vertical ? Math.min(2, kpis.length) : kpis.length;
+        const rows = Math.ceil(kpis.length / cols);
+        const cardW = (g.CW - gap * (cols - 1)) / cols;
+        const cardH = g.vertical ? 300 : 320;
+        const gridH = rows * cardH + (rows - 1) * gap;
+        const startY = g.BODY_Y + Math.max(0, (g.BODY_H - gridH) / 2);
         kpis.forEach((kpi, i) => {
-          const cardX = MARGIN + i * (cardW + gap);
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const cardX = g.M + col * (cardW + gap);
+          const cardY = startY + row * (cardH + gap);
           els.push({
             id: uid(),
             type: "shape",
@@ -237,7 +294,7 @@ function composeElements(
           els.push(
             text({
               x: cardX + 24,
-              y: cardY + 90,
+              y: cardY + cardH * 0.28,
               w: cardW - 48,
               h: 90,
               text: kpi.value,
@@ -248,7 +305,7 @@ function composeElements(
           els.push(
             text({
               x: cardX + 24,
-              y: cardY + 200,
+              y: cardY + cardH * 0.62,
               w: cardW - 48,
               h: 60,
               text: kpi.label,
@@ -262,33 +319,62 @@ function composeElements(
     }
 
     case "two-column": {
-      if (content.title) els.push(titleBar(content.title));
+      if (content.title) els.push(titleBar(g, content.title));
       const cols = (content.columns ?? []).slice(0, 2);
-      const gap = 64;
-      const colW = (CONTENT_W - gap) / 2;
-      cols.forEach((col, i) => {
-        const colX = MARGIN + i * (colW + gap);
-        els.push(
-          text({
-            x: colX,
-            y: BODY_Y,
-            w: colW,
-            h: 60,
-            text: col.heading,
-            role: "heading",
-            fontSize: 34,
-          }),
-        );
-        if (col.bullets.length) {
-          const { element } = bulletsBlock(col.bullets, {
-            x: colX,
-            y: BODY_Y + 90,
-            w: colW,
-            h: BODY_H - 90,
-          });
-          els.push(element);
-        }
-      });
+      if (g.vertical) {
+        // 4:5 — 두 블록을 세로로 스택
+        const gap = 48;
+        const blockH = (g.BODY_H - gap) / 2;
+        cols.forEach((col, i) => {
+          const blockY = g.BODY_Y + i * (blockH + gap);
+          els.push(
+            text({
+              x: g.M,
+              y: blockY,
+              w: g.CW,
+              h: 56,
+              text: col.heading,
+              role: "heading",
+              fontSize: 32,
+            }),
+          );
+          if (col.bullets.length) {
+            const { element } = bulletsBlock(col.bullets, {
+              x: g.M,
+              y: blockY + 76,
+              w: g.CW,
+              h: blockH - 76,
+            });
+            els.push(element);
+          }
+        });
+      } else {
+        const gap = 64;
+        const colW = (g.CW - gap) / 2;
+        cols.forEach((col, i) => {
+          const colX = g.M + i * (colW + gap);
+          els.push(
+            text({
+              x: colX,
+              y: g.BODY_Y,
+              w: colW,
+              h: 60,
+              text: col.heading,
+              role: "heading",
+              fontSize: 34,
+            }),
+          );
+          if (col.bullets.length) {
+            const { element } = bulletsBlock(col.bullets, {
+              x: colX,
+              y: g.BODY_Y + 90,
+              w: colW,
+              h: g.BODY_H - 90,
+            });
+            els.push(element);
+          }
+        });
+      }
       break;
     }
   }
@@ -301,7 +387,8 @@ export function composeSlide(
   layout: LayoutId,
   content: SlideContent,
   theme: Theme,
+  aspect: DeckAspect = "16:9",
 ): Slide {
-  const { elements, notes } = composeElements(layout, content, theme);
+  const { elements, notes } = composeElements(layout, content, theme, geoOf(aspect));
   return { id: uid(), layout, elements, ...(notes ? { notes } : {}) };
 }

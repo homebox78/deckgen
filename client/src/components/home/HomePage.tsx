@@ -1,8 +1,15 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import type { ImportedPptx } from "../../engine/pptxImport";
+import { parsePptx } from "../../engine/pptxImport";
+import type { DeckAspect } from "../../engine/schema";
 import { uid } from "../../engine/schema";
 import { DEFAULT_THEME_ID, getTheme, themes } from "../../engine/themes";
-import { WIREFRAME_LIBRARIES, createStoryboardDeck } from "../../engine/wireframes";
+import {
+  CAROUSEL_LIBRARIES,
+  WIREFRAME_LIBRARIES,
+  createStoryboardDeck,
+} from "../../engine/wireframes";
 import { clearHistory, useDeckStore } from "../../store/deckStore";
 import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
@@ -14,6 +21,34 @@ import { showToast } from "../ui/toast";
 
 const MIN_SLIDES = 3;
 const MAX_SLIDES = 12;
+
+// 4:5 카드뉴스 제안 칩 — 처음부터 SNS 결과물을 상상하게
+const SUGGESTIONS_CAROUSEL = [
+  {
+    label: "아침 습관 5가지",
+    prompt: "생산성을 높여주는 아침 습관 5가지를 설명하는 인스타그램 캐러셀을 만들어줘",
+    themeId: "clean-light",
+    count: 7,
+  },
+  {
+    label: "복리의 마법",
+    prompt: "복리가 시간이 지나며 자산을 어떻게 불려주는지 풀어주는 카드뉴스를 만들어줘",
+    themeId: "ink-dark",
+    count: 6,
+  },
+  {
+    label: "채용 브랜딩",
+    prompt: "개발팀 채용을 위한 우리 팀 문화 소개 캐러셀을 만들어줘: 일하는 방식, 성장 기회, 지원 방법",
+    themeId: "violet-bold",
+    count: 6,
+  },
+  {
+    label: "행사 홍보",
+    prompt: "다음 달 오프라인 세미나 홍보 캐러셀을 만들어줘: 왜 와야 하는지, 프로그램, 신청 방법",
+    themeId: "warm-craft",
+    count: 5,
+  },
+];
 
 // 디자인 시안(1b) 제안 칩 — 클릭 시 주제·테마·장수 프리필
 const SUGGESTIONS = [
@@ -45,6 +80,65 @@ const SUGGESTIONS = [
 
 /** 라이브러리별 미니 와이어프레임 프리뷰 — 각 스토리보드의 성격을 압축해 보여준다 */
 function PreviewArt({ id }: { id: string }) {
+  // ── 4:5 캐러셀 프리뷰 ──
+  if (id === "carousel-magazine") {
+    return (
+      <>
+        <div className="h-[5px] w-3/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1.5 flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
+          <div className="h-[55%] w-[55%] rounded-md bg-[#DAD9D4]" />
+        </div>
+        <div className="mt-1.5 h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
+      </>
+    );
+  }
+  if (id === "carousel-guide") {
+    return (
+      <>
+        <div className="h-[5px] w-3/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1.5 flex flex-1 flex-col justify-center gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="h-2 w-2 shrink-0 rounded-[2px] border border-[#B4B4AE]" />
+              <span className="h-[3px] flex-1 rounded-sm bg-[#DEDEDA]" />
+            </div>
+          ))}
+        </div>
+        <div className="h-[6px] w-2/5 self-center rounded-full bg-[#C9C9C4]" />
+      </>
+    );
+  }
+  if (id === "carousel-event") {
+    return (
+      <>
+        <div className="self-start rounded-full border border-[#C9C9C4] px-1.5 py-0.5 text-[6px] leading-none text-[#8A8A84]">
+          D-7 · SAT
+        </div>
+        <div className="mt-1.5 h-[6px] w-4/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1 h-[6px] w-3/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-auto flex h-[16%] items-center justify-center rounded-[4px] bg-[#DAD9D4]">
+          <span className="text-[6px] font-bold text-white">신청하기</span>
+        </div>
+      </>
+    );
+  }
+  if (id === "carousel-playbook") {
+    return (
+      <>
+        <div className="h-[5px] w-3/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1.5 flex flex-1 flex-col justify-center gap-1.5">
+          <div className="flex flex-1 items-center gap-1.5 rounded-[4px] border border-[#E4E4E0] bg-white px-1.5">
+            <span className="text-[8px] text-[#8A8A84]">✓</span>
+            <span className="h-[3px] flex-1 rounded-sm bg-[#DEDEDA]" />
+          </div>
+          <div className="flex flex-1 items-center gap-1.5 rounded-[4px] border border-[#E4E4E0] bg-[#F3F3F0] px-1.5">
+            <span className="text-[8px] text-[#8A8A84]">✗</span>
+            <span className="h-[3px] flex-1 rounded-sm bg-[#DEDEDA]" />
+          </div>
+        </div>
+      </>
+    );
+  }
   // 제안서: 불릿 논리 전개 + 근거 차트
   if (id === "proposal") {
     return (
@@ -191,16 +285,66 @@ export function HomePage() {
   const [prompt, setPrompt] = useState("");
   const [slideCount, setSlideCount] = useState(5);
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
+  const [aspect, setAspect] = useState<DeckAspect>("16:9");
   const [query, setQuery] = useState("");
   const [decks, setDecks] = useState<DeckSummary[]>(() => listDecks());
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState<ImportedPptx | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const theme = getTheme(themeId);
+  const isCarousel = aspect === "4:5";
+  const chips = isCarousel ? SUGGESTIONS_CAROUSEL : SUGGESTIONS;
+  const libs = isCarousel ? CAROUSEL_LIBRARIES : WIREFRAME_LIBRARIES;
 
   const create = () => {
     if (!prompt.trim()) return;
     const deckId = uid();
-    begin({ deckId, prompt: prompt.trim(), slideCount, themeId });
+    begin({ deckId, prompt: prompt.trim(), slideCount, themeId, aspect });
     navigate(`/deck/${deckId}/outline`);
+  };
+
+  // ── PPTX 가져오기 (Import = 그대로 편집 / Reference = 아웃라인 재구성) ──
+  const onPickFile = async (f: File | null | undefined) => {
+    if (!f) return;
+    setImporting(true);
+    try {
+      setImported(await parsePptx(f));
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "PPTX를 읽지 못했어요");
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const importAsDeck = () => {
+    if (!imported) return;
+    saveDeck(imported.deck);
+    useDeckStore.getState().setDeck(imported.deck);
+    clearHistory();
+    setImported(null);
+    navigate(`/deck/${imported.deck.id}/edit`);
+    showToast(
+      `'${imported.deck.title}' ${imported.slideCount}장 가져왔어요 — 필요한 부분만 고치세요`,
+    );
+  };
+
+  const importAsReference = () => {
+    if (!imported) return;
+    const deckId = uid();
+    begin({
+      deckId,
+      prompt: `"${imported.fileName}" 내용을 참고해 새로 구성`,
+      slideCount: imported.outline.length,
+      themeId,
+      aspect: imported.deck.aspect,
+      slides: imported.outline,
+      status: "done",
+    });
+    setImported(null);
+    navigate(`/deck/${deckId}/outline`);
+    showToast("추출한 아웃라인을 확인·수정한 뒤 슬라이드를 생성하세요");
   };
 
   const removeDeck = (d: DeckSummary) => {
@@ -231,34 +375,125 @@ export function HomePage() {
           주제를 입력하면 AI가 아웃라인을 먼저 설계하고, 확인 후 슬라이드를 만듭니다.
         </p>
         <div className="w-[720px] max-w-[92vw] rounded-2xl border border-app-border bg-app-surface p-4.5 pb-3.5 shadow-[0_4px_20px_rgba(0,0,0,.06)]">
+          {/* PPTX 첨부 칩 + Import/Reference 인라인 (스냅덱 배치) */}
+          {imported && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-app-border bg-app-bg px-2 py-1 text-[11.5px] font-medium">
+                <span className="h-2.5 w-2.5 rounded-[3px] bg-[#D14423]" />
+                <span className="max-w-48 truncate">{imported.fileName}</span>
+                <button
+                  onClick={() => setImported(null)}
+                  className="text-app-faint hover:text-app-text"
+                >
+                  ✕
+                </button>
+              </span>
+              <div className="mt-2 flex items-center gap-3 rounded-[10px] border border-app-border px-3 py-2.5">
+                <span className="h-6 w-6 shrink-0 rounded-md bg-[#FBE9E4] text-center text-[13px] leading-6">
+                  🟥
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] font-bold">
+                    Import PPTX?{" "}
+                    <span className="font-normal text-app-faint">as editable deck</span>
+                  </p>
+                  <p className="truncate text-[11px] text-app-faint">
+                    {imported.fileName} · {imported.slideCount}장
+                    {imported.skipped > 0 ? ` · 차트/표 ${imported.skipped}개 제외` : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={importAsReference}
+                  title="내용을 아웃라인으로 추출해 새로 구성"
+                  className="shrink-0 text-[12.5px] font-medium text-app-muted hover:text-app-accent"
+                >
+                  Reference
+                </button>
+                <button
+                  onClick={importAsDeck}
+                  title="양식 그대로 열어서 편집"
+                  className="shrink-0 rounded-lg bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-85"
+                >
+                  ⬆ Import
+                </button>
+              </div>
+            </div>
+          )}
+          {/* 비율 토글 — 카드 상단 (스냅덱 배치) */}
+          <div className="mb-2.5 flex items-center gap-2">
+            <div className="flex overflow-hidden rounded-full border border-app-border">
+              {(
+                [
+                  ["16:9", "▭ 16:9"],
+                  ["4:5", "▯ 4:5"],
+                ] as const
+              ).map(([a, label], i) => (
+                <button
+                  key={a}
+                  onClick={() => setAspect(a)}
+                  className={`px-3 py-1 text-[12px] font-semibold ${
+                    i === 1 ? "border-l border-app-border" : ""
+                  } ${aspect === a ? "bg-app-text text-white" : "bg-white text-app-faint hover:bg-app-bg"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <span className="text-[11.5px] text-app-faint">
+              {isCarousel ? "카드뉴스 캐러셀" : "발표자료"}
+            </span>
+          </div>
+          {/* 시도해보기 + Tab 적용 */}
+          {!prompt && (
+            <p className="mb-1 text-[12.5px] text-app-faint">
+              시도해보기: <span className="text-app-muted">{chips[0].prompt}</span>
+              <span className="mx-1.5 rounded border border-app-border bg-app-bg px-1.5 py-0.5 font-mono text-[10.5px]">
+                Tab
+              </span>
+              키를 눌러 적용하세요.
+            </p>
+          )}
           <textarea
             ref={promptRef}
             className="h-20 w-full resize-none text-[15px] leading-relaxed focus:outline-none"
-            placeholder="예: 소상공인 경영바우처 지원 제안서를 만들어줘"
+            placeholder="주제와 핵심 포인트를 입력하세요…"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
+              if (e.key === "Tab" && !prompt) {
+                e.preventDefault();
+                setPrompt(chips[0].prompt);
+                setThemeId(chips[0].themeId);
+                setSlideCount(chips[0].count);
+              }
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create();
             }}
           />
-          <div className="flex items-center gap-2.5 border-t border-app-border-soft pt-3">
-            {/* 슬라이드 수 스텝퍼 */}
-            <div className="flex items-center overflow-hidden rounded-[9px] border border-app-border">
+          {/* 하단 컨트롤 바 — 모델 · 장수 · 테마 · 첨부 · 전송 (스냅덱 배치) */}
+          <div className="flex items-center gap-2 border-t border-app-border-soft pt-3">
+            <span
+              title="현재 텍스트 모델 (환경변수 ANTHROPIC_MODEL로 변경)"
+              className="inline-flex items-center gap-1.5 rounded-full border border-app-border bg-app-text px-3 py-1.5 text-[12px] font-semibold text-white"
+            >
+              ✦ Claude Sonnet 4.6
+            </span>
+            <div className="flex items-center gap-0.5">
               <button
                 onClick={() => setSlideCount((n) => Math.max(MIN_SLIDES, n - 1))}
-                className="border-r border-app-border bg-white px-2.5 py-1.5 text-[13px] text-app-muted hover:bg-app-bg"
+                className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
               >
                 −
               </button>
-              <span className="px-3 py-1.5 text-[12.5px] font-semibold">{slideCount}장</span>
+              <span className="min-w-5 text-center text-[13px] font-semibold">
+                {slideCount}
+              </span>
               <button
                 onClick={() => setSlideCount((n) => Math.min(MAX_SLIDES, n + 1))}
-                className="border-l border-app-border bg-white px-2.5 py-1.5 text-[13px] text-app-muted hover:bg-app-bg"
+                className="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-bg"
               >
                 +
               </button>
             </div>
-            {/* 테마 드롭다운 */}
             <Dropdown
               items={Object.values(themes).map((t) => ({
                 key: t.id,
@@ -267,28 +502,43 @@ export function HomePage() {
               }))}
               activeKey={themeId}
               onSelect={setThemeId}
-              triggerClassName="flex items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2 hover:border-app-accent data-open:border-app-accent"
+              triggerClassName="flex items-center gap-1.5 rounded-full border border-app-border bg-white px-3 py-1.5 hover:border-app-accent data-open:border-app-accent"
             >
               <span
-                className="h-[11px] w-[11px] rounded-[3px]"
+                className="h-2.5 w-2.5 rounded-[3px]"
                 style={{ background: theme.accent }}
               />
-              <span className="text-[12.5px] font-medium">{theme.name}</span>
+              <span className="text-[12px] font-medium">{theme.name}</span>
               <span className="text-[9px] text-app-faint">▾</span>
             </Dropdown>
             <span className="flex-1" />
             <button
+              onClick={() => fileRef.current?.click()}
+              disabled={importing}
+              title="PPTX 첨부"
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent disabled:opacity-50"
+            >
+              {importing ? (
+                <span className="animate-dg-pulse text-[11px]">…</span>
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              )}
+            </button>
+            <button
               onClick={create}
               disabled={!prompt.trim()}
-              className="rounded-[10px] bg-app-accent px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-[0_2px_8px_rgba(109,74,255,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
+              title="아웃라인 생성 (Ctrl+Enter)"
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-app-accent text-[15px] text-white shadow-[0_2px_8px_rgba(109,74,255,.3)] hover:opacity-90 disabled:opacity-40 disabled:shadow-none"
             >
-              ✦ 아웃라인 생성
+              ↵
             </button>
           </div>
         </div>
-        {/* 제안 칩 */}
+        {/* 제안 칩 (비율별) */}
         <div className="mt-3.5 flex flex-wrap justify-center gap-2">
-          {SUGGESTIONS.map((s) => (
+          {chips.map((s) => (
             <button
               key={s.label}
               onClick={() => {
@@ -296,7 +546,7 @@ export function HomePage() {
                 setThemeId(s.themeId);
                 setSlideCount(s.count);
                 promptRef.current?.focus();
-                showToast(`'${s.label}' 템플릿 적용 — 내용을 다듬고 생성하세요`);
+                showToast(`'${s.label}' 예시 적용 — 내용을 다듬고 생성하세요`);
               }}
               className="rounded-full border border-app-border bg-app-surface px-3.5 py-1.5 text-[12px] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
             >
@@ -304,18 +554,60 @@ export function HomePage() {
             </button>
           ))}
         </div>
+        {/* 모드 버튼 행 (스냅덱 배치) — Import PPTX만 활성, 나머지 2차 */}
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pptx,.ppt"
+            className="hidden"
+            onChange={(e) => void onPickFile(e.target.files?.[0])}
+          />
+          {[
+            { key: "research", label: "🔍 Web Research", soon: true },
+            { key: "scrap", label: "🌐 Web Scrap", soon: true },
+            { key: "pptx", label: "🟥 Import PPTX", soon: false },
+            { key: "agent", label: "🤖 Auto Agent", soon: true },
+          ].map((m) => (
+            <button
+              key={m.key}
+              disabled={m.soon || importing}
+              title={m.soon ? "2차 로드맵 — 준비 중" : "기존 PowerPoint를 열어 이어서 고치거나 참고자료로 재구성"}
+              onClick={() => {
+                if (!m.soon) fileRef.current?.click();
+              }}
+              className={`rounded-full border px-4 py-2 text-[12.5px] font-semibold transition-colors ${
+                m.soon
+                  ? "cursor-not-allowed border-app-border bg-app-bg text-app-faint opacity-60"
+                  : "border-[#C9C9C4] bg-app-surface hover:border-app-accent hover:text-app-accent"
+              }`}
+            >
+              {m.label}
+              {m.soon && (
+                <span className="ml-1.5 rounded bg-app-border-soft px-1 py-0.5 text-[9.5px] text-app-faint">
+                  2차
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
+
 
       {/* 스토리보드 템플릿 (§13) — 완성 장표가 아니라 팀이 함께 채우는 와이어프레임 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-12">
         <div className="mb-3.5 flex items-baseline justify-between">
-          <h2 className="text-[16px] font-semibold">스토리보드로 시작</h2>
+          <h2 className="text-[16px] font-semibold">
+            {isCarousel ? "캐러셀 스타일로 시작" : "스토리보드로 시작"}
+          </h2>
           <span className="text-[12px] text-app-faint">
-            와이어프레임 골격을 만들고, 공유해서 팀이 함께 채워요
+            {isCarousel
+              ? "피드에서 멈추고 · 넘기고 · 저장되는 4:5 골격"
+              : "와이어프레임 골격을 만들고, 공유해서 팀이 함께 채워요"}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-          {WIREFRAME_LIBRARIES.map((lib) => (
+          {libs.map((lib) => (
             <button
               key={lib.id}
               onClick={() => {
@@ -330,11 +622,15 @@ export function HomePage() {
               className="group rounded-xl border border-app-border bg-app-surface p-3 text-left shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(109,74,255,.15)]"
             >
               {/* 와이어프레임 미니 프리뷰 — 호버 시 뒤 슬라이드 레이어들이 라벨 위로 스르륵 펼쳐짐 */}
-              <div className="relative">
+              <div
+                className={`relative ${
+                  lib.aspect === "4:5" ? "mx-auto aspect-[4/5] w-3/4" : "aspect-[16/10]"
+                }`}
+              >
                 <div className="pointer-events-none absolute inset-x-4 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[42px] group-hover:scale-x-[.82] group-hover:scale-y-[.96] delay-150" />
                 <div className="pointer-events-none absolute inset-x-2.5 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[28px] group-hover:scale-x-[.88] group-hover:scale-y-[.98] delay-75" />
                 <div className="pointer-events-none absolute inset-x-1 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[14px] group-hover:scale-x-[.94]" />
-                <div className="relative z-10 flex aspect-[16/10] flex-col rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                <div className="absolute inset-0 z-10 flex flex-col rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
                   <PreviewArt id={lib.id} />
                 </div>
               </div>

@@ -20,9 +20,12 @@
 ### 1.3 MVP 범위
 | 포함 | 제외 (2차 이후) |
 |---|---|
-| 프롬프트 → 아웃라인 → 슬라이드 생성 | PPTX 가져오기(Import) |
-| Fabric.js 캔버스 에디터 (이동/크기/회전/텍스트 편집/undo·redo) | 웹 리서치, 이미지 생성 |
-| 테마 시스템 (4종 내장) | 소셜 캐러셀(4:5) 모드 |
+| 프롬프트 → 아웃라인 → 슬라이드 생성 | 웹 리서치, 이미지 생성, Auto Agent |
+| Fabric.js 캔버스 에디터 (이동/크기/회전/텍스트 편집/undo·redo) | |
+| 테마 시스템 (4종 내장) | |
+| **PPTX 가져오기 — Import(그대로 편집) / Reference(아웃라인 추출)** (§9.2) | |
+| **4:5 카드뉴스 캐러셀 모드** (1080×1350 · 훅/저장/CTA 규칙 · 캐러셀 스타일 4종) | |
+| **AI 수정 before/after 비교 후 적용** | |
 | AI 채팅 수정 (선택 슬라이드 대상 Magic Edit) | 계정(로그인) |
 | PPTX 내보내기 (텍스트·도형·차트 편집 가능 상태로) | Auto Agent(멀티스텝 에이전트) |
 | 로컬 저장 (localStorage 자동 저장) | |
@@ -347,6 +350,12 @@ pptxgenjs를 클라이언트에서 실행. 변환 규칙:
 - 형식: **슬라이드별 SVG 벡터 묶음(.zip)** — Fabric 렌더 트리를 `canvas.toSVG()`로 벡터화. `.fig`는 비공개 바이너리 포맷이라 채택하지 않음(SVG가 Figma 공식 임포트 경로).
 - 파일명 `NN 슬라이드제목.svg` → Figma에 드래그하면 레이어 이름·순서로 반영. 텍스트=text 레이어(tspan 줄바꿈 유지), 도형·차트=벡터 레이어, 이미지=dataURL 임베드, z-order=스키마 순서.
 - 폰트는 Pretendard 기준 — Figma 환경에 없으면 대체 폰트 표시(README.txt 동봉 안내).
+
+### 9.2 PPTX 가져오기 (`engine/pptxImport.ts`)
+- 클라이언트에서 OOXML 파싱(JSZip+DOMParser). EMU→px 스케일, 세로형 파일은 4:5로 판정.
+- 변환 범위: 텍스트 상자(폰트 크기·굵기·색·정렬·불릿), 기본 도형(rect/roundRect/ellipse+solidFill), 이미지(dataURL). **차트/표/그룹은 제외하고 개수를 슬라이드 notes에 기록**(억지 변환 금지).
+- 두 경로: **Import** = DeckSchema로 열어 그대로 편집 / **Reference** = 슬라이드별 제목·불릿을 아웃라인으로 추출 → 확인 후 재생성. 홈 프롬프트 카드에 첨부 칩+인라인 선택 UI.
+- 좌표계·비율: aspect는 `Deck.aspect`("16:9"|"4:5")로 일반화, 레이아웃 엔진·렌더러·내보내기(PPTX/Figma) 모두 dims 파라미터화.
 
 ---
 

@@ -7,6 +7,7 @@ import type {
   ShapeElement,
   TextElement,
 } from "./schema";
+import { aspectDims } from "./schema";
 import type { Theme } from "./themes";
 import { getTheme, resolveColor, resolveRoleColor } from "./themes";
 
@@ -157,9 +158,11 @@ function sanitizeFileName(name: string): string {
 
 export async function exportDeckToPptx(deck: Deck): Promise<void> {
   const theme = getTheme(deck.themeId);
+  const dims = aspectDims(deck.aspect);
   const pptx = new PptxGenJS();
-  pptx.defineLayout({ name: "WIDE", width: 13.333, height: 7.5 });
-  pptx.layout = "WIDE";
+  // 144px = 1inch — 16:9는 13.333×7.5, 4:5 카드뉴스는 7.5×9.375
+  pptx.defineLayout({ name: "DECK", width: dims.w / 144, height: dims.h / 144 });
+  pptx.layout = "DECK";
   pptx.title = deck.title;
 
   for (const s of deck.slides) {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { OutlineSlide } from "../engine/schema";
+import type { DeckAspect, OutlineSlide } from "../engine/schema";
 import { DEFAULT_THEME_ID } from "../engine/themes";
 
 export type OutlineStatus = "idle" | "streaming" | "done" | "error";
@@ -9,6 +9,7 @@ interface OutlineState {
   prompt: string;
   slideCount: number;
   themeId: string;
+  aspect: DeckAspect;
   slides: OutlineSlide[];
   status: OutlineStatus;
   error: string | null;
@@ -17,6 +18,9 @@ interface OutlineState {
     prompt: string;
     slideCount: number;
     themeId: string;
+    aspect?: DeckAspect;
+    slides?: OutlineSlide[]; // PPTX Reference 등 프리필
+    status?: OutlineStatus;
   }) => void;
   setStatus: (status: OutlineStatus, error?: string | null) => void;
   appendSlide: (slide: OutlineSlide) => void;
@@ -29,17 +33,19 @@ export const useOutlineStore = create<OutlineState>()((set) => ({
   prompt: "",
   slideCount: 5,
   themeId: DEFAULT_THEME_ID,
+  aspect: "16:9",
   slides: [],
   status: "idle",
   error: null,
-  begin: ({ deckId, prompt, slideCount, themeId }) =>
+  begin: ({ deckId, prompt, slideCount, themeId, aspect = "16:9", slides = [], status = "idle" }) =>
     set({
       deckId,
       prompt,
       slideCount,
       themeId,
-      slides: [],
-      status: "idle",
+      aspect,
+      slides,
+      status,
       error: null,
     }),
   setStatus: (status, error = null) => set({ status, error }),
