@@ -66,12 +66,12 @@ final class Db
                 name VARCHAR(60) NOT NULL,
                 color VARCHAR(16) NOT NULL,
                 slide_index INT NOT NULL DEFAULT 0,
-                cursor VARCHAR(48) NULL,
+                `cursor` VARCHAR(48) NULL,
                 ts BIGINT NOT NULL,
                 PRIMARY KEY (deck_id, client_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
         );
-        // 기존 테이블에 cursor 컬럼 보강 (라이브 마이그레이션)
-        try { self::$pdo->exec('ALTER TABLE presence ADD COLUMN IF NOT EXISTS cursor VARCHAR(48) NULL'); } catch (Throwable $e) {}
+        // 기존 테이블에 cursor 컬럼 보강 (라이브 마이그레이션) — cursor는 MariaDB 예약어라 백틱 필수
+        try { self::$pdo->exec('ALTER TABLE presence ADD COLUMN IF NOT EXISTS `cursor` VARCHAR(48) NULL'); } catch (Throwable $e) {}
     }
 }

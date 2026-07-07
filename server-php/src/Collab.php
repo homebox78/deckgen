@@ -181,7 +181,7 @@ final class Collab
         if (Admin::isBlocked(mb_substr((string) ($b['name'] ?? ''), 0, 40))) self::json(403, ['error' => '차단된 사용자입니다. 관리자에게 문의하세요.']);
         $cursor = is_array($b['cursor'] ?? null) ? json_encode(['x' => (int) $b['cursor']['x'], 'y' => (int) $b['cursor']['y']]) : null;
         if ($cursor !== null && ($b['clientId'] ?? '') !== '') {
-            Db::pdo()->prepare('UPDATE presence SET cursor = :c, ts = :t WHERE deck_id = :d AND client_id = :cid')
+            Db::pdo()->prepare('UPDATE presence SET `cursor` = :c, ts = :t WHERE deck_id = :d AND client_id = :cid')
                 ->execute([':c' => $cursor, ':t' => (int) (microtime(true) * 1000), ':d' => $deckId, ':cid' => (string) $b['clientId']]);
         }
         self::touchPresence(
@@ -208,7 +208,7 @@ final class Collab
         $now = (int) (microtime(true) * 1000);
         Db::pdo()->prepare('DELETE FROM presence WHERE deck_id = :d AND ts < :t')
             ->execute([':d' => $deckId, ':t' => $now - 30000]);
-        $st = Db::pdo()->prepare('SELECT client_id, name, color, slide_index, cursor FROM presence WHERE deck_id = :d');
+        $st = Db::pdo()->prepare('SELECT client_id, name, color, slide_index, `cursor` FROM presence WHERE deck_id = :d');
         $st->execute([':d' => $deckId]);
         return array_map(fn ($r) => array_merge([
             'clientId' => $r['client_id'], 'name' => $r['name'],
