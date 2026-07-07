@@ -616,6 +616,7 @@ const AUDIT_CATS: Record<string, [string, string, string]> = {
   data: ["데이터", "#6D4AFF", "#F0EBFF"],
   banner: ["공지", "#0E8345", "#EAF7F0"],
   template: ["템플릿", "#6D4AFF", "#F0EBFF"],
+  payment: ["결제", "#0E8345", "#EAF7F0"],
 };
 
 function AuditPage() {
@@ -654,7 +655,7 @@ function AuditPage() {
             className="flex-1 bg-transparent text-[12.5px] focus:outline-none"
           />
         </div>
-        {["all", "auth", "user", "settings", "data", "banner"].map((c) => (
+        {["all", "auth", "user", "settings", "data", "payment"].map((c) => (
           <button
             key={c}
             onClick={() => setCat(c)}
@@ -668,9 +669,9 @@ function AuditPage() {
         <span className="flex-1" />
         <button
           onClick={exportCsv}
-          className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold"
+          className="flex items-center gap-1 rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold"
         >
-          ↓ CSV 내보내기
+          <span className="mi text-[15px]">download</span>CSV 내보내기
         </button>
       </div>
       <Card className="overflow-hidden">
@@ -686,7 +687,12 @@ function AuditPage() {
           return (
             <div key={i} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-2.5">
               <span className="w-[110px] flex-none font-mono text-[11.5px] text-app-muted">{fmtTime(l.ts)}</span>
-              <span className="flex-1 text-[12px]">{l.actor}</span>
+              <span className="flex flex-1 items-center gap-2 text-[12px]">
+                <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-app-muted text-[9px] font-bold text-white">
+                  {(l.actor || "?").slice(0, 1)}
+                </span>
+                {l.actor}
+              </span>
               <span className="flex-1">
                 <span
                   className="rounded-[6px] px-2 py-[3px] text-[10.5px] font-bold"
