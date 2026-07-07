@@ -28,6 +28,8 @@ interface DeckState {
     elementId: string,
     dir: "front" | "forward" | "backward" | "back",
   ) => void;
+  /** 슬라이드 자동 정리 — 삽입 요소 회전 초기화 + 여백 안으로 클램프 */
+  tidySlide: (slideId: string, dims: { w: number; h: number }) => void;
 }
 
 function touch(deck: Deck): Deck {
@@ -164,6 +166,28 @@ export const useDeckStore = create<DeckState>()(
                             : Math.max(0, i - 1);
                     elements.splice(j, 0, el);
                     return { ...sl, elements };
+                  }),
+                ),
+              }
+            : s,
+        ),
+      tidySlide: (slideId, dims) =>
+        set((s) =>
+          s.deck
+            ? {
+                deck: mapSlides(s.deck, (slides) =>
+                  slides.map((sl) => {
+                    if (sl.id !== slideId) return sl;
+                    const M = 96; // 여백
+                    return {
+                      ...sl,
+                      elements: sl.elements.map((el) => ({
+                        ...el,
+                        rotation: 0,
+                        x: Math.max(M, Math.min(dims.w - M - el.w, el.x)),
+                        y: Math.max(M, Math.min(dims.h - M - el.h, el.y)),
+                      })),
+                    };
                   }),
                 ),
               }

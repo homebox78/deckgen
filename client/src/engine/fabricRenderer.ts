@@ -42,6 +42,9 @@ function attach(obj: FabricObject, el: SlideElement): FabricObject {
   Object.assign(obj, { data: { elementId: el.id, kind: el.type } satisfies ElementData });
   if (el.rotation) obj.set({ angle: el.rotation });
   if (el.opacity !== undefined) obj.set({ opacity: el.opacity });
+  if (el.shadow) {
+    obj.set({ shadow: new Shadow({ color: "rgba(0,0,0,0.28)", blur: 24, offsetX: 0, offsetY: 8 }) });
+  }
   if (el.locked) {
     // 잠금: 선택은 가능(속성 패널에서 해제), 이동/크기/회전/인라인 편집 차단
     obj.set({

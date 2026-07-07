@@ -81,16 +81,33 @@ function addShape(slide: PptxGenJS.Slide, el: ShapeElement, theme: Theme): void 
     }
     case "rect":
     case "roundRect":
-    case "ellipse": {
-      const type =
-        el.shape === "rect" ? "rect" : el.shape === "roundRect" ? "roundRect" : "ellipse";
-      slide.addShape(type, {
+    case "pill":
+    case "ellipse":
+    case "triangle":
+    case "diamond":
+    case "star": {
+      const typeMap: Record<string, PptxGenJS.ShapeType | string> = {
+        rect: "rect",
+        roundRect: "roundRect",
+        pill: "roundRect",
+        ellipse: "ellipse",
+        triangle: "triangle",
+        diamond: "diamond",
+        star: "star5",
+      };
+      const type = typeMap[el.shape] ?? "rect";
+      slide.addShape(type as PptxGenJS.ShapeType, {
         ...base,
         fill: { color: fill },
         ...(stroke
           ? { line: { color: stroke, width: pt(el.strokeWidth ?? 2) } }
           : { line: { type: "none" } }),
-        ...(el.shape === "roundRect" ? { rectRadius: inch(el.radius ?? 16) } : {}),
+        ...(el.shape === "roundRect" || el.shape === "pill"
+          ? { rectRadius: inch(el.radius ?? (el.shape === "pill" ? Math.min(el.w, el.h) / 2 : 16)) }
+          : {}),
+        ...(el.shadow
+          ? { shadow: { type: "outer", blur: 6, offset: 4, angle: 90, color: "000000", opacity: 0.28 } }
+          : {}),
       });
     }
   }
