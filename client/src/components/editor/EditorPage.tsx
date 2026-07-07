@@ -490,6 +490,22 @@ export function EditorPage() {
     return () => window.clearTimeout(saveTimer.current);
   }, [deck]);
 
+  // 선택 변경 시 프레즌스 브로드캐스트 → 피어에게 "선택 중" 라벨 즉시 반영
+  useEffect(() => {
+    if (!isCollab) return;
+    const sess = getCollabSession(deck.id);
+    if (!sess) return;
+    void sendPresence(deck.id, {
+      token: sess.token,
+      clientId: CLIENT_ID,
+      name: getGuestName() || "게스트",
+      color: MY_COLOR,
+      slideIndex,
+      selectedId: selectedElementId ?? undefined,
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedElementId]);
+
   // 협업 팔로우 — 팔로우 대상의 슬라이드로 자동 이동
   useEffect(() => {
     if (!followId) return;
@@ -1105,6 +1121,7 @@ export function EditorPage() {
                       color: MY_COLOR,
                       slideIndex,
                       cursor: { x, y },
+                      selectedId: useUiStore.getState().selectedElementId ?? undefined,
                     }).catch(() => {});
                   }
                 : undefined

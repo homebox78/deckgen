@@ -20,6 +20,7 @@ export interface CollabPeer {
   color: string;
   slideIndex: number;
   cursor?: { x: number; y: number };
+  selectedId?: string; // 선택 중인 요소 id — "{이름} 선택 중" 라벨용
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -92,6 +93,7 @@ export function sendPresence(
     color: string;
     slideIndex: number;
     cursor?: { x: number; y: number };
+    selectedId?: string;
   },
 ): Promise<{ ok: boolean }> {
   return postJson(`/api/collab/${encodeURIComponent(deckId)}/presence`, p);

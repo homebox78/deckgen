@@ -37,7 +37,7 @@ export function SlideCanvas({
   readOnly?: boolean;
   dims?: SlideDims;
   onInsertAt?: (kind: string) => void;
-  peers?: { clientId: string; name: string; color: string; cursor?: { x: number; y: number } }[];
+  peers?: { clientId: string; name: string; color: string; cursor?: { x: number; y: number }; selectedId?: string }[];
   onCursor?: (x: number, y: number) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -598,9 +598,42 @@ export function SlideCanvas({
       });
   })();
 
+  // 피어가 선택 중인 요소에 "{이름} 선택 중" 라벨 + 색 테두리
+  const selectionLabels = (() => {
+    const fc = fcRef.current;
+    if (!fc || !peers) return null;
+    void vptTick;
+    const vpt = fc.viewportTransform;
+    return peers
+      .filter((p) => p.selectedId)
+      .map((p) => {
+        const obj = fc
+          .getObjects()
+          .find((o) => (o as { data?: { elementId?: string } }).data?.elementId === p.selectedId);
+        if (!obj) return null;
+        const r = obj.getBoundingRect();
+        const sx = r.left * vpt[0] + vpt[4];
+        const sy = r.top * vpt[3] + vpt[5];
+        const w = r.width * vpt[0];
+        const h = r.height * vpt[3];
+        return (
+          <div key={`sel-${p.clientId}`} className="pointer-events-none absolute z-20" style={{ left: sx, top: sy, width: w, height: h }}>
+            <div className="h-full w-full rounded-[2px] border-2" style={{ borderColor: p.color }} />
+            <span
+              className="absolute -top-[18px] left-0 rounded-[4px] px-1.5 py-0.5 text-[9.5px] font-semibold whitespace-nowrap text-white"
+              style={{ background: p.color }}
+            >
+              {p.name} 선택 중
+            </span>
+          </div>
+        );
+      });
+  })();
+
   return (
     <div ref={hostRef} className="relative h-full w-full overflow-hidden bg-app-canvas">
       <canvas ref={canvasElRef} />
+      {selectionLabels}
       {cursorEls}
       {ctxMenu && ctxItems.length > 0 && (
         <>

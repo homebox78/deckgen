@@ -184,6 +184,12 @@ final class Collab
             Db::pdo()->prepare('UPDATE presence SET `cursor` = :c, ts = :t WHERE deck_id = :d AND client_id = :cid')
                 ->execute([':c' => $cursor, ':t' => (int) (microtime(true) * 1000), ':d' => $deckId, ':cid' => (string) $b['clientId']]);
         }
+        // 선택 중 요소 id — "선택 중" 라벨용 (빈 문자열 = 선택 해제)
+        if (($b['clientId'] ?? '') !== '' && array_key_exists('selectedId', $b)) {
+            $sel = $b['selectedId'] !== null ? mb_substr((string) $b['selectedId'], 0, 48) : '';
+            Db::pdo()->prepare('UPDATE presence SET sel = :s, ts = :t WHERE deck_id = :d AND client_id = :cid')
+                ->execute([':s' => $sel, ':t' => (int) (microtime(true) * 1000), ':d' => $deckId, ':cid' => (string) $b['clientId']]);
+        }
         self::touchPresence(
             $deckId,
             (string) ($b['clientId'] ?? ''),
@@ -208,12 +214,13 @@ final class Collab
         $now = (int) (microtime(true) * 1000);
         Db::pdo()->prepare('DELETE FROM presence WHERE deck_id = :d AND ts < :t')
             ->execute([':d' => $deckId, ':t' => $now - 30000]);
-        $st = Db::pdo()->prepare('SELECT client_id, name, color, slide_index, `cursor` FROM presence WHERE deck_id = :d');
+        $st = Db::pdo()->prepare('SELECT client_id, name, color, slide_index, `cursor`, sel FROM presence WHERE deck_id = :d');
         $st->execute([':d' => $deckId]);
         return array_map(fn ($r) => array_merge([
             'clientId' => $r['client_id'], 'name' => $r['name'],
             'color' => $r['color'], 'slideIndex' => (int) $r['slide_index'],
-        ], !empty($r['cursor']) ? ['cursor' => json_decode($r['cursor'], true)] : []), $st->fetchAll());
+        ], !empty($r['cursor']) ? ['cursor' => json_decode($r['cursor'], true)] : [],
+           !empty($r['sel']) ? ['selectedId' => $r['sel']] : []), $st->fetchAll());
     }
 
     // ── GET /collab/{id}/events (SSE — 1초 DB 폴링, 110초 후 종료 → EventSource 자동 재접속) ──
@@ -283,7 +290,8 @@ final class Collab
             echo ": ping\n\n";
             flush();
             if (connection_aborted()) break;
-            sleep(1);
+            // 커서·선택이 부드럽게 보이도록 300ms 폴링 (라이브 커서)
+            usleep(300000);
         }
         // 연결 종료 — EventSource가 자동 재접속하며 프레즌스를 다시 등록한다
         Db::pdo()->prepare('DELETE FROM presence WHERE deck_id = :d AND client_id = :c AND ts < :t')
