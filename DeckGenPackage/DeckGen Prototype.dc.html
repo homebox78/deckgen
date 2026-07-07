@@ -532,6 +532,27 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
             </div>
           </sc-if>
         </div>
+        <div style="position:relative">
+          <div style="display:flex;align-items:center;gap:6px;border:1px solid {{ slideSearchBorder }};border-radius:9px;padding:7px 10px;background:#FBFBFA">
+            <span class="mi" style="font-size:13px;color:#8A8A84">search</span>
+            <input value="{{ slideQuery }}" onChange="{{ onSlideQuery }}" placeholder="슬라이드 검색" style="flex:1;min-width:0;border:none;background:transparent;font-family:inherit;font-size:11.5px;color:#1A1A1A"></input>
+            <sc-if value="{{ hasSlideQuery }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearSlideQuery }}" style="border:none;background:transparent;padding:0;color:#B4B4AE;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:12px">close</span></button></sc-if>
+          </div>
+          <sc-if value="{{ hasSlideQuery }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:calc(100% + 5px);left:0;right:0;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;box-shadow:0 12px 32px rgba(0,0,0,.15);padding:5px;z-index:55;max-height:240px;overflow:auto">
+              <sc-if value="{{ noSlideHits }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11.5px;color:#8A8A84;text-align:center;padding:14px 0">일치하는 슬라이드가 없어요</div>
+              </sc-if>
+              <sc-for list="{{ slideHits }}" as="sh" hint-placeholder-count="2">
+                <button onClick="{{ sh.go }}" style="display:flex;align-items:flex-start;gap:8px;width:100%;border:none;background:{{ sh.bg }};border-radius:8px;padding:8px 9px;cursor:pointer;text-align:left" style-hover="background:#F0F0EE">
+                  <span style="flex:none;font-size:10px;font-weight:700;color:#8A8A84;border:1px solid #E4E4E0;border-radius:5px;padding:2px 6px;margin-top:1px">{{ sh.num }}</span>
+                  <span style="flex:1;min-width:0"><span style="display:block;font-size:11.5px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sh.title }}</span><span style="display:block;font-size:10.5px;color:#8A8A84;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sh.snippet }}</span></span>
+                  <span class="mi" style="font-size:12px;color:#B4B4AE;margin-top:3px">{{ sh.whereIcon }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
         <sc-for list="{{ thumbs }}" as="t" hint-placeholder-count="3">
           <sc-if value="{{ t.hasSection }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;align-items:center;gap:6px;margin:6px 0 -2px;padding-left:20px">
@@ -1939,6 +1960,7 @@ class Component extends DCLogic {
     cmtPopReply: '',
     cmtReplyId: null,
     cmtReplyText: '',
+    slideQuery: '',
     tblData: {},
     tblEdit: null,
     barColors: {},
@@ -3577,6 +3599,37 @@ class Component extends DCLogic {
         this._showToast('링크 ' + n + '개 스크랩 대기열에 추가 — 생성 시 자료로 활용됩니다');
       },
       autoAgent: () => this._showToast('Auto Agent — 주제만 정하면 리서치→아웃라인→생성을 자동 진행합니다 (시뮬레이션)'),
+      slideQuery: s.slideQuery || '',
+      onSlideQuery: (e) => this.setState({ slideQuery: e.target.value }),
+      clearSlideQuery: () => this.setState({ slideQuery: '' }),
+      hasSlideQuery: !!(s.slideQuery || '').trim(),
+      slideSearchBorder: (s.slideQuery || '').trim() ? '#1A1A1A' : '#E4E4E0',
+      ...(() => {
+        const q = (s.slideQuery || '').trim().toLowerCase();
+        if (!q) return { slideHits: [], noSlideHits: false };
+        const hits = [];
+        s.outline.forEach((o, i) => {
+          const title = (o.title || '').toLowerCase();
+          const bullets = (o.bullets || '').toLowerCase();
+          const note = (o.note || '').toLowerCase();
+          let where = null, src = '';
+          if (title.indexOf(q) >= 0) { where = 'title'; src = o.title; }
+          else if (bullets.indexOf(q) >= 0) { where = 'body'; src = (o.bullets || '').split('\n').find(l => l.toLowerCase().indexOf(q) >= 0) || ''; }
+          else if (note.indexOf(q) >= 0) { where = 'note'; src = o.note; }
+          if (!where) return;
+          const at = src.toLowerCase().indexOf(q);
+          const snippet = (at > 12 ? '…' : '') + src.slice(Math.max(0, at - 12), at + q.length + 26);
+          hits.push({
+            num: String(i + 1),
+            title: o.title || '(제목 없음)',
+            snippet,
+            whereIcon: where === 'title' ? 'title' : where === 'note' ? 'sticky_note_2' : 'notes',
+            bg: i === s.cur ? '#F7F7F5' : 'transparent',
+            go: () => { this._goSlide(i); this.setState({ slideQuery: '' }); }
+          });
+        });
+        return { slideHits: hits, noSlideHits: hits.length === 0 };
+      })(),
       ddToggleNewSlide: (e) => { e.stopPropagation(); this.setState(st => ({ dd: st.dd === 'newslide' ? null : 'newslide' })); },
       ddNewSlideOpen: s.dd === 'newslide',
       newSlideBorder: s.dd === 'newslide' ? '#1A1A1A' : '#E4E4E0',

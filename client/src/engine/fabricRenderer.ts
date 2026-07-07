@@ -40,6 +40,19 @@ function attach(obj: FabricObject, el: SlideElement): FabricObject {
   Object.assign(obj, { data: { elementId: el.id, kind: el.type } satisfies ElementData });
   if (el.rotation) obj.set({ angle: el.rotation });
   if (el.opacity !== undefined) obj.set({ opacity: el.opacity });
+  if (el.locked) {
+    // 잠금: 선택은 가능(속성 패널에서 해제), 이동/크기/회전/인라인 편집 차단
+    obj.set({
+      lockMovementX: true,
+      lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
+      lockRotation: true,
+      hasControls: false,
+      editable: false,
+      hoverCursor: "not-allowed",
+    } as Partial<FabricObject>);
+  }
   return obj;
 }
 

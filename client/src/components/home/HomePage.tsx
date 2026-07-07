@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiUrl } from "../../api/base";
 import type { ImportedPptx } from "../../engine/pptxImport";
 import { parsePptx } from "../../engine/pptxImport";
 import type { DeckAspect } from "../../engine/schema";
@@ -298,7 +299,29 @@ export function HomePage() {
   const theme = getTheme(themeId);
   const isCarousel = aspect === "4:5";
   const chips = isCarousel ? SUGGESTIONS_CAROUSEL : SUGGESTIONS;
-  const libs = isCarousel ? CAROUSEL_LIBRARIES : WIREFRAME_LIBRARIES;
+
+  // 관리자 템플릿 설정(§14) 반영 — 노출/순서/이름. 서버 응답 없으면 기본 라이브러리 그대로
+  const [tplMeta, setTplMeta] = useState<{ id: string; name: string; on: boolean }[]>([]);
+  useEffect(() => {
+    void fetch(apiUrl("/api/templates"))
+      .then((r) => r.json())
+      .then((j: { templates?: { id: string; name: string; on: boolean }[] }) =>
+        setTplMeta(j.templates ?? []),
+      )
+      .catch(() => {});
+  }, []);
+  const baseLibs = isCarousel ? CAROUSEL_LIBRARIES : WIREFRAME_LIBRARIES;
+  const libs =
+    tplMeta.length === 0
+      ? baseLibs
+      : tplMeta
+          .filter((m) => m.on)
+          .map((m) => {
+            const lib = baseLibs.find((l) => l.id === m.id);
+            return lib ? { ...lib, name: m.name || lib.name } : null;
+          })
+          .filter((l): l is (typeof baseLibs)[number] => l !== null)
+          .concat(baseLibs.filter((l) => !tplMeta.some((m) => m.id === l.id)));
 
   const create = () => {
     if (!prompt.trim()) return;
@@ -626,6 +649,8 @@ export function HomePage() {
                 saveDeck(deck);
                 useDeckStore.getState().setDeck(deck);
                 clearHistory();
+                // 관리자 템플릿 사용 횟수 집계 (fire-and-forget)
+                void fetch(apiUrl(`/api/templates/${lib.id}/use`), { method: "POST" }).catch(() => {});
                 navigate(`/deck/${deck.id}/edit`);
                 showToast(`'${lib.name}' ${lib.frames.length}프레임 생성 — 자리를 채우고 공유하세요`);
               }}

@@ -62,6 +62,7 @@ const elementBase = {
   h: z.number(),
   rotation: z.number().optional(),
   opacity: z.number().min(0).max(1).optional(),
+  locked: z.boolean().optional(),
 };
 
 const textElementSchema = z.object({

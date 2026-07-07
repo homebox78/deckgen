@@ -137,6 +137,41 @@ export function PropertiesPanel({
       </div>
 
       <div className="border-b border-app-border-soft px-4 py-3.5">
+        <SectionLabel>요소 순서 (z-order) · 잠금</SectionLabel>
+        <div className="mb-2 grid grid-cols-4 gap-1.5">
+          {(
+            [
+              ["back", "맨 뒤"],
+              ["backward", "뒤로"],
+              ["forward", "앞으로"],
+              ["front", "맨 앞"],
+            ] as const
+          ).map(([dir, label]) => (
+            <button
+              key={dir}
+              onClick={() => useDeckStore.getState().reorderElement(slideId, element.id, dir)}
+              className="rounded-md border border-app-border bg-white py-1.5 text-[11px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => {
+            patch({ locked: !element.locked || undefined } as Partial<SlideElement>);
+            showToast(element.locked ? "잠금이 해제됐어요" : "요소가 잠겼어요 — 캔버스 조작이 차단됩니다");
+          }}
+          className={`w-full rounded-md border py-1.5 text-[11.5px] font-semibold ${
+            element.locked
+              ? "border-app-accent bg-app-accent-soft text-app-accent"
+              : "border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent"
+          }`}
+        >
+          {element.locked ? "🔒 잠김 — 클릭해서 해제" : "🔓 요소 잠금"}
+        </button>
+      </div>
+
+      <div className="border-b border-app-border-soft px-4 py-3.5">
         <SectionLabel>Appearance</SectionLabel>
         <div className="grid grid-cols-2 gap-2">
           <ValueRow

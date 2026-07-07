@@ -187,6 +187,11 @@ export function SlideCanvas({
       if (e.key === "Delete" || e.key === "Backspace") {
         const a = activeElement();
         if (!a) return;
+        if (a.el.locked) {
+          showToast("잠긴 요소예요 — 속성 패널에서 잠금을 해제하세요");
+          e.preventDefault();
+          return;
+        }
         fc.discardActiveObject();
         ui.setSelectedElementId(null);
         store.removeElement(slideRef.current.id, a.el.id);

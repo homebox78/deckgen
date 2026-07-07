@@ -119,6 +119,7 @@ interface ElementBase {
   w: number; h: number;
   rotation?: number;          // deg
   opacity?: number;           // 0~1
+  locked?: boolean;           // 잠금 — 캔버스 이동/크기/회전/삭제 차단 (속성 패널에서 해제)
 }
 
 interface TextElement extends ElementBase {

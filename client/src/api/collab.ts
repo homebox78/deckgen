@@ -37,6 +37,17 @@ export function publishDeck(deck: Deck): Promise<ShareTokens & { rev: number }> 
   return postJson("/api/share", { deck });
 }
 
+/** 이메일 초대 — Invite Email 템플릿으로 발송 (편집 토큰 = 초대 권한 증명) */
+export function sendInvite(
+  deckId: string,
+  token: string,
+  email: string,
+  role: "edit" | "view",
+  inviterName: string,
+): Promise<{ ok: boolean; message?: string }> {
+  return postJson("/api/share/invite", { deckId, token, email, role, inviterName });
+}
+
 /** 공유 링크 토큰으로 덱+권한 조회 */
 export async function fetchShared(token: string): Promise<SharedDeckInfo> {
   const res = await fetch(apiUrl(`/api/share/${encodeURIComponent(token)}`));

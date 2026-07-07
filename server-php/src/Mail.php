@@ -72,6 +72,37 @@ final class Mail
         fclose($fp);
     }
 
+    /** 공유 초대 메일 — DeckGen Invite Email 템플릿 이식 (table+인라인 스타일) */
+    public static function inviteHtml(array $v): string
+    {
+        $e = fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
+        $f = "'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif";
+        $name = $e($v['inviterName']);
+        $url = $e($v['inviteUrl']);
+        $role = $e($v['roleLabel']);
+        return '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>DeckGen 덱 공유 초대</title></head>'
+            . '<body style="margin:0;padding:0;background-color:#F0F0EE;">'
+            . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0F0EE;"><tr><td align="center" style="padding:36px 16px;">'
+            . '<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;">'
+            . '<tr><td style="padding:0 4px 18px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr>'
+            . '<td style="width:26px;height:26px;background-color:#1A1A1A;border-radius:7px;font-size:0;">&nbsp;</td>'
+            . "<td style=\"padding-left:9px;font-family:{$f};font-size:17px;font-weight:700;color:#1A1A1A;\">DeckGen</td></tr></table></td></tr>"
+            . '<tr><td style="background-color:#FFFFFF;border:1px solid #E4E4E0;border-radius:16px;padding:36px 36px 32px;">'
+            . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">'
+            . "<tr><td align=\"center\" style=\"font-family:{$f};font-size:20px;line-height:1.45;font-weight:700;color:#1A1A1A;padding:4px 0 6px;\">{$name}님이 덱에 초대했어요</td></tr>"
+            . "<tr><td align=\"center\" style=\"font-family:{$f};font-size:13.5px;line-height:1.65;color:#6B6B66;padding-bottom:24px;\">아래 덱을 함께 작업하도록 요청했습니다.</td></tr>"
+            . '<tr><td style="border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px;background-color:#FBFBFA;">'
+            . "<div style=\"font-family:{$f};font-size:15px;font-weight:700;color:#1A1A1A;\">" . $e($v['deckTitle']) . '</div>'
+            . "<div style=\"font-family:{$f};font-size:12px;color:#8A8A84;padding-top:3px;\">" . $e($v['deckMeta']) . " · 권한: {$role}</div></td></tr>"
+            . "<tr><td align=\"center\" style=\"font-family:{$f};font-size:12.5px;line-height:1.65;color:#6B6B66;padding:16px 8px 22px;\">부여된 권한: <b style=\"color:#1A1A1A;\">{$role}</b> — " . $e($v['roleDesc']) . '</td></tr>'
+            . '<tr><td align="center" style="padding-bottom:14px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr>'
+            . "<td align=\"center\" style=\"background-color:#1A1A1A;border-radius:10px;\"><a href=\"{$url}\" target=\"_blank\" style=\"display:inline-block;font-family:{$f};font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;padding:13px 40px;border-radius:10px;\">덱 열기</a></td></tr></table></td></tr>"
+            . "<tr><td align=\"center\" style=\"font-family:{$f};font-size:11.5px;line-height:1.7;color:#8A8A84;\">버튼이 열리지 않으면: <a href=\"{$url}\" style=\"color:#55554F;\">{$url}</a></td></tr>"
+            . '</table></td></tr>'
+            . "<tr><td align=\"center\" style=\"padding:22px 8px 0;font-family:{$f};font-size:11px;line-height:1.8;color:#9C9C96;\">이 메일은 " . $e($v['recipientEmail']) . ' 주소로 발송된 DeckGen 공유 초대 메일입니다.<br>본인이 요청하지 않았다면 무시하셔도 됩니다.</td></tr>'
+            . '</table></td></tr></table></body></html>';
+    }
+
     public static function verificationHtml(string $code): string
     {
         return '<div style="font-family:Pretendard,Apple SD Gothic Neo,sans-serif;max-width:420px;margin:0 auto;padding:32px 24px;border:1px solid #E4E4E0;border-radius:16px">'

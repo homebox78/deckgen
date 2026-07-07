@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { publishDeck } from "../../api/collab";
+import { publishDeck, sendInvite } from "../../api/collab";
 import type { Deck } from "../../engine/schema";
 import {
+  getGuestName,
   getShareTokens,
   saveShareTokens,
   useCollabStore,
@@ -24,6 +25,27 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
   const [mode, setMode] = useState<Mode>("view");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+
+  const invite = async () => {
+    const email = inviteEmail.trim();
+    if (!tokens || inviting) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showToast("올바른 이메일을 입력하세요");
+      return;
+    }
+    setInviting(true);
+    try {
+      await sendInvite(deck.id, tokens.editToken, email, mode, getGuestName() || "게스트");
+      showToast(`${email}로 초대 메일을 보냈어요`);
+      setInviteEmail("");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "초대 발송 실패");
+    } finally {
+      setInviting(false);
+    }
+  };
 
   // 최초 공유: 서버에 덱 등록 → 토큰 발급 → 협업 세션 활성화
   useEffect(() => {
@@ -130,6 +152,31 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             >
               {copied ? "복사됨 ✓" : "복사"}
             </button>
+          </div>
+        )}
+
+        {/* 이메일 초대 — Invite Email 템플릿으로 발송, 선택된 권한 적용 */}
+        {tokens && (
+          <div className="mt-3">
+            <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">
+              이메일로 초대 · {mode === "edit" ? "편집 가능" : "보기 전용"}
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void invite()}
+                placeholder="name@company.com"
+                className="min-w-0 flex-1 rounded-[10px] border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none"
+              />
+              <button
+                onClick={() => void invite()}
+                disabled={inviting}
+                className="shrink-0 rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12.5px] font-semibold hover:border-app-accent disabled:opacity-50"
+              >
+                {inviting ? "발송 중…" : "초대"}
+              </button>
+            </div>
           </div>
         )}
 

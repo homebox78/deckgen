@@ -22,6 +22,12 @@ interface DeckState {
   ) => void;
   /** 요소 1개를 여러 요소로 치환 (차트 분해 등) — 같은 z 위치에 삽입 */
   explodeElement: (slideId: string, elementId: string, parts: SlideElement[]) => void;
+  /** z-order 이동 — elements 배열 순서 = z-order (§3) */
+  reorderElement: (
+    slideId: string,
+    elementId: string,
+    dir: "front" | "forward" | "backward" | "back",
+  ) => void;
 }
 
 function touch(deck: Deck): Deck {
@@ -133,6 +139,32 @@ export const useDeckStore = create<DeckState>()(
                           ),
                         },
                   ),
+                ),
+              }
+            : s,
+        ),
+      reorderElement: (slideId, elementId, dir) =>
+        set((s) =>
+          s.deck
+            ? {
+                deck: mapSlides(s.deck, (slides) =>
+                  slides.map((sl) => {
+                    if (sl.id !== slideId) return sl;
+                    const i = sl.elements.findIndex((el) => el.id === elementId);
+                    if (i < 0) return sl;
+                    const elements = [...sl.elements];
+                    const [el] = elements.splice(i, 1);
+                    const j =
+                      dir === "front"
+                        ? elements.length
+                        : dir === "back"
+                          ? 0
+                          : dir === "forward"
+                            ? Math.min(elements.length, i + 1)
+                            : Math.max(0, i - 1);
+                    elements.splice(j, 0, el);
+                    return { ...sl, elements };
+                  }),
                 ),
               }
             : s,

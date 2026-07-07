@@ -140,11 +140,45 @@ final class Collab
         self::json(200, ['rev' => $rev]);
     }
 
+    // ── POST /share/invite — 이메일 초대 (Invite Email 템플릿) ──
+    public static function invite(): void
+    {
+        $b = self::body();
+        $deckId = (string) ($b['deckId'] ?? '');
+        $email = strtolower(trim((string) ($b['email'] ?? '')));
+        $role = ($b['role'] ?? '') === 'edit' ? 'edit' : 'view';
+        $inviter = mb_substr(trim((string) ($b['inviterName'] ?? '게스트')), 0, 40) ?: '게스트';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) self::json(400, ['error' => '유효한 이메일이 필요합니다.']);
+        $rec = self::requireRole($deckId, (string) ($b['token'] ?? ''), 'edit');
+        if (!$rec) self::json(403, ['error' => '초대 권한이 없습니다.']);
+        if (!Mail::configured()) self::json(503, ['error' => '메일 발송이 설정되지 않았습니다.']);
+        $base = rtrim(trim((string) Db::cfg('public_base_url', '')), '/');
+        if ($base === '') self::json(503, ['error' => 'public_base_url이 설정되지 않았습니다.']);
+        $deck = json_decode((string) $rec['json'], true);
+        $token = $role === 'edit' ? $rec['edit_token'] : $rec['view_token'];
+        try {
+            Mail::send($email, "[DeckGen] {$inviter}님이 '" . ($deck['title'] ?? '덱') . "' 덱에 초대했어요", Mail::inviteHtml([
+                'inviterName' => $inviter,
+                'deckTitle' => (string) ($deck['title'] ?? '덱'),
+                'roleLabel' => $role === 'edit' ? '편집 가능' : '보기 전용',
+                'roleDesc' => $role === 'edit' ? '아웃라인·슬라이드를 수정하고 실시간 공동 편집할 수 있어요.' : '열람과 PPTX 다운로드만 가능해요.',
+                'inviteUrl' => $base . '/s/' . $token,
+                'deckMeta' => count($deck['slides'] ?? []) . '장 · DeckGen',
+                'recipientEmail' => $email,
+            ]));
+            Admin::logEvent('export', true, 0, "초대 메일 · {$email} · {$role}");
+            self::json(200, ['ok' => true, 'message' => "{$email}로 초대 메일을 보냈어요."]);
+        } catch (Throwable $e) {
+            self::json(502, ['error' => '초대 메일 발송에 실패했습니다.']);
+        }
+    }
+
     // ── POST /collab/{id}/presence ──
     public static function presence(string $deckId): void
     {
         $b = self::body();
         if (!self::requireRole($deckId, (string) ($b['token'] ?? ''), 'view')) self::json(403, ['error' => '권한이 없습니다.']);
+        if (Admin::isBlocked(mb_substr((string) ($b['name'] ?? ''), 0, 40))) self::json(403, ['error' => '차단된 사용자입니다. 관리자에게 문의하세요.']);
         self::touchPresence(
             $deckId,
             (string) ($b['clientId'] ?? ''),

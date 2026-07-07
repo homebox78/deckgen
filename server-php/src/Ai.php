@@ -30,7 +30,28 @@ final class Ai
 
     private static function model(): string
     {
+        // 관리자 콘솔 "생성 모델" 설정(§14)이 있으면 우선
+        $override = Admin::genModelOverride();
+        if ($override !== '') return $override;
         return trim((string) Db::cfg('anthropic_model', 'claude-sonnet-4-6'));
+    }
+
+    /** §14 점검 모드 + IP당 일일 생성 한도 — 차단 시 JSON 응답 후 true 반환 */
+    private static function guardGenerate(): bool
+    {
+        if (Admin::isMaintenance()) {
+            http_response_code(503);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['error' => '점검 중입니다. 잠시 후 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
+            return true;
+        }
+        if (!Admin::checkDailyLimit()) {
+            http_response_code(429);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['error' => '일일 생성 한도를 초과했습니다.'], JSON_UNESCAPED_UNICODE);
+            return true;
+        }
+        return false;
     }
 
     private static function httpJson(string $url, array $headers, array $body): array
@@ -120,8 +141,10 @@ final class Ai
             echo json_encode(['error' => 'prompt가 필요합니다.'], JSON_UNESCAPED_UNICODE);
             return;
         }
+        if (self::guardGenerate()) return;
         $count = max(3, min(12, (int) ($b['slideCount'] ?? 5)));
         $carousel = ($b['format'] ?? '') === '4:5';
+        $t0 = microtime(true);
         $emit = self::sseStart();
 
         if (self::key() === '') {
@@ -145,10 +168,16 @@ final class Ai
                     usleep(250000);
                 }
             }
-            if ($sent === 0) $emit('error', ['message' => '아웃라인을 생성하지 못했습니다. 다시 시도해주세요.']);
-            else $emit('done', []);
+            if ($sent === 0) {
+                $emit('error', ['message' => '아웃라인을 생성하지 못했습니다. 다시 시도해주세요.']);
+                Admin::logEvent('outline', false, (int) ((microtime(true) - $t0) * 1000), $prompt, 'OutlineGenerationError');
+            } else {
+                $emit('done', []);
+                Admin::logEvent('outline', true, (int) ((microtime(true) - $t0) * 1000), mb_substr($prompt, 0, 60));
+            }
         } catch (Throwable $e) {
             $emit('error', ['message' => '아웃라인 생성 실패: ' . $e->getMessage()]);
+            Admin::logEvent('outline', false, (int) ((microtime(true) - $t0) * 1000), $prompt, 'OutlineGenerationError');
         }
     }
 
@@ -190,7 +219,9 @@ final class Ai
             echo json_encode(['error' => '유효한 outline 배열이 필요합니다.'], JSON_UNESCAPED_UNICODE);
             return;
         }
+        if (self::guardGenerate()) return;
         $carousel = ($b['format'] ?? '') === '4:5';
+        $t0 = microtime(true);
         $emit = self::sseStart();
         $useMock = self::key() === '';
         $system = Prompts::SLIDES . ($carousel ? "\n\n[4:5 카드뉴스] 세로 캔버스다. title-bullets/kpi-cards/section을 우선하고, 텍스트는 짧게, 페이지 번호·발표자 정보는 절대 넣지 마라. 마지막 장은 section 레이아웃의 CTA로." : '');
@@ -220,9 +251,11 @@ final class Ai
                 }
             } catch (Throwable $e) {
                 $emit('slide-error', ['index' => $i, 'message' => '이 슬라이드 생성에 실패했습니다.']);
+                Admin::logError('SlideGenerationError', $e->getMessage());
             }
         }
         $emit('done', []);
+        Admin::logEvent('slides', true, (int) ((microtime(true) - $t0) * 1000), $n . '장' . ($useMock ? ' (mock)' : ''));
     }
 
     private static function mockSpec(array $item, int $total): array
@@ -248,6 +281,13 @@ final class Ai
     // ── POST /edit ──
     public static function edit(): void
     {
+        if (Admin::isMaintenance()) {
+            http_response_code(503);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['error' => '점검 중입니다. 잠시 후 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        $t0 = microtime(true);
         header('Content-Type: application/json; charset=utf-8');
         $b = self::body();
         $instruction = trim((string) ($b['instruction'] ?? ''));
@@ -279,12 +319,14 @@ final class Ai
                 $edited = json_decode($text, true);
                 if (!is_array($edited) || !isset($edited['elements'])) throw new RuntimeException('스키마 불일치');
                 $edited['id'] = $slide['id'];
+                Admin::logEvent('edit', true, (int) ((microtime(true) - $t0) * 1000), mb_substr($instruction, 0, 50) . ' · ' . $model);
                 echo json_encode(['slide' => $edited, 'model' => $model], JSON_UNESCAPED_UNICODE);
                 return;
             } catch (Throwable $e) {
                 // 다음 모델로 폴백
             }
         }
+        Admin::logEvent('edit', false, (int) ((microtime(true) - $t0) * 1000), mb_substr($instruction, 0, 50), 'MagicEditError');
         http_response_code(502);
         echo json_encode(['error' => 'AI 수정에 실패했습니다. 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
     }

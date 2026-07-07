@@ -25,6 +25,7 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
+import { PresentMode } from "./PresentMode";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { RegenerateLayer } from "./RegenerateLayer";
 import { ShareDialog } from "./ShareDialog";
@@ -277,6 +278,7 @@ export function EditorPage() {
   const [tab, setTab] = useState<RightTab>("chat");
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
+  const [presenting, setPresenting] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -500,6 +502,13 @@ export function EditorPage() {
             <span className="text-[9px] text-app-faint">▾</span>
           </Dropdown>
         )}
+        <button
+          onClick={() => setPresenting(true)}
+          title="발표 모드 — 클릭/→ 진행 · N 노트 · Esc 종료"
+          className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+        >
+          ▶ 발표
+        </button>
         {!collab.isGuest && (
           <button
             onClick={() => setShareOpen(true)}
@@ -519,6 +528,14 @@ export function EditorPage() {
           <ExportPopover onClose={() => setExportOpen(false)} onExport={runExport} />
         )}
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
+        {presenting && (
+          <PresentMode
+            deck={deck}
+            theme={theme}
+            startIndex={slideIndex}
+            onExit={() => setPresenting(false)}
+          />
+        )}
         {regen &&
           (() => {
             const target = deck.slides.find((s) => s.id === regen.slideId);

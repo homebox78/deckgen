@@ -12,7 +12,9 @@ import {
   replaceSlide,
   upsertShared,
 } from "../store/deckRepo.js";
-import { getBlocked } from "../store/adminStore.js";
+import { mailConfigured, sendMail } from "../mail.js";
+import { getBlocked, logEvent } from "../store/adminStore.js";
+import { inviteEmailHtml } from "../templates/inviteEmail.js";
 import { initSSE, sendEvent } from "../sse.js";
 
 export const collabRouter = Router();
@@ -183,6 +185,60 @@ collabRouter.post("/collab/:deckId/deck", (req: Request, res: Response) => {
 });
 
 // ===== ⑤ 프레즌스 하트비트 =====
+// ===== 이메일 초대 (Invite Email 템플릿) =====
+const inviteBody = z.object({
+  deckId: z.string(),
+  token: z.string(), // 편집 토큰 = 초대 권한 증명
+  email: z.string().email(),
+  role: z.enum(["edit", "view"]),
+  inviterName: z.string().max(40).default("게스트"),
+});
+
+collabRouter.post("/share/invite", async (req: Request, res: Response) => {
+  const parsed = inviteBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "유효하지 않은 초대 요청입니다." });
+    return;
+  }
+  const { deckId, token, email, role, inviterName } = parsed.data;
+  const rec = requireRole(deckId, token, "edit"); // 편집 권한자만 초대 가능
+  if (!rec) {
+    res.status(403).json({ error: "초대 권한이 없습니다." });
+    return;
+  }
+  if (!mailConfigured()) {
+    res.status(503).json({ error: "메일 발송이 설정되지 않았습니다." });
+    return;
+  }
+  const base = (process.env.PUBLIC_BASE_URL ?? "").trim().replace(/\/$/, "");
+  if (!base) {
+    res.status(503).json({ error: "public_base_url이 설정되지 않았습니다 (config.php)." });
+    return;
+  }
+  const inviteToken = role === "edit" ? rec.editToken : rec.viewToken;
+  const html = inviteEmailHtml({
+    inviterName,
+    inviterEmail: "DeckGen 공유",
+    deckTitle: rec.deck.title,
+    roleLabel: role === "edit" ? "편집 가능" : "보기 전용",
+    roleDesc:
+      role === "edit"
+        ? "아웃라인·슬라이드를 수정하고 실시간 공동 편집할 수 있어요."
+        : "열람과 PPTX 다운로드만 가능해요.",
+    inviteUrl: `${base}/s/${inviteToken}`,
+    deckMeta: `${rec.deck.slides.length}장 · DeckGen`,
+    recipientEmail: email,
+  });
+  try {
+    await sendMail(email, `[DeckGen] ${inviterName}님이 '${rec.deck.title}' 덱에 초대했어요`, html);
+    logEvent({ ts: Date.now(), kind: "export", ok: true, ms: 0, meta: `초대 메일 · ${email} · ${role}` });
+    res.json({ ok: true, message: `${email}로 초대 메일을 보냈어요.` });
+  } catch (e) {
+    console.warn("[invite] 발송 실패:", e);
+    res.status(502).json({ error: "초대 메일 발송에 실패했습니다." });
+  }
+});
+
 const presenceBody = z.object({
   token: z.string(),
   clientId: z.string().max(64),
