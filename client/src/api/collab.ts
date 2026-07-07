@@ -19,6 +19,7 @@ export interface CollabPeer {
   name: string;
   color: string;
   slideIndex: number;
+  cursor?: { x: number; y: number };
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -84,7 +85,14 @@ export function pushDeck(
 
 export function sendPresence(
   deckId: string,
-  p: { token: string; clientId: string; name: string; color: string; slideIndex: number },
+  p: {
+    token: string;
+    clientId: string;
+    name: string;
+    color: string;
+    slideIndex: number;
+    cursor?: { x: number; y: number };
+  },
 ): Promise<{ ok: boolean }> {
   return postJson(`/api/collab/${encodeURIComponent(deckId)}/presence`, p);
 }

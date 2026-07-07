@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { trackEvent } from "../../api/client";
-import { fetchShared } from "../../api/collab";
+import { fetchShared, sendPresence } from "../../api/collab";
 import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
 import { exportDeckToPng } from "../../engine/pngExporter";
@@ -11,6 +11,7 @@ import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
 import { aspectDims, uid } from "../../engine/schema";
 import { getTheme, themes } from "../../engine/themes";
 import {
+  CLIENT_ID,
   MY_COLOR,
   getCollabSession,
   getGuestName,
@@ -826,7 +827,30 @@ export function EditorPage() {
 
         {/* 중앙: 캔버스 + 줌 툴바 */}
         <main className="relative min-w-0 flex-1">
-          <SlideCanvas slide={slide} theme={theme} readOnly={readOnly} dims={dims} onInsertAt={insertElement} />
+          <SlideCanvas
+            slide={slide}
+            theme={theme}
+            readOnly={readOnly}
+            dims={dims}
+            onInsertAt={insertElement}
+            peers={peers.filter((p) => p.slideIndex === slideIndex)}
+            onCursor={
+              isCollab
+                ? (x, y) => {
+                    const sess = getCollabSession(deck.id);
+                    if (!sess) return;
+                    void sendPresence(deck.id, {
+                      token: sess.token,
+                      clientId: CLIENT_ID,
+                      name: getGuestName() || "게스트",
+                      color: MY_COLOR,
+                      slideIndex,
+                      cursor: { x, y },
+                    }).catch(() => {});
+                  }
+                : undefined
+            }
+          />
           {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 */}
           <div className="absolute bottom-3.5 left-3.5 z-10 flex items-center gap-1.5 rounded-[11px] border border-app-border bg-white px-2.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             <span className="text-[11px] text-app-muted">🗺</span>

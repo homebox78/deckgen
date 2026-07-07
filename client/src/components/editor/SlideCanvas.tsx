@@ -29,12 +29,16 @@ export function SlideCanvas({
   readOnly = false,
   dims = { w: SLIDE_W, h: SLIDE_H },
   onInsertAt,
+  peers,
+  onCursor,
 }: {
   slide: Slide;
   theme: Theme;
   readOnly?: boolean;
   dims?: SlideDims;
   onInsertAt?: (kind: string) => void;
+  peers?: { clientId: string; name: string; color: string; cursor?: { x: number; y: number } }[];
+  onCursor?: (x: number, y: number) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
@@ -47,6 +51,9 @@ export function SlideCanvas({
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; elementId: string | null } | null>(
     null,
   );
+  const onCursorRef = useRef(onCursor);
+  onCursorRef.current = onCursor;
+  const [vptTick, setVptTick] = useState(0); // 뷰포트 변경 시 커서 오버레이 재계산
 
   useEffect(() => {
     const host = hostRef.current!;
@@ -171,6 +178,7 @@ export function SlideCanvas({
       );
       fc.zoomToPoint(new Point(opt.e.offsetX, opt.e.offsetY), zoom);
       reportZoom();
+      setVptTick((t) => t + 1);
     });
 
     // --- 스냅 가이드 (Figma식) — 중앙·여백·다른 요소 정렬 시 점선 ---
@@ -244,6 +252,18 @@ export function SlideCanvas({
       if (!panning) return;
       panning = false;
       fc.selection = true;
+      setVptTick((t) => t + 1);
+    });
+
+    // --- 라이브 커서 브로드캐스트 (C2, 120ms 스로틀) ---
+    let lastCursor = 0;
+    fc.on("mouse:move", (opt) => {
+      if (!onCursorRef.current) return;
+      const now = Date.now();
+      if (now - lastCursor < 120) return;
+      lastCursor = now;
+      const p = fc.getScenePoint(opt.e);
+      onCursorRef.current(Math.round(p.x), Math.round(p.y));
     });
 
     // --- 역동기화 (보기 전용에선 편집 이벤트가 없으므로 생략) ---
@@ -502,9 +522,37 @@ export function SlideCanvas({
     );
   }
 
+  // 협업자 라이브 커서 오버레이 (C2) — 슬라이드 좌표 → 화면 좌표
+  const cursorEls = (() => {
+    const fc = fcRef.current;
+    if (!fc || !peers) return null;
+    void vptTick; // 뷰포트 변경 시 재계산 의존
+    const vpt = fc.viewportTransform;
+    return peers
+      .filter((p) => p.cursor)
+      .map((p) => {
+        const sx = p.cursor!.x * vpt[0] + vpt[4];
+        const sy = p.cursor!.y * vpt[3] + vpt[5];
+        return (
+          <div key={p.clientId} className="pointer-events-none absolute z-30" style={{ left: sx, top: sy }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.3))" }}>
+              <path d="M5 3l14 7-6 2-2 6z" fill={p.color} stroke="#fff" strokeWidth="1.5" />
+            </svg>
+            <span
+              className="ml-2.5 rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
+              style={{ background: p.color }}
+            >
+              {p.name}
+            </span>
+          </div>
+        );
+      });
+  })();
+
   return (
     <div ref={hostRef} className="relative h-full w-full overflow-hidden bg-app-canvas">
       <canvas ref={canvasElRef} />
+      {cursorEls}
       {ctxMenu && ctxItems.length > 0 && (
         <>
           <div className="fixed inset-0 z-40" onClick={closeCtx} onContextMenu={(e) => { e.preventDefault(); closeCtx(); }} />

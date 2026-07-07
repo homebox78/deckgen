@@ -25,6 +25,7 @@ interface Peer {
   name: string;
   color: string;
   slideIndex: number;
+  cursor?: { x: number; y: number }; // 슬라이드 좌표 (C2 라이브 커서)
   ts: number;
 }
 
@@ -245,6 +246,7 @@ const presenceBody = z.object({
   name: z.string().max(40),
   color: z.string().max(16),
   slideIndex: z.number().int().min(0).max(200),
+  cursor: z.object({ x: z.number(), y: z.number() }).optional(),
 });
 
 collabRouter.post("/collab/:deckId/presence", (req: Request, res: Response) => {
@@ -253,7 +255,7 @@ collabRouter.post("/collab/:deckId/presence", (req: Request, res: Response) => {
     res.status(400).json({ error: "유효하지 않은 요청입니다." });
     return;
   }
-  const { token, clientId, name, color, slideIndex } = parsed.data;
+  const { token, clientId, name, color, slideIndex, cursor } = parsed.data;
   if (!requireRole(req.params.deckId, token, "view")) {
     res.status(403).json({ error: "권한이 없습니다." });
     return;
@@ -265,8 +267,9 @@ collabRouter.post("/collab/:deckId/presence", (req: Request, res: Response) => {
   const deckId = req.params.deckId;
   if (!presence.has(deckId)) presence.set(deckId, new Map());
   const prev = presence.get(deckId)!.get(clientId);
-  presence.get(deckId)!.set(clientId, { clientId, name, color, slideIndex, ts: Date.now() });
-  if (!prev || prev.slideIndex !== slideIndex || prev.name !== name) {
+  presence.get(deckId)!.set(clientId, { clientId, name, color, slideIndex, cursor, ts: Date.now() });
+  // 커서만 바뀐 경우에도 브로드캐스트(라이브 커서). 슬라이드/이름 변경도 포함
+  if (!prev || prev.slideIndex !== slideIndex || prev.name !== name || cursor) {
     broadcastPresence(deckId);
   }
   res.json({ ok: true });
