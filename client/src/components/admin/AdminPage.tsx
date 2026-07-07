@@ -31,23 +31,49 @@ type PageId =
   | "apikeys"
   | "credits"
   | "plans"
-  | "settings";
+  | "settings"
+  | "health"
+  | "exports"
+  | "abtest"
+  | "emails"
+  | "flags"
+  | "policies"
+  | "refunds"
+  | "roles";
 
-const PAGES: { id: PageId; name: string; desc: string }[] = [
-  { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실데이터" },
-  { id: "users", name: "사용자 관리", desc: "협업 참여자 · 차단" },
-  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 이벤트" },
-  { id: "errors", name: "오류 로그", desc: "미해결 오류 그룹" },
-  { id: "audit", name: "감사 로그", desc: "append-only 관리자 기록" },
-  { id: "banners", name: "공지 / 배너", desc: "사용자 화면 상단 안내 관리" },
-  { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정" },
-  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크 · 멤버 · 강제 잠금" },
-  { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션" },
-  { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용" },
-  { id: "apikeys", name: "API 키 관리", desc: "서버 연동 키 · 회전 · 폐기" },
-  { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그" },
-  { id: "plans", name: "플랜 · 결제", desc: "플랜 정의 (결제 연동 2차)" },
-  { id: "settings", name: "서비스 설정", desc: "한도·점검 모드·모델 정책" },
+const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
+  { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실데이터", icon: "📊" },
+  { id: "users", name: "사용자 관리", desc: "협업 참여자 · 차단 · 플랜", icon: "👥" },
+  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크 · 멤버 · 강제 잠금", icon: "🗂" },
+  { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션", icon: "💬" },
+  { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정", icon: "🎨" },
+  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 이벤트", icon: "⚙️" },
+  { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용", icon: "🤖" },
+  { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그", icon: "🪙" },
+  { id: "flags", name: "기능 플래그", desc: "롤아웃 % · 타겟 · ON/OFF", icon: "🚩" },
+  { id: "abtest", name: "A/B 테스트", desc: "실험 · 변형 전환율 · 승자 적용", icon: "🧪" },
+  { id: "plans", name: "플랜 · 결제", desc: "플랜 정의 (결제 연동 2차)", icon: "💳" },
+  { id: "refunds", name: "환불 · 청구", desc: "결제 내역 · 환불 · 재청구", icon: "🧾" },
+  { id: "policies", name: "약관 · 정책", desc: "버전 · 재동의 · 게시", icon: "📜" },
+  { id: "banners", name: "공지 / 배너", desc: "사용자 화면 상단 안내 관리", icon: "📢" },
+  { id: "emails", name: "이메일 로그", desc: "발송 상태 · 전송률 · 재발송", icon: "✉️" },
+  { id: "health", name: "시스템 상태", desc: "서비스 헬스 · 인시던트 · 점검", icon: "🩺" },
+  { id: "errors", name: "오류 로그", desc: "미해결 오류 그룹", icon: "🐞" },
+  { id: "audit", name: "감사 로그", desc: "append-only 관리자 기록", icon: "📝" },
+  { id: "exports", name: "데이터 내보내기", desc: "CSV/JSON · GDPR 요청", icon: "📤" },
+  { id: "apikeys", name: "API 키 관리", desc: "서버 연동 키 · 회전 · 폐기", icon: "🔑" },
+  { id: "roles", name: "역할 · 권한", desc: "관리자 멤버 · 권한 매트릭스", icon: "🛡" },
+  { id: "settings", name: "서비스 설정", desc: "한도·점검 모드·모델 정책", icon: "⚙️" },
+];
+
+// 그룹형 아코디언 내비 (6그룹)
+const NAV_GROUPS: { label: string; ids: PageId[] }[] = [
+  { label: "개요", ids: ["dash"] },
+  { label: "사용자·콘텐츠", ids: ["users", "decks", "collab", "templates"] },
+  { label: "생성·AI", ids: ["jobs", "models", "credits", "flags", "abtest"] },
+  { label: "매출·정책", ids: ["plans", "refunds", "policies"] },
+  { label: "커뮤니케이션", ids: ["banners", "emails"] },
+  { label: "시스템·운영", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
 ];
 
 const fmtTime = (ts: number) => {
@@ -1169,63 +1195,521 @@ function CreditsPage() {
   );
 }
 
+// KPI 4카드 그리드 헬퍼
+function KpiGrid({ items }: { items: { name: string; value: string; sub: string }[] }) {
+  return (
+    <div className="mb-5 grid grid-cols-4 gap-3.5">
+      {items.map((k) => (
+        <Card key={k.name} className="px-[18px] py-4">
+          <div className="text-[12px] text-app-muted">{k.name}</div>
+          <div className="mt-1.5 text-[24px] font-extrabold">{k.value}</div>
+          <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+const thCls = "flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint";
+const rowCls = "flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]";
+
+// ===== 시스템 상태 (health) =====
+function HealthPage() {
+  const [maint, setMaint] = useState(false);
+  const [incidents, setIncidents] = useState([
+    { id: 1, title: "이미지 생성 지연", detail: "gpt-image 응답 p95 8s 초과", when: "2시간 전", ok: false },
+    { id: 2, title: "메일 발송 일시 실패", detail: "SMTP 커넥션 리셋 · 자동 복구됨", when: "어제", ok: true },
+  ]);
+  const services = [
+    { name: "API 게이트웨이", latency: "42ms", uptime: "99.98%", ok: true },
+    { name: "생성 워커 (LLM)", latency: "1.2s", uptime: "99.9%", ok: true },
+    { name: "이미지 생성", latency: "6.4s", uptime: "99.1%", ok: false },
+    { name: "PostgreSQL", latency: "8ms", uptime: "100%", ok: true },
+    { name: "오브젝트 스토리지", latency: "31ms", uptime: "99.99%", ok: true },
+    { name: "결제 (PG)", latency: "180ms", uptime: "99.95%", ok: true },
+    { name: "메일 발송", latency: "620ms", uptime: "99.8%", ok: true },
+    { name: "큐", latency: "12ms", uptime: "100%", ok: true },
+  ];
+  const down = services.filter((s) => !s.ok).length;
+  return (
+    <>
+      <Card className="mb-5 flex items-center gap-3 px-5 py-4">
+        <span className={`flex h-9 w-9 items-center justify-center rounded-full text-[18px] ${maint ? "bg-[#FEF3E2]" : down ? "bg-[#FFF0F0]" : "bg-[#EAF7F0]"}`}>
+          {maint ? "🛠" : down ? "⚠️" : "✅"}
+        </span>
+        <div className="flex-1">
+          <div className="text-[14px] font-bold">
+            {maint ? "점검 모드 진행 중" : down ? `${down}개 서비스 성능 저하` : "모든 서비스 정상"}
+          </div>
+          <div className="text-[11.5px] text-app-faint">실시간 헬스 체크 · 30초 주기</div>
+        </div>
+        <button
+          onClick={() => { setMaint((v) => !v); showToast(maint ? "점검 모드 해제" : "점검 모드 켜짐 — 생성 3종 503"); }}
+          className={`rounded-lg border px-3.5 py-2 text-[12px] font-semibold ${maint ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-white"}`}
+        >
+          {maint ? "점검 모드 끄기" : "점검 모드 켜기"}
+        </button>
+      </Card>
+      <div className="mb-5 grid grid-cols-4 gap-3">
+        {services.map((s) => (
+          <Card key={s.name} className="px-4 py-3.5">
+            <div className="flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${s.ok ? "bg-[#1E7F4F]" : "bg-app-danger"}`} />
+              <span className="text-[12.5px] font-semibold">{s.name}</span>
+            </div>
+            <div className="mt-2 flex justify-between text-[11px] text-app-muted">
+              <span>지연 {s.latency}</span>
+              <span>업타임 {s.uptime}</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+      <Card className="overflow-hidden">
+        <div className={thCls}><span className="flex-[2]">인시던트</span><span className="flex-1">발생</span><span className="w-24 flex-none">조치</span></div>
+        {incidents.map((ic) => (
+          <div key={ic.id} className={rowCls}>
+            <div className="flex-[2]">
+              <div className="text-[12.5px] font-semibold">{ic.title}</div>
+              <div className="text-[10.5px] text-app-faint">{ic.detail}</div>
+            </div>
+            <span className="flex-1 text-[11.5px] text-app-muted">{ic.when}</span>
+            <span className="w-24 flex-none">
+              {ic.ok ? <StatusPill ok label="해결됨" /> : (
+                <button onClick={() => { setIncidents((p) => p.map((x) => x.id === ic.id ? { ...x, ok: true } : x)); showToast("인시던트를 해결 처리했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">해결</button>
+              )}
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 데이터 내보내기 (exports) + GDPR =====
+function ExportsPage() {
+  const DATASETS = [["users", "사용자"], ["decks", "덱"], ["invoices", "인보이스"], ["audit", "감사 로그"], ["credits", "크레딧"]] as const;
+  const [ds, setDs] = useState<string>("users");
+  const [fmt, setFmt] = useState<"csv" | "json">("csv");
+  const [gdprEmail, setGdprEmail] = useState("");
+  const [jobs, setJobs] = useState([
+    { id: 1, ds: "덱", fmt: "CSV", rows: "12,480", when: "10분 전", ready: true },
+    { id: 2, ds: "사용자", fmt: "JSON", rows: "3,201", when: "1시간 전", ready: true },
+    { id: 3, ds: "인보이스", fmt: "CSV", rows: "—", when: "방금", ready: false },
+  ]);
+  return (
+    <>
+      <Card className="mb-4 px-5 py-4">
+        <div className="mb-3 text-[13px] font-bold">새 내보내기</div>
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {DATASETS.map(([k, l]) => (
+            <button key={k} onClick={() => setDs(k)} className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${ds === k ? "border-app-accent bg-app-accent-soft text-app-text" : "border-app-border bg-white text-app-muted"}`}>{l}</button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex overflow-hidden rounded-lg border border-app-border">
+            {(["csv", "json"] as const).map((f) => (
+              <button key={f} onClick={() => setFmt(f)} className={`px-3 py-1.5 text-[12px] font-semibold ${fmt === f ? "bg-app-text text-white" : "bg-white text-app-muted"}`}>{f.toUpperCase()}</button>
+            ))}
+          </div>
+          <button
+            onClick={() => { setJobs((p) => [{ id: Date.now(), ds: DATASETS.find(([k]) => k === ds)![1], fmt: fmt.toUpperCase(), rows: "—", when: "방금", ready: false }, ...p]); showToast("내보내기 작업을 시작했어요"); }}
+            className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white"
+          >
+            내보내기 실행
+          </button>
+        </div>
+      </Card>
+      <Card className="mb-4 px-5 py-4">
+        <div className="mb-1 text-[13px] font-bold">개인정보 요청 (GDPR)</div>
+        <div className="mb-3 text-[11.5px] text-app-faint">이메일로 사용자를 특정해 데이터 이동권(추출)·삭제권(파기)을 처리합니다.</div>
+        <div className="flex items-center gap-2">
+          <input value={gdprEmail} onChange={(e) => setGdprEmail(e.target.value)} placeholder="user@example.com" className="flex-1 rounded-lg border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none" />
+          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 추출을 시작했어요`)} className="rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold">데이터 추출</button>
+          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 파기를 예약했어요`)} className="rounded-lg border border-[#F5C6C8] bg-[#FFF0F0] px-3.5 py-2 text-[12px] font-semibold text-app-danger">데이터 파기</button>
+        </div>
+      </Card>
+      <Card className="overflow-hidden">
+        <div className={thCls}><span className="flex-[1.4]">데이터셋</span><span className="flex-1">형식</span><span className="flex-1">행</span><span className="flex-1">생성</span><span className="w-24 flex-none">조치</span></div>
+        {jobs.map((j) => (
+          <div key={j.id} className={rowCls}>
+            <span className="flex-[1.4] text-[12.5px] font-semibold">{j.ds}</span>
+            <span className="flex-1 text-[12px]">{j.fmt}</span>
+            <span className="flex-1 text-[12px] text-app-muted">{j.rows}</span>
+            <span className="flex-1 text-[11.5px] text-app-faint">{j.when}</span>
+            <span className="w-24 flex-none">
+              {j.ready ? <button onClick={() => showToast("파일을 다운로드합니다")} className="rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">⬇ 다운로드</button> : <span className="text-[11px] text-app-faint">생성 중…</span>}
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== A/B 테스트 (abtest) =====
+function AbtestPage() {
+  const [exps, setExps] = useState([
+    { id: 1, name: "온보딩 프롬프트 문구", metric: "첫 덱 생성률", days: 6, running: true, lift: "+12%", vars: [{ n: "A (기존)", share: 50, conv: 34, win: false }, { n: "B (신규)", share: 50, conv: 46, win: true }] },
+    { id: 2, name: "요금제 CTA 색상", metric: "업그레이드 클릭률", days: 3, running: true, lift: "+4%", vars: [{ n: "A 검정", share: 50, conv: 8, win: false }, { n: "B 바이올렛", share: 50, conv: 12, win: true }] },
+    { id: 3, name: "빈 상태 일러스트", metric: "이탈률", days: 12, running: false, lift: "—", vars: [{ n: "A", share: 50, conv: 21, win: false }, { n: "B", share: 50, conv: 20, win: false }] },
+  ]);
+  return (
+    <>
+      <div className="mb-3.5 flex justify-end">
+        <button onClick={() => { setExps((p) => [{ id: Date.now(), name: "새 실험", metric: "지표 미정", days: 0, running: true, lift: "—", vars: [{ n: "A", share: 50, conv: 0, win: false }, { n: "B", share: 50, conv: 0, win: false }] }, ...p]); showToast("새 실험을 생성했어요"); }} className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white">+ 새 실험</button>
+      </div>
+      <div className="grid grid-cols-2 gap-3.5">
+        {exps.map((ex) => {
+          const maxConv = Math.max(1, ...ex.vars.map((v) => v.conv));
+          return (
+            <Card key={ex.id} className="px-5 py-4">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="flex-1 text-[13.5px] font-bold">{ex.name}</span>
+                <StatusPill ok={ex.running} label={ex.running ? `진행 ${ex.days}일` : "종료"} />
+              </div>
+              <div className="mb-3 text-[11.5px] text-app-faint">목표: {ex.metric} · 우세 {ex.lift}</div>
+              <div className="space-y-2">
+                {ex.vars.map((v) => (
+                  <div key={v.n} className="flex items-center gap-2">
+                    <span className="w-24 flex-none text-[11.5px] font-medium">{v.n}</span>
+                    <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+                      <div className="h-full rounded" style={{ width: `${(v.conv / maxConv) * 100}%`, background: v.win ? "#1E7F4F" : "#8B6BFF", opacity: 0.85 }} />
+                    </div>
+                    <span className="w-16 flex-none text-right text-[11px] font-bold">{v.conv}%{v.win ? " 🏆" : ""}</span>
+                  </div>
+                ))}
+              </div>
+              {ex.running && (
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("실험을 중지했어요"); }} className="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[11.5px] font-semibold">중지</button>
+                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("승자 변형을 전체 적용했어요"); }} className="flex-1 rounded-lg bg-app-text py-1.5 text-[11.5px] font-semibold text-white">승자 전체 적용</button>
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+// ===== 이메일 발송 로그 (emails) =====
+function EmailsPage() {
+  const rows = [
+    { id: 1, time: "10:24", to: "kim@corp.com", tpl: "공유 초대", subject: "덱에 초대되었습니다", st: "열람" },
+    { id: 2, time: "10:11", to: "guest_9f2@x.io", tpl: "결제 영수증", subject: "DeckGen Plus 결제 완료", st: "전송됨" },
+    { id: 3, time: "09:52", to: "lee@corp.com", tpl: "이메일 인증", subject: "인증 코드: 402913", st: "열람" },
+    { id: 4, time: "09:30", to: "bad@spam.io", tpl: "재동의 요청", subject: "약관 변경 안내", st: "반송" },
+    { id: 5, time: "08:47", to: "park@corp.com", tpl: "비밀번호 재설정", subject: "비밀번호 재설정 링크", st: "전송됨" },
+  ];
+  const pill = (st: string) => st === "열람" ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : st === "반송" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
+  return (
+    <>
+      <KpiGrid items={[
+        { name: "오늘 발송", value: "1,284", sub: "전 템플릿 합산" },
+        { name: "전송률", value: "98.6%", sub: "반송 제외" },
+        { name: "오픈율", value: "54.2%", sub: "인증·초대 포함" },
+        { name: "억제 목록", value: "37", sub: "반송·수신거부" },
+      ]} />
+      <Card className="overflow-hidden">
+        <div className={thCls}><span className="w-14 flex-none">시각</span><span className="flex-[1.4]">수신자</span><span className="flex-1">템플릿</span><span className="flex-[1.6]">제목</span><span className="w-16 flex-none">상태</span><span className="w-20 flex-none">조치</span></div>
+        {rows.map((r) => (
+          <div key={r.id} className={rowCls}>
+            <span className="w-14 flex-none text-[11.5px] text-app-muted">{r.time}</span>
+            <span className="flex-[1.4] truncate text-[12px]">{r.to}</span>
+            <span className="flex-1 text-[12px] text-app-muted">{r.tpl}</span>
+            <span className="flex-[1.6] truncate text-[12px]">{r.subject}</span>
+            <span className="w-16 flex-none"><span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold ${pill(r.st)}`}>{r.st}</span></span>
+            <span className="w-20 flex-none"><button onClick={() => showToast(`${r.to}에게 재발송했어요`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">재발송</button></span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 기능 플래그 (flags) =====
+function FlagsPage() {
+  const [rows, setRows] = useState([
+    { id: "fig_export", name: "Figma 내보내기", desc: "SVG zip 핸드오프", rollout: 100, target: "전체", on: true },
+    { id: "auto_agent", name: "Auto Agent", desc: "멀티스텝 자동 편집", rollout: 20, target: "내부 스탭", on: false },
+    { id: "realtime_collab", name: "실시간 협업", desc: "라이브 커서·프레즌스", rollout: 100, target: "전체", on: true },
+    { id: "web_research", name: "웹 리서치", desc: "생성 시 웹 검색 보강", rollout: 30, target: "Plus 이상", on: false },
+    { id: "new_editor", name: "신규 에디터", desc: "차기 캔버스 엔진", rollout: 10, target: "내부 스탭", on: false },
+    { id: "video_embed", name: "동영상 임베드", desc: "YouTube 슬라이드", rollout: 50, target: "Plus 이상", on: true },
+  ]);
+  const upd = (id: string, patch: Partial<(typeof rows)[number]>) => setRows((p) => p.map((r) => r.id === id ? { ...r, ...patch } : r));
+  const onCnt = rows.filter((r) => r.on).length;
+  return (
+    <>
+      <div className="mb-3.5 text-[12.5px] text-app-muted">활성 {onCnt} / {rows.length}개</div>
+      <Card className="overflow-hidden">
+        {rows.map((r) => (
+          <div key={r.id} className="flex items-center gap-3 border-b border-[#F0F0EE] px-[18px] py-3 last:border-b-0">
+            <div className="flex-[1.6]">
+              <div className="text-[12.5px] font-semibold">{r.name}</div>
+              <div className="font-mono text-[10.5px] text-app-faint">{r.id} · {r.desc}</div>
+            </div>
+            <div className="flex flex-1 items-center gap-2">
+              <input type="range" min={0} max={100} step={10} value={r.rollout} onChange={(e) => upd(r.id, { rollout: Number(e.target.value) })} className="flex-1 accent-app-accent" />
+              <span className="w-10 text-right text-[11px] font-bold tabular-nums">{r.rollout}%</span>
+            </div>
+            <select value={r.target} onChange={(e) => upd(r.id, { target: e.target.value })} className="w-24 flex-none rounded-md border border-app-border px-1.5 py-1 text-[11px]">
+              <option>전체</option><option>Plus 이상</option><option>내부 스탭</option>
+            </select>
+            <Toggle on={r.on} onClick={() => upd(r.id, { on: !r.on })} />
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 약관 · 정책 (policies) =====
+function PoliciesPage() {
+  const [rows, setRows] = useState([
+    { id: 1, name: "이용약관", version: "v3.2", reconsent: false, draft: false },
+    { id: 2, name: "개인정보 처리방침", version: "v4.0", reconsent: true, draft: false },
+    { id: 3, name: "환불 정책", version: "v1.1", reconsent: false, draft: false },
+    { id: 4, name: "마케팅 수신 동의", version: "v2.0 (초안)", reconsent: false, draft: true },
+  ]);
+  const pub = rows.filter((r) => !r.draft).length;
+  return (
+    <>
+      <div className="mb-3.5 text-[12.5px] text-app-muted">게시됨 {pub} / {rows.length}개</div>
+      <Card className="overflow-hidden">
+        <div className={thCls}><span className="flex-[1.8]">문서</span><span className="flex-1">버전</span><span className="flex-1">상태</span><span className="w-[220px] flex-none">조치</span></div>
+        {rows.map((r) => (
+          <div key={r.id} className={rowCls}>
+            <div className="flex-[1.8]">
+              <span className="text-[12.5px] font-semibold">{r.name}</span>
+              {r.reconsent && <span className="ml-2 rounded-full border border-[#F5C6C8] bg-[#FFF0F0] px-1.5 py-[1px] text-[10px] font-semibold text-app-danger">재동의 필요</span>}
+            </div>
+            <span className="flex-1 font-mono text-[11.5px]">{r.version}</span>
+            <span className="flex-1"><StatusPill ok={!r.draft} label={r.draft ? "초안" : "게시됨"} /></span>
+            <span className="flex w-[220px] flex-none gap-1.5">
+              <button onClick={() => showToast(`${r.name} 새 버전을 만들었어요`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">새 버전</button>
+              {r.draft
+                ? <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, draft: false } : x)); showToast("게시했어요"); }} className="rounded-[7px] bg-app-text px-2 py-[5px] text-[11px] font-semibold text-white">게시</button>
+                : <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, reconsent: true } : x)); showToast("재동의를 요청했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">재동의 요청</button>}
+              <button onClick={() => showToast("버전 이력을 표시합니다")} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">이력</button>
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 환불 · 청구 (refunds) =====
+function RefundsPage() {
+  const [rows, setRows] = useState([
+    { id: "INV-2041", user: "kim@corp.com", plan: "Plus", amt: "₩19,000", method: "카드", st: "결제 완료" },
+    { id: "INV-2040", user: "guest_9f2", plan: "Pro", amt: "₩49,000", method: "카드", st: "환불됨" },
+    { id: "INV-2039", user: "lee@corp.com", plan: "Plus", amt: "₩19,000", method: "카드", st: "실패" },
+    { id: "INV-2038", user: "park@corp.com", plan: "Team", amt: "₩99,000", method: "세금계산서", st: "결제 완료" },
+  ]);
+  const pill = (st: string) => st === "결제 완료" ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : st === "실패" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
+  return (
+    <>
+      <KpiGrid items={[
+        { name: "이번 달 매출", value: "₩4.2M", sub: "구독 + 크레딧" },
+        { name: "활성 구독", value: "312", sub: "Plus 248 · Pro 64" },
+        { name: "환불 (이번 달)", value: "₩186K", sub: "8건" },
+        { name: "결제 실패", value: "5", sub: "재청구 대기" },
+      ]} />
+      <Card className="overflow-hidden">
+        <div className={thCls}><span className="flex-1">인보이스</span><span className="flex-[1.4]">사용자</span><span className="w-16 flex-none">플랜</span><span className="w-24 flex-none text-right">금액</span><span className="w-24 flex-none">결제수단</span><span className="w-20 flex-none">상태</span><span className="w-[150px] flex-none">조치</span></div>
+        {rows.map((r) => (
+          <div key={r.id} className={rowCls}>
+            <span className="flex-1 font-mono text-[11.5px]">{r.id}</span>
+            <span className="flex-[1.4] truncate text-[12px]">{r.user}</span>
+            <span className="w-16 flex-none text-[12px]">{r.plan}</span>
+            <span className="w-24 flex-none text-right text-[12px] font-semibold tabular-nums">{r.amt}</span>
+            <span className="w-24 flex-none text-[11.5px] text-app-muted">{r.method}</span>
+            <span className="w-20 flex-none"><span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold ${pill(r.st)}`}>{r.st}</span></span>
+            <span className="flex w-[150px] flex-none gap-1.5">
+              {r.st === "결제 완료" && <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, st: "환불됨" } : x)); showToast(`${r.id} 환불 처리`); }} className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-[5px] text-[11px] font-semibold text-app-danger">환불</button>}
+              {r.st === "실패" && <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, st: "결제 완료" } : x)); showToast(`${r.id} 재청구 성공`); }} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">재청구</button>}
+              <button onClick={() => showToast("인보이스를 표시합니다")} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">인보이스</button>
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 역할 · 권한 (roles) =====
+function RolesPage() {
+  const [staff, setStaff] = useState([
+    { id: 1, name: "관리자 (나)", email: "admin@deckgen.io", role: "관리자", owner: true },
+    { id: 2, name: "이서포트", email: "support@deckgen.io", role: "서포트", owner: false },
+    { id: 3, name: "박애널", email: "analyst@deckgen.io", role: "분석가", owner: false },
+  ]);
+  const [email, setEmail] = useState("");
+  const perms = [
+    { name: "대시보드", admin: true, support: true, analyst: true },
+    { name: "사용자 관리", admin: true, support: true, analyst: false },
+    { name: "결제·환불", admin: true, support: false, analyst: false },
+    { name: "서비스 설정", admin: true, support: false, analyst: false },
+    { name: "감사 로그", admin: true, support: false, analyst: true },
+  ];
+  const cell = (ok: boolean) => <span className={ok ? "text-[#1E7F4F]" : "text-app-faint"}>{ok ? "✓" : "—"}</span>;
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <Card className="overflow-hidden">
+        <div className="border-b border-app-border px-[18px] py-2.5 text-[12.5px] font-bold">관리자 멤버 ({staff.length})</div>
+        {staff.map((s) => (
+          <div key={s.id} className="flex items-center gap-2 border-b border-[#F0F0EE] px-[18px] py-2.5 last:border-b-0">
+            <div className="min-w-0 flex-1">
+              <div className="text-[12.5px] font-semibold">{s.name}</div>
+              <div className="truncate text-[10.5px] text-app-faint">{s.email}</div>
+            </div>
+            <select value={s.role} disabled={s.owner} onChange={(e) => setStaff((p) => p.map((x) => x.id === s.id ? { ...x, role: e.target.value } : x))} className="rounded-md border border-app-border px-1.5 py-1 text-[11px] disabled:opacity-50">
+              <option>관리자</option><option>서포트</option><option>분석가</option>
+            </select>
+            {!s.owner && <button onClick={() => setStaff((p) => p.filter((x) => x.id !== s.id))} className="rounded-md border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-1 text-[11px] font-semibold text-app-danger">제거</button>}
+          </div>
+        ))}
+        <div className="flex gap-1.5 px-[18px] py-3">
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="멤버 이메일 초대" className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12px] focus:border-app-accent focus:outline-none" />
+          <button onClick={() => { if (email) { setStaff((p) => [...p, { id: Date.now(), name: email.split("@")[0], email, role: "서포트", owner: false }]); setEmail(""); showToast("초대 메일을 보냈어요"); } }} className="flex-none rounded-lg bg-app-text px-3 py-2 text-[12px] font-semibold text-white">초대</button>
+        </div>
+      </Card>
+      <Card className="overflow-hidden">
+        <div className="border-b border-app-border px-[18px] py-2.5 text-[12.5px] font-bold">역할별 권한</div>
+        <div className="flex border-b border-[#F0F0EE] bg-[#FBFBFA] px-[18px] py-2 text-[11px] font-bold text-app-faint">
+          <span className="flex-[1.6]">권한</span><span className="flex-1 text-center">관리자</span><span className="flex-1 text-center">서포트</span><span className="flex-1 text-center">분석가</span>
+        </div>
+        {perms.map((p) => (
+          <div key={p.name} className="flex border-b border-[#F0F0EE] px-[18px] py-2.5 text-[12px] last:border-b-0">
+            <span className="flex-[1.6]">{p.name}</span>
+            <span className="flex-1 text-center">{cell(p.admin)}</span>
+            <span className="flex-1 text-center">{cell(p.support)}</span>
+            <span className="flex-1 text-center">{cell(p.analyst)}</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
 // ===== 콘솔 셸 =====
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getAdminToken());
   const [page, setPage] = useState<PageId>("dash");
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("dg_admin_sidebar") === "0");
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(NAV_GROUPS.map((g) => [g.label, true])),
+  );
+  const toggleSidebar = () => {
+    setCollapsed((v) => {
+      localStorage.setItem("dg_admin_sidebar", v ? "1" : "0");
+      return !v;
+    });
+  };
 
   if (!authed) return <AdminLogin onAuthed={() => setAuthed(true)} />;
   const cur = PAGES.find((p) => p.id === page)!;
 
   return (
     <div className="flex h-screen overflow-hidden bg-app-bg">
-      {/* 사이드바 */}
-      <div className="flex w-[216px] flex-none flex-col bg-[#17151F] px-3 py-4">
-        <div className="flex items-center gap-[9px] px-2.5 pb-[18px] pt-1.5">
-          <span className="h-[22px] w-[22px] rounded-md bg-app-accent" />
-          <span className="text-[14px] font-bold text-white">DeckGen</span>
-          <span className="rounded-[5px] bg-[rgba(139,107,255,.15)] px-1.5 py-0.5 text-[10px] font-bold text-[#8B6BFF]">
-            ADMIN
-          </span>
-        </div>
-        {PAGES.map((p) => (
+      {/* 사이드바 (접이식 + 그룹 아코디언) */}
+      <div
+        className="flex flex-none flex-col bg-[#17151F] py-4 transition-all"
+        style={{ width: collapsed ? 64 : 216, paddingLeft: 12, paddingRight: 12 }}
+      >
+        <div className="mb-3 flex items-center gap-[9px] px-1.5">
+          <span className="h-[22px] w-[22px] flex-none rounded-md bg-app-accent" />
+          {!collapsed && (
+            <>
+              <span className="text-[14px] font-bold text-white">DeckGen</span>
+              <span className="rounded-[5px] bg-[rgba(139,107,255,.15)] px-1.5 py-0.5 text-[10px] font-bold text-[#8B6BFF]">
+                ADMIN
+              </span>
+            </>
+          )}
           <button
-            key={p.id}
-            onClick={() => setPage(p.id)}
-            className="mb-0.5 flex items-center gap-2.5 rounded-[9px] px-3 py-2.5 text-left"
-            style={{ background: page === p.id ? "rgba(139,107,255,.16)" : "transparent" }}
+            onClick={toggleSidebar}
+            title={collapsed ? "펼치기" : "접기"}
+            className={`flex h-6 w-6 items-center justify-center rounded-md text-[13px] text-[rgba(255,255,255,.6)] hover:bg-[rgba(255,255,255,.08)] ${collapsed ? "" : "ml-auto"}`}
           >
-            <span
-              className="h-[7px] w-[7px] flex-none rounded-[2px]"
-              style={{ background: page === p.id ? "#8B6BFF" : "rgba(255,255,255,.2)" }}
-            />
-            <span
-              className="flex-1 text-[13px]"
-              style={{
-                color: page === p.id ? "#fff" : "rgba(255,255,255,.6)",
-                fontWeight: page === p.id ? 700 : 500,
-              }}
-            >
-              {p.name}
-            </span>
+            {collapsed ? "»" : "«"}
           </button>
-        ))}
-        <div className="mt-auto flex items-center gap-[9px] border-t border-[rgba(255,255,255,.1)] pl-2.5 pt-3">
-          <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-app-accent text-[11px] font-bold text-white">
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {collapsed
+            ? // 레일 모드 — 아이콘만
+              PAGES.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setPage(p.id)}
+                  title={p.name}
+                  className="mb-0.5 flex w-full items-center justify-center rounded-[9px] py-2.5 text-[15px]"
+                  style={{ background: page === p.id ? "rgba(139,107,255,.16)" : "transparent" }}
+                >
+                  {p.icon}
+                </button>
+              ))
+            : // 그룹 아코디언
+              NAV_GROUPS.map((g) => {
+                const items = g.ids.map((id) => PAGES.find((p) => p.id === id)!).filter(Boolean);
+                const open = openGroups[g.label];
+                return (
+                  <div key={g.label} className="mb-1">
+                    <button
+                      onClick={() => setOpenGroups((s) => ({ ...s, [g.label]: !s[g.label] }))}
+                      className="flex w-full items-center gap-1.5 px-2.5 py-1.5 text-[10.5px] font-bold tracking-wide text-[rgba(255,255,255,.4)] uppercase"
+                    >
+                      <span className={`text-[9px] transition-transform ${open ? "rotate-90" : ""}`}>▸</span>
+                      {g.label}
+                    </button>
+                    {open &&
+                      items.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => setPage(p.id)}
+                          className="mb-0.5 flex w-full items-center gap-2.5 rounded-[9px] px-3 py-2 text-left"
+                          style={{ background: page === p.id ? "rgba(139,107,255,.16)" : "transparent" }}
+                        >
+                          <span className="flex-none text-[13px]">{p.icon}</span>
+                          <span
+                            className="flex-1 text-[12.5px]"
+                            style={{
+                              color: page === p.id ? "#fff" : "rgba(255,255,255,.6)",
+                              fontWeight: page === p.id ? 700 : 500,
+                            }}
+                          >
+                            {p.name}
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                );
+              })}
+        </div>
+
+        <div className="mt-2 flex items-center gap-[9px] border-t border-[rgba(255,255,255,.1)] pt-3">
+          <span className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full bg-app-accent text-[11px] font-bold text-white">
             관
           </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-[12px] font-semibold text-white">관리자</div>
-          </div>
-          <button
-            onClick={() => {
-              setAdminToken("");
-              setAuthed(false);
-            }}
-            className="rounded-[7px] border border-[rgba(255,255,255,.2)] px-2 py-1 text-[10.5px] font-semibold text-[rgba(255,255,255,.65)]"
-          >
-            로그아웃
-          </button>
+          {!collapsed && (
+            <>
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-semibold text-white">관리자</div>
+              </div>
+              <button
+                onClick={() => {
+                  setAdminToken("");
+                  setAuthed(false);
+                }}
+                className="rounded-[7px] border border-[rgba(255,255,255,.2)] px-2 py-1 text-[10.5px] font-semibold text-[rgba(255,255,255,.65)]"
+              >
+                로그아웃
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1255,6 +1739,14 @@ export function AdminPage() {
           {page === "credits" && <CreditsPage />}
           {page === "plans" && <PlansPage />}
           {page === "settings" && <SettingsPage />}
+          {page === "health" && <HealthPage />}
+          {page === "exports" && <ExportsPage />}
+          {page === "abtest" && <AbtestPage />}
+          {page === "emails" && <EmailsPage />}
+          {page === "flags" && <FlagsPage />}
+          {page === "policies" && <PoliciesPage />}
+          {page === "refunds" && <RefundsPage />}
+          {page === "roles" && <RolesPage />}
         </div>
       </div>
     </div>
