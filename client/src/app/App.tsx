@@ -3,6 +3,7 @@ import { AdminPage } from "../components/admin/AdminPage";
 import { HomePage } from "../components/home/HomePage";
 import { EditorPage } from "../components/editor/EditorPage";
 import { OutlinePage } from "../components/outline/OutlinePage";
+import { SetupPage } from "../components/outline/SetupPage";
 import { SharedEntryPage } from "../components/share/SharedEntryPage";
 import { BannerBar } from "../components/ui/BannerBar";
 import { Toaster } from "../components/ui/toast";
@@ -19,6 +20,7 @@ function withBanner(el: React.ReactNode) {
 const router = createBrowserRouter(
   [
     { path: "/", element: withBanner(<HomePage />) },
+    { path: "/deck/:id/setup", element: withBanner(<SetupPage />) },
     { path: "/deck/:id/outline", element: withBanner(<OutlinePage />) },
     { path: "/deck/:id/edit", element: withBanner(<EditorPage />) },
     { path: "/s/:token", element: <SharedEntryPage /> },

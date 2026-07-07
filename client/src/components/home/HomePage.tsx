@@ -341,7 +341,8 @@ export function HomePage() {
     if (webResearch) fullPrompt += "\n\n[웹 리서치를 반영해 최신 근거·수치를 포함해줘]";
     if (scrapUrls.length > 0) fullPrompt += `\n\n[참고 URL]\n${scrapUrls.join("\n")}`;
     begin({ deckId, prompt: fullPrompt, slideCount, themeId, aspect });
-    navigate(`/deck/${deckId}/outline`);
+    // 스타일·테마·변형을 고르는 Setup 단계로 (Demo Act 3)
+    navigate(`/deck/${deckId}/setup`);
   };
 
   // ── PPTX 가져오기 (Import = 그대로 편집 / Reference = 아웃라인 재구성) ──

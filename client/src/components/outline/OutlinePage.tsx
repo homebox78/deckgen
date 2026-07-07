@@ -289,8 +289,15 @@ export function OutlinePage() {
     if (store.status !== "idle" || startedRef.current) return;
     startedRef.current = true;
     store.setStatus("streaming");
+    const STYLE_HINT: Record<string, string> = {
+      report: "전략·분석·인사이트 중심의 리포트 톤으로",
+      standard: "범용 문서형 톤으로",
+      presentation: "발표·제안서 톤으로",
+      keynote: "이미지 중심의 임팩트 있는 키노트 톤으로",
+    };
+    const styledPrompt = `${store.prompt}\n\n[스타일: ${STYLE_HINT[store.style] ?? ""}]`;
     void streamOutline(
-      { prompt: store.prompt, slideCount: store.slideCount, format: store.aspect },
+      { prompt: styledPrompt, slideCount: store.slideCount, format: store.aspect },
       {
         onSlide: (slide) => useOutlineStore.getState().appendSlide(slide),
         onDone: () => useOutlineStore.getState().setStatus("done"),
