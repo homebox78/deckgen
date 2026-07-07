@@ -7,7 +7,6 @@ import {
   Group,
   Line,
   Path,
-  Polyline,
   Rect,
   Shadow,
   StaticCanvas,
@@ -23,6 +22,7 @@ import type {
   TextElement,
 } from "./schema";
 import { SLIDE_H, SLIDE_W } from "./schema";
+import { decomposeChart } from "./chartDecompose";
 import type { Theme } from "./themes";
 import { resolveColor, resolveRoleColor } from "./themes";
 
@@ -91,12 +91,20 @@ function buildShape(el: ShapeElement, theme: Theme): FabricObject {
     case "ellipse":
       obj = new Ellipse({ ...common, rx: el.w / 2, ry: el.h / 2 });
       break;
-    case "line":
-      obj = new Line([el.x, el.y + el.h / 2, el.x + el.w, el.y + el.h / 2], {
-        stroke: el.stroke ?? el.fill ?? theme.textSecondary,
+    case "line": {
+      // slope 지정 시 대각선 (차트 분해 선분용): down=좌상→우하, up=좌하→우상
+      const [y1, y2] = el.slope
+        ? el.slope === "down"
+          ? [el.y, el.y + el.h]
+          : [el.y + el.h, el.y]
+        : [el.y + el.h / 2, el.y + el.h / 2];
+      obj = new Line([el.x, y1, el.x + el.w, y2], {
+        stroke: el.stroke ? resolveColor(theme, el.stroke) : (el.fill ? fill : theme.textSecondary),
         strokeWidth: el.strokeWidth ?? 4,
+        strokeLineCap: "round",
       });
       break;
+    }
     case "arrow": {
       // 수평 화살표: 몸통 선 + 삼각 머리
       const yMid = el.h / 2;
@@ -114,235 +122,42 @@ function buildShape(el: ShapeElement, theme: Theme): FabricObject {
       obj = new Group([body, head], { left: el.x, top: el.y });
       break;
     }
+    case "pie": {
+      // 부채꼴: 바운딩 박스 내접원 + 각도 범위 (0°=3시, 시계방향)
+      const r = Math.min(el.w, el.h) / 2;
+      const cx = el.x + el.w / 2;
+      const cy = el.y + el.h / 2;
+      const a0 = ((el.angleStart ?? 0) * Math.PI) / 180;
+      const sweepDeg = Math.min(359.99, Math.max(0.01, (el.angleEnd ?? 360) - (el.angleStart ?? 0)));
+      const a1 = a0 + (sweepDeg * Math.PI) / 180;
+      const x0 = cx + r * Math.cos(a0);
+      const y0 = cy + r * Math.sin(a0);
+      const x1 = cx + r * Math.cos(a1);
+      const y1 = cy + r * Math.sin(a1);
+      const largeArc = sweepDeg > 180 ? 1 : 0;
+      obj = new Path(
+        `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`,
+        { fill, stroke, strokeWidth: el.strokeWidth ?? 0 },
+      );
+      break;
+    }
   }
   return attach(obj, el);
 }
 
 // ===== 차트 (Fabric 도형 그룹) =====
-
-const CHART_LABEL_SIZE = 20;
-const CHART_AXIS_GAP = 44; // 라벨 영역 높이
-
-interface PlotArea {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-function chartFrame(el: ChartElement, theme: Theme, parts: FabricObject[]): PlotArea {
-  // 로컬 좌표(0,0 기준)로 그린 뒤 Group을 el.x/y에 배치
-  let topOffset = 0;
-  if (el.title) {
-    parts.push(
-      new Textbox(el.title, {
-        left: 0,
-        top: 0,
-        width: el.w,
-        fontSize: 26,
-        fontWeight: 600,
-        fill: theme.textPrimary,
-        fontFamily: theme.fontFamily,
-        textAlign: "center",
-      }),
-    );
-    topOffset = 56;
-  }
-  const legendH = el.series.length > 1 && el.chartType !== "pie" ? 40 : 0;
-  if (legendH) {
-    let lx = 0;
-    el.series.forEach((s, i) => {
-      parts.push(
-        new Rect({
-          left: lx,
-          top: topOffset + 6,
-          width: 18,
-          height: 18,
-          fill: theme.chartPalette[i % theme.chartPalette.length],
-          rx: 4,
-          ry: 4,
-        }),
-      );
-      const label = new Textbox(s.name, {
-        left: lx + 26,
-        top: topOffset + 4,
-        width: 200,
-        fontSize: CHART_LABEL_SIZE,
-        fill: theme.textSecondary,
-        fontFamily: theme.fontFamily,
-      });
-      parts.push(label);
-      lx += 26 + Math.min(200, s.name.length * CHART_LABEL_SIZE * 0.75) + 32;
-    });
-  }
-  return {
-    x: 0,
-    y: topOffset + legendH,
-    w: el.w,
-    h: el.h - topOffset - legendH,
-  };
-}
-
-function axisLabels(
-  labels: string[],
-  plot: PlotArea,
-  theme: Theme,
-  parts: FabricObject[],
-) {
-  const slotW = plot.w / labels.length;
-  labels.forEach((label, i) => {
-    parts.push(
-      new Textbox(label, {
-        left: plot.x + i * slotW,
-        top: plot.y + plot.h - CHART_AXIS_GAP + 12,
-        width: slotW,
-        fontSize: CHART_LABEL_SIZE,
-        fill: theme.textSecondary,
-        fontFamily: theme.fontFamily,
-        textAlign: "center",
-      }),
-    );
-  });
-}
-
-function buildBarChart(el: ChartElement, theme: Theme, parts: FabricObject[], plot: PlotArea) {
-  const innerH = plot.h - CHART_AXIS_GAP;
-  const maxVal = Math.max(1, ...el.series.flatMap((s) => s.values));
-  const groups = el.labels.length;
-  const slotW = plot.w / groups;
-  const barAreaW = slotW * 0.6;
-  const barW = barAreaW / el.series.length;
-
-  el.labels.forEach((_, i) => {
-    el.series.forEach((s, si) => {
-      const v = s.values[i] ?? 0;
-      const barH = Math.max(2, (v / maxVal) * (innerH - 8));
-      parts.push(
-        new Rect({
-          left: plot.x + i * slotW + (slotW - barAreaW) / 2 + si * barW,
-          top: plot.y + innerH - barH,
-          width: Math.max(4, barW - 6),
-          height: barH,
-          fill: theme.chartPalette[si % theme.chartPalette.length],
-          rx: 4,
-          ry: 4,
-        }),
-      );
-    });
-  });
-  parts.push(
-    new Line([plot.x, plot.y + innerH, plot.x + plot.w, plot.y + innerH], {
-      stroke: theme.textSecondary,
-      strokeWidth: 2,
-      opacity: 0.5,
-    }),
-  );
-  axisLabels(el.labels, plot, theme, parts);
-}
-
-function buildLineChart(el: ChartElement, theme: Theme, parts: FabricObject[], plot: PlotArea) {
-  const innerH = plot.h - CHART_AXIS_GAP;
-  const maxVal = Math.max(1, ...el.series.flatMap((s) => s.values));
-  const n = el.labels.length;
-  const slotW = plot.w / n;
-  const pointX = (i: number) => plot.x + slotW * (i + 0.5);
-  const pointY = (v: number) => plot.y + innerH - (v / maxVal) * (innerH - 16) - 4;
-
-  el.series.forEach((s, si) => {
-    const color = theme.chartPalette[si % theme.chartPalette.length];
-    const pts = s.values.slice(0, n).map((v, i) => ({ x: pointX(i), y: pointY(v) }));
-    parts.push(
-      new Polyline(pts, {
-        stroke: color,
-        strokeWidth: 5,
-        fill: "transparent",
-        strokeLineJoin: "round",
-      }),
-    );
-    pts.forEach((p) => {
-      parts.push(
-        new Ellipse({ left: p.x - 7, top: p.y - 7, rx: 7, ry: 7, fill: color }),
-      );
-    });
-  });
-  parts.push(
-    new Line([plot.x, plot.y + innerH, plot.x + plot.w, plot.y + innerH], {
-      stroke: theme.textSecondary,
-      strokeWidth: 2,
-      opacity: 0.5,
-    }),
-  );
-  axisLabels(el.labels, plot, theme, parts);
-}
-
-function buildPieChart(el: ChartElement, theme: Theme, parts: FabricObject[], plot: PlotArea) {
-  const values = el.series[0]?.values.slice(0, el.labels.length) ?? [];
-  const total = values.reduce((a, b) => a + b, 0) || 1;
-  const r = Math.min(plot.w * 0.5, plot.h) / 2 - 8;
-  const cx = plot.x + plot.w * 0.3;
-  const cy = plot.y + plot.h / 2;
-
-  let angle = -Math.PI / 2;
-  values.forEach((v, i) => {
-    const sweep = (v / total) * Math.PI * 2;
-    const a0 = angle;
-    const a1 = angle + sweep;
-    angle = a1;
-    const x0 = cx + r * Math.cos(a0);
-    const y0 = cy + r * Math.sin(a0);
-    const x1 = cx + r * Math.cos(a1);
-    const y1 = cy + r * Math.sin(a1);
-    const largeArc = sweep > Math.PI ? 1 : 0;
-    parts.push(
-      new Path(
-        `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`,
-        { fill: theme.chartPalette[i % theme.chartPalette.length], strokeWidth: 0 },
-      ),
-    );
-  });
-
-  // 범례 (우측)
-  const legendX = plot.x + plot.w * 0.62;
-  let ly = cy - el.labels.length * 22;
-  el.labels.forEach((label, i) => {
-    parts.push(
-      new Rect({
-        left: legendX,
-        top: ly + 2,
-        width: 18,
-        height: 18,
-        fill: theme.chartPalette[i % theme.chartPalette.length],
-        rx: 4,
-        ry: 4,
-      }),
-    );
-    const pct = Math.round(((values[i] ?? 0) / total) * 100);
-    parts.push(
-      new Textbox(`${label} (${pct}%)`, {
-        left: legendX + 28,
-        top: ly,
-        width: plot.w * 0.38 - 28,
-        fontSize: CHART_LABEL_SIZE,
-        fill: theme.textPrimary,
-        fontFamily: theme.fontFamily,
-      }),
-    );
-    ly += 44;
-  });
-}
+// 기하는 chartDecompose.ts가 단일 소스 — 분해된 요소를 그대로 그려 그룹으로 묶는다.
+// (차트 더블클릭 "분해" 전후가 픽셀 단위로 동일해지는 근거)
 
 function buildChart(el: ChartElement, theme: Theme): FabricObject {
-  const parts: FabricObject[] = [];
-  const plot = chartFrame(el, theme, parts);
-  if (el.chartType === "bar") buildBarChart(el, theme, parts, plot);
-  else if (el.chartType === "line") buildLineChart(el, theme, parts, plot);
-  else buildPieChart(el, theme, parts, plot);
-
-  // 차트는 통째로 이동/크기조절만 가능 — 내부 개별 선택 금지
+  const localParts = decomposeChart({ ...el, x: 0, y: 0 }, theme);
+  const parts = localParts.map((p) =>
+    p.type === "text" ? buildText(p, theme) : buildShape(p as ShapeElement, theme),
+  );
   const group = new Group(parts, {
     left: el.x,
     top: el.y,
-    subTargetCheck: false,
+    subTargetCheck: false, // 그룹 상태에선 통짜 선택 — 개별 수정은 분해(ungroup) 후
   });
   return attach(group, el);
 }

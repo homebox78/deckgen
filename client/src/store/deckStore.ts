@@ -20,6 +20,8 @@ interface DeckState {
     elementId: string,
     patch: Partial<SlideElement>,
   ) => void;
+  /** 요소 1개를 여러 요소로 치환 (차트 분해 등) — 같은 z 위치에 삽입 */
+  explodeElement: (slideId: string, elementId: string, parts: SlideElement[]) => void;
 }
 
 function touch(deck: Deck): Deck {
@@ -131,6 +133,23 @@ export const useDeckStore = create<DeckState>()(
                           ),
                         },
                   ),
+                ),
+              }
+            : s,
+        ),
+      explodeElement: (slideId, elementId, parts) =>
+        set((s) =>
+          s.deck
+            ? {
+                deck: mapSlides(s.deck, (slides) =>
+                  slides.map((sl) => {
+                    if (sl.id !== slideId) return sl;
+                    const i = sl.elements.findIndex((el) => el.id === elementId);
+                    if (i < 0) return sl;
+                    const elements = [...sl.elements];
+                    elements.splice(i, 1, ...parts);
+                    return { ...sl, elements };
+                  }),
                 ),
               }
             : s,

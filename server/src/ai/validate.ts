@@ -91,11 +91,14 @@ const textElementSchema = z.object({
 const shapeElementSchema = z.object({
   ...elementBase,
   type: z.literal("shape"),
-  shape: z.enum(["rect", "roundRect", "ellipse", "line", "arrow"]),
+  shape: z.enum(["rect", "roundRect", "ellipse", "line", "arrow", "pie"]),
   fill: z.string().optional(),
   stroke: z.string().optional(),
   strokeWidth: z.number().optional(),
   radius: z.number().optional(),
+  slope: z.enum(["down", "up"]).optional(), // line 대각선
+  angleStart: z.number().optional(), // pie 전용
+  angleEnd: z.number().optional(),
 });
 
 const chartElementSchema = z.object({

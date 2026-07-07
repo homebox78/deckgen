@@ -1,8 +1,11 @@
+import { decomposeChart } from "../../engine/chartDecompose";
 import type { SlideDims, SlideElement } from "../../engine/schema";
 import { SLIDE_H, SLIDE_W } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { resolveColor, resolveRoleColor } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
+import { useUiStore } from "../../store/uiStore";
+import { showToast } from "../ui/toast";
 
 interface Props {
   slideId: string;
@@ -152,6 +155,26 @@ export function PropertiesPanel({
           )}
         </div>
       </div>
+
+      {element.type === "chart" && (
+        <div className="border-b border-app-border-soft px-4 py-3.5">
+          <SectionLabel>차트 편집</SectionLabel>
+          <button
+            onClick={() => {
+              const parts = decomposeChart(element, theme);
+              useUiStore.getState().setSelectedElementId(null);
+              useDeckStore.getState().explodeElement(slideId, element.id, parts);
+              showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
+            }}
+            className="w-full rounded-lg border border-app-border bg-white py-2 text-[12.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+          >
+            ⛶ 개별 요소로 분해 (막대·라벨 개별 수정)
+          </button>
+          <p className="mt-2 text-[11px] leading-relaxed text-app-faint">
+            더블클릭으로도 분해됩니다. 분해 후에는 PPTX에 도형으로 내보내집니다.
+          </p>
+        </div>
+      )}
 
       {(element.type === "text" || element.type === "shape") && (
         <div className="border-b border-app-border-soft px-4 py-3.5">

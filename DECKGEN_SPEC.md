@@ -138,11 +138,14 @@ interface TextElement extends ElementBase {
 
 interface ShapeElement extends ElementBase {
   type: "shape";
-  shape: "rect" | "roundRect" | "ellipse" | "line" | "arrow";
+  shape: "rect" | "roundRect" | "ellipse" | "line" | "arrow" | "pie";
   fill?: string;
   stroke?: string;
   strokeWidth?: number;
   radius?: number;            // roundRect 전용
+  slope?: "down" | "up";      // line 전용 — 대각선(박스 좌상→우하 / 좌하→우상). 미지정 시 수평
+  angleStart?: number;        // pie 전용 — 시작각 deg (0°=3시 방향, 시계방향)
+  angleEnd?: number;          // pie 전용 — 끝각 deg
 }
 
 interface ChartElement extends ElementBase {
@@ -279,7 +282,8 @@ interface Theme {
 ### 7.1 렌더 (`fabricRenderer.ts`)
 - `renderSlide(canvas, slide, theme)`: Schema → Fabric 객체 생성. 각 Fabric 객체에 `data: { elementId }` 부착
 - Text → `fabric.Textbox`(줄바꿈·너비 고정 편집), Shape → Rect/Ellipse/Line/Path, Image → `fabric.Image`
-- **Chart는 Fabric 그룹으로 직접 그린다**: bar = Rect 배열 + 라벨 Textbox, line = Polyline + 원, pie = 부채꼴 Path. 외부 차트 라이브러리 사용 금지 (PPTX 변환·편집 일관성 때문). 차트 그룹은 통째로 이동/크기조절만 가능, 내부 수정은 속성 패널/AI로
+- **Chart는 Fabric 그룹으로 직접 그린다**: bar = Rect 배열 + 라벨 Textbox, line = Polyline + 원, pie = 부채꼴 Path. 외부 차트 라이브러리 사용 금지 (PPTX 변환·편집 일관성 때문). 차트 그룹은 통째로 이동/크기조절 가능
+- **차트 분해(ungroup)**: 차트 더블클릭(또는 속성 패널 "개별 요소로 분해") 시 ChartElement가 동일 기하의 일반 요소들(roundRect 막대·pie 조각·slope line 선분·text 라벨)로 스키마에서 치환된다 → 막대 색·라벨 등 **모든 조각을 개별 선택/수정 가능**. 분해 수학은 렌더러와 단일 소스(`chartDecompose.ts`) 공유 — 분해 전후 픽셀 동일. 분해 후에는 PPTX에 네이티브 차트가 아닌 도형으로 내보내지며, undo로 복원 가능
 - 캔버스는 `setDimensions`로 1920×1080 유지, CSS 스케일로 화면 맞춤
 
 ### 7.2 역동기화 (`fabricSync.ts`)

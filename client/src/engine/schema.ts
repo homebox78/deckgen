@@ -85,7 +85,7 @@ export interface TextElement extends ElementBase {
   strike?: boolean;
 }
 
-export type ShapeKind = "rect" | "roundRect" | "ellipse" | "line" | "arrow";
+export type ShapeKind = "rect" | "roundRect" | "ellipse" | "line" | "arrow" | "pie";
 
 export interface ShapeElement extends ElementBase {
   type: "shape";
@@ -94,6 +94,9 @@ export interface ShapeElement extends ElementBase {
   stroke?: string;
   strokeWidth?: number;
   radius?: number; // roundRect 전용
+  slope?: "down" | "up"; // line 전용 — 대각선(좌상→우하 / 좌하→우상). 미지정 시 수평
+  angleStart?: number; // pie 전용 — 시작각 deg (0°=3시, 시계방향)
+  angleEnd?: number; // pie 전용 — 끝각 deg
 }
 
 export type ChartType = "bar" | "line" | "pie";

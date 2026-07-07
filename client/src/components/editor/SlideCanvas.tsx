@@ -1,5 +1,6 @@
 import { Canvas, FabricObject, Point } from "fabric";
 import { useEffect, useRef } from "react";
+import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
 import { attachSync, consumeInternalUpdate } from "../../engine/fabricSync";
 import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
@@ -7,6 +8,7 @@ import { SLIDE_H, SLIDE_W, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
 import { useUiStore } from "../../store/uiStore";
+import { showToast } from "../ui/toast";
 import { registerCanvasApi } from "./canvasApi";
 
 const FIT_PADDING = 120;
@@ -37,6 +39,8 @@ export function SlideCanvas({
   const fcRef = useRef<Canvas | null>(null);
   const slideRef = useRef(slide);
   slideRef.current = slide;
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
 
   useEffect(() => {
     const host = hostRef.current!;
@@ -132,6 +136,20 @@ export function SlideCanvas({
           onSelect: (elementId) =>
             useUiStore.getState().setSelectedElementId(elementId),
         });
+
+    // --- 차트 더블클릭 = 개별 요소로 분해 (ungroup) → 조각 개별 선택/수정 가능 ---
+    fc.on("mouse:dblclick", (opt) => {
+      if (readOnly || !opt.target) return;
+      const data = getElementData(opt.target);
+      if (data?.kind !== "chart") return;
+      const el = slideRef.current.elements.find((x) => x.id === data.elementId);
+      if (!el || el.type !== "chart") return;
+      const parts = decomposeChart(el, themeRef.current);
+      fc.discardActiveObject();
+      useUiStore.getState().setSelectedElementId(null);
+      useDeckStore.getState().explodeElement(slideRef.current.id, el.id, parts);
+      showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
+    });
 
     // --- 단축키 ---
     const activeElement = (): { obj: FabricObject; el: SlideElement } | null => {

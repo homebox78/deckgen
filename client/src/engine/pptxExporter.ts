@@ -57,10 +57,10 @@ function addShape(slide: PptxGenJS.Slide, el: ShapeElement, theme: Theme): void 
   switch (el.shape) {
     case "line":
     case "arrow":
+      // slope 지정 시 대각선: PPTX line은 바운딩 박스 대각(기본 좌상→우하), flipV로 좌하→우상
       slide.addShape("line", {
         ...base,
-        y: inch(el.y + el.h / 2),
-        h: 0,
+        ...(el.slope ? { flipV: el.slope === "up" } : { y: inch(el.y + el.h / 2), h: 0 }),
         line: {
           color: stroke ?? fill,
           width: pt(el.strokeWidth ?? 4),
@@ -68,6 +68,17 @@ function addShape(slide: PptxGenJS.Slide, el: ShapeElement, theme: Theme): void 
         },
       });
       return;
+    case "pie": {
+      // PPTX pie 도형: angleRange = [시작, 끝] deg (0°=3시, 시계방향 — 스키마와 동일 규약)
+      const norm = (a: number) => ((a % 360) + 360) % 360;
+      slide.addShape("pie", {
+        ...base,
+        angleRange: [norm(el.angleStart ?? 0), norm(el.angleEnd ?? 360)],
+        fill: { color: fill },
+        line: { type: "none" },
+      });
+      return;
+    }
     case "rect":
     case "roundRect":
     case "ellipse": {
