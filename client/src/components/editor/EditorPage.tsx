@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchShared } from "../../api/collab";
 import { renderSlideToDataURL } from "../../engine/fabricRenderer";
+import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
 import type { Slide, SlideElement } from "../../engine/schema";
@@ -158,8 +159,30 @@ function NotesPanel({
   );
 }
 
+type ExportFormat = "pptx" | "figma";
+
+const EXPORT_FORMATS: { id: ExportFormat; name: string; desc: string }[] = [
+  {
+    id: "pptx",
+    name: "PowerPoint (.pptx)",
+    desc: "텍스트·차트 편집 가능한 네이티브 슬라이드",
+  },
+  {
+    id: "figma",
+    name: "Figma (SVG 벡터, .zip)",
+    desc: "Figma에 드래그하면 슬라이드가 편집 가능한 레이어·텍스트로 열림",
+  },
+];
+
 /** 디자인 시안(1a·07)의 내보내기 팝오버 — PDF는 2차 */
-function ExportPopover({ onClose, onExport }: { onClose: () => void; onExport: () => void }) {
+function ExportPopover({
+  onClose,
+  onExport,
+}: {
+  onClose: () => void;
+  onExport: (format: ExportFormat) => void;
+}) {
+  const [fmt, setFmt] = useState<ExportFormat>("pptx");
   return (
     <>
       <div className="fixed inset-0 z-30" onClick={onClose} />
@@ -167,15 +190,29 @@ function ExportPopover({ onClose, onExport }: { onClose: () => void; onExport: (
         <p className="text-[14px] font-bold">덱 내보내기</p>
         <p className="mt-1 mb-3 text-[12px] text-app-muted">다운로드할 형식을 선택하세요.</p>
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2.5 rounded-[10px] border-[1.5px] border-app-accent bg-[#F7F4FF] px-3 py-2.5">
-            <span className="h-4 w-4 shrink-0 rounded-full border-[5px] border-app-accent bg-white" />
-            <div>
-              <p className="text-[13px] font-semibold">PowerPoint (.pptx)</p>
-              <p className="text-[11.5px] text-app-muted">
-                텍스트·차트 편집 가능한 네이티브 슬라이드
-              </p>
-            </div>
-          </div>
+          {EXPORT_FORMATS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFmt(f.id)}
+              className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-left ${
+                fmt === f.id
+                  ? "border-[1.5px] border-app-accent bg-[#F7F4FF]"
+                  : "border border-app-border hover:border-app-accent-border"
+              }`}
+            >
+              <span
+                className={`h-4 w-4 shrink-0 rounded-full bg-white ${
+                  fmt === f.id
+                    ? "border-[5px] border-app-accent"
+                    : "border-[1.5px] border-[#C9C9C4]"
+                }`}
+              />
+              <span>
+                <span className="block text-[13px] font-semibold">{f.name}</span>
+                <span className="block text-[11.5px] text-app-muted">{f.desc}</span>
+              </span>
+            </button>
+          ))}
           <div className="flex cursor-not-allowed items-center gap-2.5 rounded-[10px] border border-app-border px-3 py-2.5 opacity-70">
             <span className="h-4 w-4 shrink-0 rounded-full border-[1.5px] border-[#C9C9C4] bg-white" />
             <div>
@@ -189,11 +226,18 @@ function ExportPopover({ onClose, onExport }: { onClose: () => void; onExport: (
             </div>
           </div>
         </div>
+        {fmt === "figma" && (
+          <p className="mt-2.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-2.5 text-[11px] leading-relaxed text-app-faint">
+            슬라이드별 SVG 묶음이 내려받아집니다. 압축을 풀어 Figma 캔버스에 드래그하면
+            레이어 순서·텍스트가 유지됩니다. Pretendard 폰트가 없으면 대체 폰트로 보일 수
+            있어요.
+          </p>
+        )}
         <button
-          onClick={onExport}
+          onClick={() => onExport(fmt)}
           className="mt-3 w-full rounded-[10px] bg-app-accent py-2.5 text-[13px] font-semibold text-white hover:opacity-90"
         >
-          ⬇ PPTX 다운로드
+          ⬇ {fmt === "pptx" ? "PPTX" : "Figma SVG"} 다운로드
         </button>
       </div>
     </>
@@ -352,11 +396,18 @@ export function EditorPage() {
     );
   };
 
-  const runExport = () => {
+  const runExport = (format: ExportFormat) => {
     setExportOpen(false);
     setExporting(true);
-    exportDeckToPptx(deck)
-      .then(() => showToast(`'${deck.title}.pptx' 다운로드 시작`))
+    const job =
+      format === "pptx"
+        ? exportDeckToPptx(deck).then(() =>
+            showToast(`'${deck.title}.pptx' 다운로드 시작`),
+          )
+        : exportDeckToFigmaZip(deck).then(() =>
+            showToast("Figma용 SVG 묶음 다운로드 — 압축 풀어 Figma에 드래그하세요"),
+          );
+    job
       .catch((e) => showToast(`내보내기 실패: ${e instanceof Error ? e.message : e}`))
       .finally(() => setExporting(false));
   };

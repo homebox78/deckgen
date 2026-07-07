@@ -343,6 +343,11 @@ pptxgenjs를 클라이언트에서 실행. 변환 규칙:
 - 파일명: `{덱제목}.pptx`, 16:9 (`pptx.defineLayout({ name:"WIDE", width:13.333, height:7.5 })`)
 - 완료 기준: 내보낸 파일을 PowerPoint에서 열었을 때 텍스트 편집 가능, 차트 더블클릭 시 데이터 시트가 열림
 
+### 9.1 Figma 핸드오프 (`engine/figmaExporter.ts`)
+- 형식: **슬라이드별 SVG 벡터 묶음(.zip)** — Fabric 렌더 트리를 `canvas.toSVG()`로 벡터화. `.fig`는 비공개 바이너리 포맷이라 채택하지 않음(SVG가 Figma 공식 임포트 경로).
+- 파일명 `NN 슬라이드제목.svg` → Figma에 드래그하면 레이어 이름·순서로 반영. 텍스트=text 레이어(tspan 줄바꿈 유지), 도형·차트=벡터 레이어, 이미지=dataURL 임베드, z-order=스키마 순서.
+- 폰트는 Pretendard 기준 — Figma 환경에 없으면 대체 폰트 표시(README.txt 동봉 안내).
+
 ---
 
 ## 10. 구현 단계 (Phase Plan)
