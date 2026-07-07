@@ -86,7 +86,8 @@ function addShape(slide: PptxGenJS.Slide, el: ShapeElement, theme: Theme): void 
     case "ellipse":
     case "triangle":
     case "diamond":
-    case "star": {
+    case "star":
+    case "parallelogram": {
       const typeMap: Record<string, PptxGenJS.ShapeType | string> = {
         rect: "rect",
         roundRect: "roundRect",
@@ -95,6 +96,7 @@ function addShape(slide: PptxGenJS.Slide, el: ShapeElement, theme: Theme): void 
         triangle: "triangle",
         diamond: "diamond",
         star: "star5",
+        parallelogram: "parallelogram",
       };
       const type = typeMap[el.shape] ?? "rect";
       slide.addShape(type as PptxGenJS.ShapeType, {

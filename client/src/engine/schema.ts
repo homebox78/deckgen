@@ -108,7 +108,8 @@ export type ShapeKind =
   | "triangle"
   | "diamond"
   | "star"
-  | "pill";
+  | "pill"
+  | "parallelogram";
 
 export interface ShapeElement extends ElementBase {
   type: "shape";

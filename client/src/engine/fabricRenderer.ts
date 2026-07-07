@@ -155,6 +155,19 @@ function buildShape(el: ShapeElement, theme: Theme): FabricObject {
         { ...common },
       );
       break;
+    case "parallelogram": {
+      const skew = el.w * 0.22;
+      obj = new Polygon(
+        [
+          { x: skew, y: 0 },
+          { x: el.w, y: 0 },
+          { x: el.w - skew, y: el.h },
+          { x: 0, y: el.h },
+        ],
+        { ...common },
+      );
+      break;
+    }
     case "star": {
       // 5각 별 (외/내 반지름)
       const cx = el.w / 2;

@@ -105,6 +105,7 @@ const shapeElementSchema = z.object({
     "diamond",
     "star",
     "pill",
+    "parallelogram",
   ]),
   fill: z.string().optional(),
   fillType: z.enum(["solid", "linear", "circular"]).optional(),

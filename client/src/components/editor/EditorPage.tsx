@@ -61,14 +61,18 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
   switch (kind) {
     case "rect":
       return { ...base, type: "shape", shape: "rect", x: cx - 200, w: 400 };
+    case "circle":
+      return { ...base, type: "shape", shape: "ellipse", x: cx - 130, y: cy - 130, w: 260, h: 260 };
     case "ellipse":
-      return { ...base, type: "shape", shape: "ellipse", x: cx - 110, y: cy - 110, w: 220, h: 220 };
+      return { ...base, type: "shape", shape: "ellipse", x: cx - 200, y: cy - 120, w: 400, h: 240 };
     case "triangle":
       return { ...base, type: "shape", shape: "triangle" };
     case "diamond":
       return { ...base, type: "shape", shape: "diamond" };
     case "star":
       return { ...base, type: "shape", shape: "star" };
+    case "parallelogram":
+      return { ...base, type: "shape", shape: "parallelogram", x: cx - 200, y: cy - 100, w: 400, h: 200 };
     case "pill":
       return { ...base, type: "shape", shape: "pill", x: cx - 190, y: cy - 48, w: 380, h: 96, opacity: 0.16 };
     case "line":
@@ -1181,11 +1185,12 @@ export function EditorPage() {
                   direction="up"
                   items={[
                     { key: "rect", name: "사각형" },
-                    { key: "ellipse", name: "원" },
+                    { key: "circle", name: "원" },
+                    { key: "ellipse", name: "타원" },
                     { key: "triangle", name: "삼각형" },
                     { key: "diamond", name: "다이아몬드" },
                     { key: "star", name: "별" },
-                    { key: "pill", name: "알약" },
+                    { key: "parallelogram", name: "평행사변형" },
                     { key: "line", name: "선" },
                     { key: "arrow", name: "화살표" },
                     { key: "table", name: "표" },
