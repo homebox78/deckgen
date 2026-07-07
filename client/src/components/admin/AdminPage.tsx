@@ -1064,9 +1064,10 @@ function DecksPage() {
             <span className="w-[60px] flex-none text-center text-[12.5px]">{(i % 4) + 1}</span>
             <span className="w-[70px] flex-none text-center text-[12.5px]">{[12, 31, 4, 9][i % 4]}</span>
             <span className="w-[130px] flex-none">
-              <select className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]" defaultValue={locked[d.id] ? "off" : "on"}>
-                <option value="on">링크 활성</option>
+              <select className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]" defaultValue={locked[d.id] ? "off" : "view"}>
                 <option value="off">링크 비활성</option>
+                <option value="view">보기 전용</option>
+                <option value="edit">편집 허용</option>
               </select>
             </span>
             <span className="flex w-[190px] flex-none gap-1.5">
@@ -1117,12 +1118,28 @@ function CollabPage() {
           초대 메일 <span className="text-[11px] font-normal text-app-faint">· DeckGen Invite Email 발송</span>
         </div>
         {invites.map((iv, i) => (
-          <div key={i} className="flex items-center justify-between border-b border-[#F0F0EE] px-4 py-2.5">
+          <div key={i} className="flex items-center justify-between gap-2 border-b border-[#F0F0EE] px-4 py-2.5">
             <div className="min-w-0">
               <div className="truncate text-[12px]">{iv.meta.replace("초대 메일 · ", "")}</div>
-              <div className="text-[10.5px] text-app-faint">{fmtTime(iv.ts)}</div>
+              <div className="text-[10.5px] text-app-faint">{fmtTime(iv.ts)} · 편집자</div>
             </div>
-            <StatusPill ok label="발송됨" />
+            <div className="flex flex-none items-center gap-1.5">
+              <StatusPill ok label="발송됨" />
+              <button
+                onClick={() => showToast("초대 메일을 재발송했어요")}
+                title="재발송"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-app-border text-app-muted hover:border-app-accent hover:text-app-accent"
+              >
+                <span className="mi text-[15px]">send</span>
+              </button>
+              <button
+                onClick={() => showToast("초대를 취소했어요")}
+                title="초대 취소"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-app-border text-app-muted hover:border-app-danger hover:text-app-danger"
+              >
+                <span className="mi text-[15px]">close</span>
+              </button>
+            </div>
           </div>
         ))}
         {invites.length === 0 && (
@@ -1833,6 +1850,29 @@ function FunnelPage() {
           ))}
         </div>
       </div>
+      {/* 요약 KPI 3카드 */}
+      <div className="mb-4 grid grid-cols-3 gap-3">
+        {(() => {
+          let maxDrop = 0, maxStage = "";
+          stages.forEach((s, i) => {
+            if (i < stages.length - 1) {
+              const d = s.n - stages[i + 1].n;
+              if (d > maxDrop) { maxDrop = d; maxStage = `${s.name} → ${stages[i + 1].name}`; }
+            }
+          });
+          return [
+            { label: "전체 전환율", value: `${stages[stages.length - 1].pct}%`, sub: "가입 → 첫 덱 완성" },
+            { label: "최대 이탈 구간", value: maxStage, sub: `${maxDrop.toLocaleString()}명 이탈`, small: true },
+            { label: "평균 소요 시간", value: "4분 12초", sub: "가입 → 첫 덱" },
+          ].map((k) => (
+            <Card key={k.label} className="px-4 py-3.5">
+              <div className="text-[11px] font-semibold text-app-faint">{k.label}</div>
+              <div className={`mt-1 font-extrabold ${k.small ? "text-[14px] leading-tight" : "text-[22px]"}`}>{k.value}</div>
+              <div className="mt-0.5 text-[11px] text-app-muted">{k.sub}</div>
+            </Card>
+          ));
+        })()}
+      </div>
       <Card className="px-5 py-4">
         {stages.map((s, i) => {
           const drop = i < stages.length - 1 ? s.n - stages[i + 1].n : 0;
@@ -1849,14 +1889,18 @@ function FunnelPage() {
                 <span className="w-12 flex-none text-right text-[12.5px] font-bold">{s.pct}%</span>
               </div>
               {i < stages.length - 1 && (
-                <div className="py-0.5 pl-40 text-[10.5px] font-semibold text-app-danger">
-                  ↓ {drop.toLocaleString()} 이탈 ({dropPct}%)
+                <div className="flex items-center gap-0.5 py-0.5 pl-40 text-[10.5px] font-semibold text-app-danger">
+                  <span className="mi text-[13px]">arrow_downward</span>{drop.toLocaleString()} 이탈 ({dropPct}%)
                 </div>
               )}
             </div>
           );
         })}
       </Card>
+      <p className="mt-3 rounded-lg border border-app-border bg-app-bg px-4 py-2.5 text-[11.5px] text-app-muted">
+        <span className="mi align-middle text-[14px] mr-1">lightbulb</span>
+        가장 큰 이탈은 <b className="text-app-text">용도 선택 → 첫 프롬프트/템플릿</b> 구간입니다. 온보딩 추천 템플릿 노출을 강화하면 전환율 개선 여지가 큽니다.
+      </p>
     </>
   );
 }
