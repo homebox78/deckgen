@@ -133,6 +133,14 @@ export function CommentsPanel({
                 className={`rounded-xl border px-3 py-2.5 ${c.resolved ? "border-app-border-soft bg-[#FBFBFA] opacity-70" : "border-app-border bg-white"}`}
               >
                 <div className="mb-1 flex items-center gap-2">
+                  {typeof c.x === "number" && typeof c.y === "number" && (
+                    <span
+                      title="핀 댓글"
+                      className="flex h-4 w-4 flex-none items-center justify-center rounded-full bg-app-accent text-[9px] font-bold text-white"
+                    >
+                      {comments.filter((k) => typeof k.x === "number").findIndex((k) => k.id === c.id) + 1}
+                    </span>
+                  )}
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-app-text text-[9px] font-bold text-white">
                     {c.author[0]}
                   </span>
@@ -146,6 +154,8 @@ export function CommentsPanel({
                 {c.replies.map((r) => (
                   <div key={r.id} className="mt-1.5 ml-2 border-l-2 border-app-border-soft pl-2">
                     <span className="text-[10.5px] font-semibold">{r.author}</span>{" "}
+                    <span className="text-[9.5px] text-app-faint">{rel(r.ts)}</span>
+                    <br />
                     <span className="text-[11.5px] text-app-muted">{r.text}</span>
                   </div>
                 ))}

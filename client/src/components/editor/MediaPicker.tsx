@@ -86,6 +86,8 @@ export function MediaPicker({
   const [ytUrl, setYtUrl] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
+  const [aiModel, setAiModel] = useState("gpt-image-2");
+  const [stockQuery, setStockQuery] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const cx = dims.w / 2;
@@ -175,7 +177,7 @@ export function MediaPicker({
       const res = await fetch(apiUrl("/api/ai-image"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: aiPrompt.trim() }),
+        body: JSON.stringify({ prompt: aiPrompt.trim(), model: aiModel }),
       });
       const j = (await res.json()) as { image?: string; error?: string };
       if (res.ok && j.image) {
@@ -265,11 +267,17 @@ export function MediaPicker({
 
           {tab === "stock" && (
             <>
-              <p className="mb-3 text-[12px] text-app-faint">
-                스톡 이미지 (Pexels 연동 — 현재 시뮬레이션 타일)
-              </p>
+              <div className="mb-3 flex items-center gap-2 rounded-lg border border-app-border px-3 py-2">
+                <span className="mi text-[16px] text-app-faint">search</span>
+                <input
+                  value={stockQuery}
+                  onChange={(e) => setStockQuery(e.target.value)}
+                  placeholder="Pexels 이미지 검색 (예: 오피스, 자연, 기술)"
+                  className="min-w-0 flex-1 text-[12.5px] focus:outline-none"
+                />
+              </div>
               <div className="grid grid-cols-4 gap-2.5">
-                {STOCK.map((s) => (
+                {STOCK.filter((s) => !stockQuery.trim() || s.label.includes(stockQuery.trim())).map((s) => (
                   <button
                     key={s.label}
                     onClick={() => insertImage(gradientDataURL(s.from, s.to, 800, 600, s.label), 640, 480)}
@@ -372,6 +380,18 @@ export function MediaPicker({
                 placeholder="예: 소상공인 카페 인테리어, 따뜻한 조명, 미니멀"
                 className="resize-none rounded-lg border border-app-border px-3.5 py-2.5 text-[13px] focus:border-app-accent focus:outline-none"
               />
+              <div className="flex items-center gap-2">
+                <span className="text-[11.5px] font-semibold text-app-faint">모델</span>
+                <select
+                  value={aiModel}
+                  onChange={(e) => setAiModel(e.target.value)}
+                  className="rounded-lg border border-app-border bg-white px-2.5 py-1.5 text-[12px] focus:border-app-accent focus:outline-none"
+                >
+                  <option value="gpt-image-2">GPT Image 2 (고품질)</option>
+                  <option value="nano-banana-2">Nano Banana 2 (빠름)</option>
+                  <option value="gemini-3-flash-image">Gemini 3 Flash (저비용)</option>
+                </select>
+              </div>
               <button
                 onClick={() => void genAi()}
                 disabled={aiBusy}

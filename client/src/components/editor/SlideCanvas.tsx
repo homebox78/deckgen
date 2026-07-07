@@ -661,12 +661,13 @@ export function SlideCanvas({
             e.stopPropagation();
             onPinClick?.(pin.id);
           }}
-          className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow-md ${
-            pin.resolved ? "bg-app-faint" : "bg-app-text"
+          title={`댓글 핀 ${pin.n}`}
+          className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-full rotate-45 items-center justify-center rounded-full rounded-bl-none border-2 border-white shadow-md ${
+            pin.resolved ? "bg-app-faint" : "bg-app-accent"
           }`}
           style={{ left: sx, top: sy }}
         >
-          {pin.n}
+          <span className="-rotate-45 text-[11px] font-bold text-white">{pin.n}</span>
         </button>
       );
     });

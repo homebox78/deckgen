@@ -31,6 +31,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
   const [tokens, setTokens] = useState(() => getShareTokens(deck.id));
   const [mode, setMode] = useState<Mode>("view");
   const [copied, setCopied] = useState(false);
+  const [presentLink, setPresentLink] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
@@ -239,6 +240,21 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             </button>
           </div>
         )}
+
+        {/* 발표 모드로 바로 열리는 링크 토글 */}
+        <label className="mt-3 flex cursor-pointer items-center gap-2.5 rounded-lg border border-app-border bg-app-bg px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={presentLink}
+            onChange={(e) => setPresentLink(e.target.checked)}
+            className="h-4 w-4 accent-[#1A1A1A]"
+          />
+          <span className="flex-1">
+            <span className="block text-[12px] font-semibold">발표 모드로 바로 열리는 링크</span>
+            <span className="block text-[11px] text-app-faint">받는 사람이 링크를 열면 즉시 발표 모드로 시작합니다</span>
+          </span>
+          <span className="mi text-[18px] text-app-muted">play_circle</span>
+        </label>
 
         <p className="mt-3.5 border-t border-app-border-soft pt-3 text-[11.5px] leading-relaxed text-app-faint">
           같은 슬라이드를 동시에 고치면 나중 저장이 반영돼요. 서로 다른 슬라이드를 나눠

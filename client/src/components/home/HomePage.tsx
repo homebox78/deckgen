@@ -29,7 +29,6 @@ import {
   type Folder,
   type TrashedDeck,
 } from "../../store/deckMeta";
-import { getShareTokens } from "../../store/collabStore";
 import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
@@ -434,7 +433,7 @@ export function HomePage() {
   // 첫 실행 시 온보딩 노출
   const [onboarding, setOnboarding] = useState(() => !getSettings().onboardingDone);
   const [query, setQuery] = useState("");
-  const [deckFilter, setDeckFilter] = useState<"all" | "recent" | "shared" | "fav">("all");
+  const [deckFilter, setDeckFilter] = useState<"all" | "fav" | "done" | "generating">("all");
   const [deckView, setDeckView] = useState<"grid" | "list">("grid");
   const [decks, setDecks] = useState<DeckSummary[]>(() => listDecks());
   // 폴더 · 즐겨찾기 · 휴지통
@@ -594,7 +593,6 @@ export function HomePage() {
   };
 
   const q = query.trim().toLowerCase();
-  const RECENT_MS = 72 * 3600 * 1000;
   const inTrash = folderSel === "trash";
   const filtered = decks
     .filter((d) => {
@@ -604,9 +602,9 @@ export function HomePage() {
       if (folderSel !== "all" && folderSel !== "uncat" && folderSel !== "trash" && folderMap[d.id] !== folderSel)
         return false;
       // 상단 필터 탭
-      if (deckFilter === "recent" && Date.now() - d.updatedAt >= RECENT_MS) return false;
-      if (deckFilter === "shared" && !getShareTokens(d.id)) return false;
       if (deckFilter === "fav" && !favs.includes(d.id)) return false;
+      if (deckFilter === "done" && d.slideCount <= 0) return false;
+      if (deckFilter === "generating") return false; // 저장된 덱은 모두 완료 상태
       return true;
     })
     .sort((a, b) => {
@@ -1147,9 +1145,9 @@ export function HomePage() {
           {(
             [
               ["all", "전체"],
-              ["recent", "최근"],
-              ["shared", "공유됨"],
               ["fav", "즐겨찾기"],
+              ["done", "완료"],
+              ["generating", "생성 중"],
             ] as const
           ).map(([key, label]) => (
             <button
