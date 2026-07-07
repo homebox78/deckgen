@@ -98,6 +98,7 @@ export function listDeckSummaries(): {
   id: string;
   title: string;
   slides: number;
+  themeId: string;
   rev: number;
   updatedAt: number;
 }[] {
@@ -107,6 +108,7 @@ export function listDeckSummaries(): {
       id: r.deck.id,
       title: r.deck.title,
       slides: r.deck.slides.length,
+      themeId: r.deck.themeId,
       rev: r.rev,
       updatedAt: r.updatedAt,
     }))

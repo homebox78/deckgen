@@ -212,8 +212,18 @@ final class Admin
             $daily[] = ['day' => gmdate('m-d', (int) ($d0 / 1000)), 'count' => $c];
         }
         $avgBy = fn (string $k) => (int) ($q('SELECT AVG(ms) a FROM events WHERE kind = :k AND ok = 1', [':k' => $k])->fetch()['a'] ?? 0);
+        // 테마 사용 비율 (덱 json 파싱)
+        $themeCounts = [];
+        foreach ($pdo->query('SELECT json FROM decks')->fetchAll() as $row) {
+            $d = json_decode((string) $row['json'], true);
+            $t = is_array($d) ? (string) ($d['themeId'] ?? '') : '';
+            if ($t !== '') $themeCounts[$t] = ($themeCounts[$t] ?? 0) + 1;
+        }
+        arsort($themeCounts);
+        $themeDist = array_map(fn ($k, $v) => ['themeId' => $k, 'count' => $v], array_keys($themeCounts), array_values($themeCounts));
         self::json([
             'kpis' => ['todayGens' => $todayGens, 'failRate' => $todayGens ? (int) round($failed / max(1, $todayGens) * 100) : 0, 'sharedDecks' => $decks, 'exportsToday' => $exportsToday, 'avgGenMs' => $avgMs],
+            'themeDist' => $themeDist,
             'daily' => $daily,
             'pipeline' => [
                 ['name' => '아웃라인 생성', 'ms' => $avgBy('outline')],

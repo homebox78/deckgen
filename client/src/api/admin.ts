@@ -59,6 +59,7 @@ export async function adminVerify(email: string, code: string): Promise<void> {
 // ── 데이터 ──
 export interface AdminMetrics {
   kpis: { todayGens: number; failRate: number; sharedDecks: number; exportsToday: number; avgGenMs: number };
+  themeDist?: { themeId: string; count: number }[];
   daily: { day: string; count: number }[];
   pipeline: { name: string; ms: number }[];
 }

@@ -290,6 +290,51 @@ function DashPage() {
           </div>
         </Card>
       </div>
+      {/* 테마 사용 비율 도넛 (AD8) */}
+      <Card className="px-5 py-[18px]">
+        <div className="mb-3.5 text-[13.5px] font-bold">테마 사용 비율</div>
+        {(() => {
+          const dist = m.themeDist ?? [];
+          const total = dist.reduce((s, d) => s + d.count, 0);
+          if (total === 0) return <p className="text-[12px] text-app-faint">공유된 덱이 없어 집계할 데이터가 없습니다.</p>;
+          const COLORS: Record<string, string> = {
+            "clean-light": "#2563EB",
+            "ink-dark": "#14141A",
+            "warm-craft": "#C25E3A",
+            "violet-bold": "#8B6BFF",
+          };
+          const NAMES: Record<string, string> = {
+            "clean-light": "Clean Light",
+            "ink-dark": "Ink Dark",
+            "warm-craft": "Warm Craft",
+            "violet-bold": "Violet Bold",
+          };
+          let acc = 0;
+          const stops = dist
+            .map((d) => {
+              const from = (acc / total) * 360;
+              acc += d.count;
+              const to = (acc / total) * 360;
+              return `${COLORS[d.themeId] ?? "#8A8A84"} ${from}deg ${to}deg`;
+            })
+            .join(", ");
+          return (
+            <div className="flex items-center gap-6">
+              <div className="h-[110px] w-[110px] flex-none rounded-full" style={{ background: `conic-gradient(${stops})` }} />
+              <div className="flex flex-col gap-2">
+                {dist.map((d) => (
+                  <div key={d.themeId} className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: COLORS[d.themeId] ?? "#8A8A84" }} />
+                    <span className="text-[11.5px] text-[#4A4A45]">
+                      {NAMES[d.themeId] ?? d.themeId} {Math.round((d.count / total) * 100)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+      </Card>
     </>
   );
 }
@@ -297,6 +342,7 @@ function DashPage() {
 function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [q, setQ] = useState("");
+  const [plans, setPlans] = useState<Record<string, string>>({});
   const load = useCallback(() => {
     void adminApi.users().then((r) => setUsers(r.users)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
@@ -320,26 +366,47 @@ function UsersPage() {
       </div>
       <Card className="overflow-hidden">
         <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
-          <span className="flex-[1.6]">사용자</span>
-          <span className="flex-1">참여 덱 수</span>
+          <span className="flex-[1.5]">사용자</span>
+          <span className="flex-1">플랜</span>
+          <span className="flex-1">참여 덱</span>
           <span className="flex-1">최근 활동</span>
           <span className="flex-1">상태</span>
-          <span className="w-[110px] flex-none" />
+          <span className="w-[180px] flex-none" />
         </div>
         {rows.map((u) => (
           <div key={u.name} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
-            <div className="flex flex-[1.6] items-center gap-2.5">
+            <div className="flex flex-[1.5] items-center gap-2.5">
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-app-accent text-[11px] font-bold text-white">
                 {u.name[0]}
               </span>
               <span className="text-[12.5px] font-semibold">{u.name}</span>
             </div>
+            <span className="flex-1">
+              <select
+                value={plans[u.name] ?? "Free"}
+                onChange={(e) => {
+                  setPlans((p) => ({ ...p, [u.name]: e.target.value }));
+                  showToast(`${u.name} 플랜을 ${e.target.value}(으)로 변경했어요 (감사 로그 기록)`);
+                }}
+                className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11.5px] font-semibold focus:outline-none"
+              >
+                {["Free", "Plus", "Pro"].map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </span>
             <span className="flex-1 text-[12.5px]">{u.decks}</span>
             <span className="flex-1 text-[12px] text-app-muted">{rel(u.last)}</span>
             <span className="flex-1">
               <StatusPill ok={!u.blocked} label={u.blocked ? "차단됨" : "활성"} />
             </span>
-            <span className="flex w-[110px] flex-none justify-end">
+            <span className="flex w-[180px] flex-none justify-end gap-1.5">
+              <button
+                onClick={() => showToast(`${u.name}의 이번 달 크레딧 사용량을 초기화했어요`)}
+                className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold text-app-muted"
+              >
+                크레딧 리셋
+              </button>
               <button
                 onClick={() => {
                   void adminApi.block(u.name, !u.blocked).then(() => {

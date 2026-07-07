@@ -129,6 +129,12 @@ adminRouter.get("/admin/metrics", (_req: Request, res: Response) => {
   };
 
   const decks = listDeckSummaries();
+  // 테마 사용 비율 (공유 덱 기준)
+  const themeCounts: Record<string, number> = {};
+  for (const d of decks) themeCounts[d.themeId] = (themeCounts[d.themeId] ?? 0) + 1;
+  const themeDist = Object.entries(themeCounts)
+    .map(([themeId, count]) => ({ themeId, count }))
+    .sort((a, b) => b.count - a.count);
   res.json({
     kpis: {
       todayGens: todayGens.length,
@@ -137,6 +143,7 @@ adminRouter.get("/admin/metrics", (_req: Request, res: Response) => {
       exportsToday: exportsToday.length,
       avgGenMs: avgMs,
     },
+    themeDist,
     daily,
     pipeline: [
       { name: "아웃라인 생성", ms: avgBy("outline") },
