@@ -12,7 +12,7 @@ import { aspectDims, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
 import { addSavedTemplate } from "../../store/savedTemplateStore";
-import { useComments } from "../../store/commentStore";
+import { addComment, useComments } from "../../store/commentStore";
 import {
   CLIENT_ID,
   MY_COLOR,
@@ -1126,6 +1126,16 @@ export function EditorPage() {
                   }
                 : undefined
             }
+            pins={allComments
+              .filter((c) => c.slideId === slide?.id && c.x != null && c.y != null)
+              .map((c, i) => ({ id: c.id, x: c.x!, y: c.y!, n: i + 1, resolved: c.resolved }))}
+            onPinPlace={(x, y) => {
+              addComment(deck.id, slide.id, getGuestName() || "나", "이 위치 확인 부탁드립니다.", { x, y });
+              useUiStore.getState().setPinPicking(false);
+              setTab("comments");
+              showToast("댓글이 등록됐어요");
+            }}
+            onPinClick={() => setTab("comments")}
           />
           </div>
           {/* AI 편집 affordance (스냅덱 — 마퀴→AI 수정) */}

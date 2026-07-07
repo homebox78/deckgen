@@ -15,6 +15,8 @@ export interface Comment {
   ts: number;
   resolved: boolean;
   replies: Reply[];
+  x?: number; // 핀 위치 (슬라이드 좌표, 없으면 핀 없는 댓글)
+  y?: number;
 }
 
 const key = (deckId: string) => `deckgen:comments:${deckId}`;
@@ -40,10 +42,16 @@ function write(deckId: string, list: Comment[]): void {
 
 const rid = () => Math.random().toString(36).slice(2, 10);
 
-export function addComment(deckId: string, slideId: string, author: string, text: string): void {
+export function addComment(
+  deckId: string,
+  slideId: string,
+  author: string,
+  text: string,
+  pos?: { x: number; y: number },
+): void {
   write(deckId, [
     ...read(deckId),
-    { id: rid(), slideId, author, text, ts: Date.now(), resolved: false, replies: [] },
+    { id: rid(), slideId, author, text, ts: Date.now(), resolved: false, replies: [], x: pos?.x, y: pos?.y },
   ]);
 }
 export function addReply(deckId: string, commentId: string, author: string, text: string): void {

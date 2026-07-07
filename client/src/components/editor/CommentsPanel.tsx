@@ -9,6 +9,8 @@ import {
 } from "../../store/commentStore";
 import { getGuestName, useCollabStore } from "../../store/collabStore";
 import { pushNotif } from "../../store/notifStore";
+import { useUiStore } from "../../store/uiStore";
+import { showToast } from "../ui/toast";
 
 function rel(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -42,6 +44,8 @@ export function CommentsPanel({
   const [mentionOpen, setMentionOpen] = useState<"draft" | "reply" | null>(null);
   const me = getGuestName() || "나";
   const collab = useCollabStore();
+  const pinPicking = useUiStore((s) => s.pinPicking);
+  const setPinPicking = useUiStore((s) => s.setPinPicking);
   // 멘션 후보 = 협업자(나 제외) + 데모 기본 후보
   const candidates = Array.from(
     new Set(
@@ -94,10 +98,25 @@ export function CommentsPanel({
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-app-border-soft px-4 py-3">
         <span className="text-[13.5px] font-bold">댓글 — 슬라이드 {slideIndex + 1}</span>
-        <span className="text-[11.5px] text-app-faint">
-          {comments.filter((c) => !c.resolved).length}개 미해결
-        </span>
+        {!readOnly && (
+          <button
+            onClick={() => {
+              setPinPicking(!pinPicking);
+              if (!pinPicking) showToast("슬라이드 위 원하는 위치를 클릭하면 핀이 찍힙니다");
+            }}
+            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold ${
+              pinPicking ? "border-app-text bg-app-text text-white" : "border-app-border bg-white hover:border-app-accent"
+            }`}
+          >
+            {pinPicking ? "핀 찍는 중… 취소" : "+ 핀 찍기"}
+          </button>
+        )}
       </div>
+      {pinPicking && (
+        <div className="border-b border-app-border-soft bg-app-bg px-4 py-2 text-[11.5px] text-app-muted">
+          슬라이드 위 원하는 위치를 클릭하면 핀이 찍힙니다.
+        </div>
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {comments.length === 0 ? (
@@ -183,7 +202,7 @@ export function CommentsPanel({
                   setDraft("");
                 }
               }}
-              placeholder="댓글 입력 후 Enter (@로 멘션)"
+              placeholder="댓글 입력 후 Enter — 핀 없이 남기기 (@로 멘션)"
               className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12px] focus:border-app-accent focus:outline-none"
             />
             <button

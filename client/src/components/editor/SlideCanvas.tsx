@@ -31,6 +31,9 @@ export function SlideCanvas({
   onInsertAt,
   peers,
   onCursor,
+  pins,
+  onPinPlace,
+  onPinClick,
 }: {
   slide: Slide;
   theme: Theme;
@@ -39,6 +42,9 @@ export function SlideCanvas({
   onInsertAt?: (kind: string) => void;
   peers?: { clientId: string; name: string; color: string; cursor?: { x: number; y: number }; selectedId?: string }[];
   onCursor?: (x: number, y: number) => void;
+  pins?: { id: string; x: number; y: number; n: number; resolved: boolean }[];
+  onPinPlace?: (x: number, y: number) => void;
+  onPinClick?: (id: string) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
@@ -53,6 +59,8 @@ export function SlideCanvas({
   );
   const onCursorRef = useRef(onCursor);
   onCursorRef.current = onCursor;
+  const onPinPlaceRef = useRef(onPinPlace);
+  onPinPlaceRef.current = onPinPlace;
   const [vptTick, setVptTick] = useState(0); // 뷰포트 변경 시 커서 오버레이 재계산
 
   useEffect(() => {
@@ -264,6 +272,13 @@ export function SlideCanvas({
       lastCursor = now;
       const p = fc.getScenePoint(opt.e);
       onCursorRef.current(Math.round(p.x), Math.round(p.y));
+    });
+
+    // --- 댓글 핀 찍기: 핀 모드에서 캔버스 클릭 → 좌표 전달 ---
+    fc.on("mouse:down", (opt) => {
+      if (!useUiStore.getState().pinPicking || !onPinPlaceRef.current) return;
+      const p = fc.getScenePoint(opt.e);
+      onPinPlaceRef.current(Math.round(p.x), Math.round(p.y));
     });
 
     // --- 역동기화 (보기 전용에선 편집 이벤트가 없으므로 생략) ---
@@ -630,10 +645,41 @@ export function SlideCanvas({
       });
   })();
 
+  // 댓글 핀 (번호 원) — 슬라이드 좌표 → 화면
+  const pinEls = (() => {
+    const fc = fcRef.current;
+    if (!fc || !pins?.length) return null;
+    void vptTick;
+    const vpt = fc.viewportTransform;
+    return pins.map((pin) => {
+      const sx = pin.x * vpt[0] + vpt[4];
+      const sy = pin.y * vpt[3] + vpt[5];
+      return (
+        <button
+          key={pin.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPinClick?.(pin.id);
+          }}
+          className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white text-[11px] font-bold text-white shadow-md ${
+            pin.resolved ? "bg-app-faint" : "bg-app-text"
+          }`}
+          style={{ left: sx, top: sy }}
+        >
+          {pin.n}
+        </button>
+      );
+    });
+  })();
+
   return (
-    <div ref={hostRef} className="relative h-full w-full overflow-hidden bg-app-canvas">
+    <div
+      ref={hostRef}
+      className={`relative h-full w-full overflow-hidden bg-app-canvas ${useUiStore.getState().pinPicking ? "cursor-crosshair" : ""}`}
+    >
       <canvas ref={canvasElRef} />
       {selectionLabels}
+      {pinEls}
       {cursorEls}
       {ctxMenu && ctxItems.length > 0 && (
         <>
