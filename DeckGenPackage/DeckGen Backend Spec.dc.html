@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+body{margin:0;background:#F7F7F5;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif}
+</style>
+</helmet>
+
+<div style="max-width:880px;margin:0 auto;padding:48px 32px 72px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <span style="width:24px;height:24px;border-radius:7px;background:#6D4AFF"></span>
+    <span style="font-size:15px;font-weight:700;color:#1A1A1A">DeckGen</span>
+    <span style="font-size:11px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border-radius:5px;padding:2px 7px">Backend Spec v1</span>
+  </div>
+  <div style="font-size:26px;font-weight:800;color:#1A1A1A;letter-spacing:-.02em">백엔드 설계 — 프론트 기능 1:1 대응</div>
+  <div style="font-size:13px;color:#6B6B66;margin:8px 0 28px;line-height:1.6">
+    <a href="DeckGen Prototype.dc.html" style="color:#6D4AFF;text-decoration:none;font-weight:600">프로토타입</a>과
+    <a href="DeckGen Admin.dc.html" style="color:#6D4AFF;text-decoration:none;font-weight:600">관리자 콘솔</a>의 모든 동작을 커버하는 API·스키마·파이프라인 명세.
+    스택: FastAPI + PostgreSQL + Redis(큐) + S3(에셋) · SSE 스트리밍 · WebSocket(협업)
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">1 · 인증 & 계정 (Auth)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden;margin-bottom:12px">
+    <sc-for list="{{ authApis }}" as="a" hint-placeholder-count="10">
+      <div style="display:flex;align-items:baseline;gap:12px;padding:10px 16px;border-bottom:1px solid #F0F0EE">
+        <span style="width:52px;flex:none;font-size:10.5px;font-weight:800;color:{{ a.mColor }};background:{{ a.mBg }};border-radius:5px;padding:3px 0;text-align:center">{{ a.method }}</span>
+        <span style="width:290px;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#1A1A1A">{{ a.path }}</span>
+        <span style="flex:1;font-size:12px;color:#6B6B66">{{ a.desc }}</span>
+        <span style="flex:none;font-size:10.5px;font-weight:600;color:#8A8A84">{{ a.ui }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px">
+      <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:10px">토큰 정책</div>
+      <sc-for list="{{ tokenRules }}" as="tr">
+        <div style="display:flex;gap:9px;padding:4px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#6D4AFF;margin-top:6px"></span><span style="font-size:12px;color:#4A4A45;line-height:1.6">{{ tr.t }}</span></div>
+      </sc-for>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px">
+      <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:10px">가입 플로우 (프로토타입 온보딩과 대응)</div>
+      <sc-for list="{{ signupFlow }}" as="sf">
+        <div style="display:flex;gap:10px;padding:4px 0"><span style="flex:none;width:18px;height:18px;border-radius:6px;background:#F0EBFF;color:#6D4AFF;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">{{ sf.n }}</span><span style="font-size:12px;color:#4A4A45;line-height:1.55">{{ sf.t }}</span></div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">2 · 사용자 설정 API (설정 화면 1:1)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+    <sc-for list="{{ settingsApis }}" as="a" hint-placeholder-count="6">
+      <div style="display:flex;align-items:baseline;gap:12px;padding:10px 16px;border-bottom:1px solid #F0F0EE">
+        <span style="width:52px;flex:none;font-size:10.5px;font-weight:800;color:{{ a.mColor }};background:{{ a.mBg }};border-radius:5px;padding:3px 0;text-align:center">{{ a.method }}</span>
+        <span style="width:290px;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#1A1A1A">{{ a.path }}</span>
+        <span style="flex:1;font-size:12px;color:#6B6B66">{{ a.desc }}</span>
+        <span style="flex:none;font-size:10.5px;font-weight:600;color:#8A8A84">{{ a.ui }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">3 · 앱 API (REST / SSE)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+    <sc-for list="{{ apis }}" as="a" hint-placeholder-count="10">
+      <div style="display:flex;align-items:baseline;gap:12px;padding:10px 16px;border-bottom:1px solid #F0F0EE">
+        <span style="width:52px;flex:none;font-size:10.5px;font-weight:800;color:{{ a.mColor }};background:{{ a.mBg }};border-radius:5px;padding:3px 0;text-align:center">{{ a.method }}</span>
+        <span style="width:290px;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#1A1A1A">{{ a.path }}</span>
+        <span style="flex:1;font-size:12px;color:#6B6B66">{{ a.desc }}</span>
+        <span style="flex:none;font-size:10.5px;font-weight:600;color:#8A8A84">{{ a.ui }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">4 · DB 스키마 (PostgreSQL)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <sc-for list="{{ tables }}" as="t" hint-placeholder-count="6">
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:8px;background:#FBFBFA;border-bottom:1px solid #E4E4E0;padding:9px 14px">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:#6D4AFF">{{ t.name }}</span>
+          <span style="font-size:11px;color:#8A8A84">{{ t.desc }}</span>
+        </div>
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:4px">
+          <sc-for list="{{ t.cols }}" as="c">
+            <div style="display:flex;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px"><span style="width:140px;flex:none;color:#1A1A1A">{{ c.n }}</span><span style="color:#8A8A84">{{ c.t }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">5 · 생성 파이프라인 (비동기 워커)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+    <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:14px">
+      <sc-for list="{{ stages }}" as="st" hint-placeholder-count="5">
+        <div style="flex:1;background:{{ st.bg }};border:1px solid {{ st.border }};border-radius:10px;padding:11px 12px">
+          <div style="font-size:10px;font-weight:800;color:{{ st.numColor }}">{{ st.num }}</div>
+          <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-top:3px">{{ st.name }}</div>
+          <div style="font-size:10.5px;color:#6B6B66;margin-top:3px;line-height:1.45">{{ st.desc }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <sc-for list="{{ rules }}" as="r" hint-placeholder-count="4">
+      <div style="display:flex;gap:9px;padding:5px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#6D4AFF;margin-top:6px"></span><span style="font-size:12.5px;color:#4A4A45;line-height:1.6">{{ r.t }}</span></div>
+    </sc-for>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">6 · 실시간 협업 (WebSocket)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+    <sc-for list="{{ wsEvents }}" as="w" hint-placeholder-count="5">
+      <div style="display:flex;gap:12px;align-items:baseline;padding:6px 0;border-bottom:1px solid #F7F7F5">
+        <span style="width:190px;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:700;color:#0FA968">{{ w.ev }}</span>
+        <span style="flex:1;font-size:12px;color:#6B6B66">{{ w.desc }}</span>
+      </div>
+    </sc-for>
+    <div style="font-size:11.5px;color:#8A8A84;margin-top:10px">룸 = deck_id · 커서/선택은 30Hz 스로틀 브로드캐스트 · 콘텐츠 변경은 버전 벡터로 충돌 해소 (마지막 쓰기 승리 + 필드 단위 병합)</div>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">7 · 결제 & 구독 (Stripe/토스페이먼츠)</div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden;margin-bottom:12px">
+    <sc-for list="{{ billingApis }}" as="a" hint-placeholder-count="6">
+      <div style="display:flex;align-items:baseline;gap:12px;padding:10px 16px;border-bottom:1px solid #F0F0EE">
+        <span style="width:52px;flex:none;font-size:10.5px;font-weight:800;color:{{ a.mColor }};background:{{ a.mBg }};border-radius:5px;padding:3px 0;text-align:center">{{ a.method }}</span>
+        <span style="width:290px;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#1A1A1A">{{ a.path }}</span>
+        <span style="flex:1;font-size:12px;color:#6B6B66">{{ a.desc }}</span>
+        <span style="flex:none;font-size:10.5px;font-weight:600;color:#8A8A84">{{ a.ui }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px">
+    <sc-for list="{{ billingRules }}" as="br">
+      <div style="display:flex;gap:9px;padding:4px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#6D4AFF;margin-top:6px"></span><span style="font-size:12px;color:#4A4A45;line-height:1.6">{{ br.t }}</span></div>
+    </sc-for>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1A1A1A;margin:26px 0 10px">8 · 보안 · 레이트리밋 · 운영</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px">
+      <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:10px">보안</div>
+      <sc-for list="{{ securityRules }}" as="sr">
+        <div style="display:flex;gap:9px;padding:4px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#E5484D;margin-top:6px"></span><span style="font-size:12px;color:#4A4A45;line-height:1.6">{{ sr.t }}</span></div>
+      </sc-for>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px">
+      <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:10px">레이트리밋 & 운영</div>
+      <sc-for list="{{ opsRules }}" as="or">
+        <div style="display:flex;gap:9px;padding:4px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:#0FA968;margin-top:6px"></span><span style="font-size:12px;color:#4A4A45;line-height:1.6">{{ or.t }}</span></div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const M = { GET: ['#1E7F4F', '#EAF7F0'], POST: ['#6D4AFF', '#F0EBFF'], PATCH: ['#B45309', '#FEF3E2'], DEL: ['#E5484D', '#FFF0F0'], WS: ['#0FA968', '#EAF7F0'], SSE: ['#2563EB', '#EFF4FF'] };
+    const api = (method, path, desc, ui) => ({ method, path, desc, ui, mColor: M[method][0], mBg: M[method][1] });
+    return {
+      authApis: [
+        api('POST', '/v1/auth/signup', '이메일+비밀번호 가입 → 인증 메일 발송 (pending 상태)', '회원가입'),
+        api('POST', '/v1/auth/verify-email', '토큰 검증 → active 전환, 웰컴 메일', '메일 링크'),
+        api('POST', '/v1/auth/login', '로그인 → access+refresh 발급, 실패 5회 시 10분 잠금', '로그인'),
+        api('POST', '/v1/auth/oauth/:provider', 'Google·카카오 OAuth 콜백 → 계정 연결/생성', '소셜 로그인'),
+        api('POST', '/v1/auth/refresh', 'refresh 회전(rotation) → 새 토큰 쌍', '자동 갱신'),
+        api('POST', '/v1/auth/logout', '현재 세션 폐기 (all=true 시 전체 기기)', '로그아웃'),
+        api('POST', '/v1/auth/password/forgot', '재설정 메일 (15분 유효, 1회용)', '비밀번호 찾기'),
+        api('POST', '/v1/auth/password/reset', '토큰+새 비밀번호 → 전 세션 무효화', '재설정 폼'),
+        api('GET', '/v1/auth/sessions', '활성 세션 목록 (기기·IP·최근 활동) · DELETE로 원격 로그아웃', '보안 설정'),
+        api('POST', '/v1/auth/2fa/totp', 'TOTP 등록/검증 (Team 플랜 필수 옵션)', '2단계 인증'),
+        api('DEL', '/v1/auth/account', '탈퇴 — 30일 유예 후 완전 삭제, 즉시 익명화 옵션', '계정 삭제')
+      ],
+      tokenRules: [
+        { t: 'Access JWT 15분 · Refresh 30일 (httpOnly Secure 쿠키, SameSite=Lax)' },
+        { t: 'Refresh 회전 + 재사용 감지 시 해당 사용자 전 세션 강제 만료' },
+        { t: '비밀번호 argon2id 해시 · 이메일 열거 방지(가입/재설정 응답 동일)' },
+        { t: '관리자 콘솔은 별도 role=admin 클레임 + IP 허용 목록' }
+      ],
+      signupFlow: [
+        { n: '1', t: 'signup 또는 OAuth → users.status=pending' },
+        { n: '2', t: '이메일 인증 → active · 첫 로그인 시 onboarding_done=false' },
+        { n: '3', t: '온보딩 마법사: PATCH /v1/me/settings {lang, focus[]} 저장' },
+        { n: '4', t: '완료 → 홈 진입 · 기본 브랜드 킷/테마 프리셋 생성' }
+      ],
+      settingsApis: [
+        api('GET', '/v1/me', '프로필+플랜+사용량 요약 (계정 카드)', '설정 상단'),
+        api('PATCH', '/v1/me', '이름·아바타·비밀번호 변경(현재 비밀번호 필수)', '프로필'),
+        api('GET', '/v1/me/settings', '전체 설정 조회 — 아래 키들의 단일 소스', '설정 화면'),
+        api('PATCH', '/v1/me/settings', '{gen_lang, default_theme, default_count, transition, show_notes, gen_speed}', '기본 생성·에디터'),
+        api('PATCH', '/v1/me/brand-kit', '{logo, accent, footer, footer_text} — 전 덱 적용', '브랜드 킷'),
+        api('POST', '/v1/me/onboarding/reset', '온보딩 다시 보기 플래그', '데이터'),
+        api('DEL', '/v1/me/data', '로컬(서버) 데이터 초기화 — 덱·버전·댓글 soft delete', '데이터 삭제')
+      ],
+      billingApis: [
+        api('GET', '/v1/billing/plans', '플랜·가격·한도 정의 (관리자 콘솔과 공유)', '요금제'),
+        api('POST', '/v1/billing/checkout', '결제 세션 생성 → PG 리다이렉트 URL', '업그레이드'),
+        api('POST', '/v1/billing/webhook', 'PG 웹훅: paid/failed/canceled → 구독 상태 전이', '서버 전용'),
+        api('GET', '/v1/billing/invoices', '영수증·청구 내역', '결제 내역'),
+        api('POST', '/v1/billing/cancel', '해지 예약 — 기간 만료까지 Pro 유지', '구독 관리'),
+        api('GET', '/v1/admin/billing/summary', 'MRR·전환·이탈률·ARPU', '관리자 플랜·결제')
+      ],
+      billingRules: [
+        { t: '구독 상태 머신: trialing → active → past_due(3회 재시도) → canceled · 다운그레이드는 기간 말 적용' },
+        { t: '웹훅은 서명 검증 + 멱등키(event_id)로 중복 처리 방지' },
+        { t: '플랜 한도는 entitlements 테이블로 분리 — 관리자 설정에서 코드 배포 없이 변경' }
+      ],
+      securityRules: [
+        { t: '전 구간 TLS · CORS 화이트리스트 · CSRF 토큰(쿠키 세션)' },
+        { t: 'RBAC: owner/editor/viewer(공유 링크 role) + admin — 슬라이드 잠금은 서버에서도 검증' },
+        { t: '업로드(PPTX·이미지): MIME+매직바이트 검사, 50MB 제한, 바이러스 스캔 후 S3 격리 버킷' },
+        { t: 'AI 프롬프트 입력 로깅은 PII 마스킹 후 30일 보관' },
+        { t: '감사 로그(audit_log): 관리자 차단·설정 변경·데이터 삭제 전부 기록' }
+      ],
+      opsRules: [
+        { t: '레이트리밋: 인증 5req/min/IP · 생성 free 5/day(설정 가능) · magic-edit 30/hour' },
+        { t: '큐: Redis Streams — slide 렌더 동시 3, 우선순위 pro>free' },
+        { t: '관측: OpenTelemetry 트레이스 + p50/p95 대시보드(관리자 파이프라인 차트의 소스)' },
+        { t: '점검 모드: settings 플래그 → /generate 503 + 프론트 배너, 읽기·편집 유지' },
+        { t: '백업: PG PITR 7일 · deck_versions와 별개로 일 1회 스냅샷' }
+      ],
+      apis: [
+        api('POST', '/v1/auth/onboarding', '언어·용도 저장', '온보딩'),
+        api('POST', '/v1/decks', '덱 생성 (prompt, count, theme, style)', '홈·설정 단계'),
+        api('POST', '/v1/decks/import', 'PPTX 업로드 → 아웃라인 변환 잡 등록', 'PPTX 가져오기'),
+        api('SSE', '/v1/decks/:id/outline/stream', '아웃라인 카드 단위 스트리밍', '아웃라인 화면'),
+        api('PATCH', '/v1/decks/:id/outline', '제목·불릿·viz·지시문·섹션 수정', '아웃라인 편집'),
+        api('POST', '/v1/decks/:id/generate', '슬라이드 생성 잡 등록 (per-slide)', '생성 파이프라인'),
+        api('SSE', '/v1/jobs/:id/events', '슬라이드별 queued/running/done/failed 이벤트', '썸네일 상태·작업 로그'),
+        api('POST', '/v1/slides/:id/retry', '실패 슬라이드 재생성', '오류 패널'),
+        api('POST', '/v1/slides/:id/magic-edit', 'AI 수정 지시 (자연어) → diff 적용', 'AI 채팅'),
+        api('PATCH', '/v1/slides/:id', '속성·레이아웃·배경·잠금·노트·요소 CRUD', '속성 패널·삽입·드래그'),
+        api('POST', '/v1/slides/:id/ai-image', '프롬프트+스타일 → 이미지 생성', 'AI 이미지'),
+        api('GET', '/v1/decks/:id/versions', '버전 목록 · POST로 복원', '버전 히스토리'),
+        api('POST', '/v1/decks/:id/comments', '댓글 생성 (x,y 핀 좌표)', '댓글/핀'),
+        api('POST', '/v1/decks/:id/share', '공유 링크 발급 (role, present)', '공유 모달'),
+        api('POST', '/v1/decks/:id/export', 'PPTX/PDF/PNG 내보내기 잡', '내보내기'),
+        api('WS', '/v1/decks/:id/collab', '커서·선택·프레즌스 실시간 채널', '멀티플레이어'),
+        api('GET', '/v1/admin/metrics', 'KPI·일별 생성·테마 비율', '관리자 대시보드'),
+        api('GET', '/v1/admin/users?q=&plan=', '사용자 검색/필터 · PATCH 차단', '사용자 관리'),
+        api('GET', '/v1/admin/jobs?status=', '잡 큐 모니터링 · POST retry', '작업 큐'),
+        api('GET', '/v1/admin/errors', '오류 그룹 목록 · PATCH resolve', '오류 로그'),
+        api('PATCH', '/v1/admin/settings', '가입 허용·한도·점검 모드·모델', '서비스 설정')
+      ],
+      tables: [
+        { name: 'users', desc: '계정', cols: [{ n: 'id / email', t: 'uuid pk / citext unique' }, { n: 'password_hash', t: 'text? (argon2id)' }, { n: 'status', t: 'pending|active|blocked' }, { n: 'name / avatar_url', t: 'text' }, { n: 'settings', t: 'jsonb (lang,theme,count,…)' }, { n: 'brand_kit', t: 'jsonb (logo,accent,footer)' }, { n: 'onboarding', t: 'jsonb (lang,focus[],done)' }] },
+        { name: 'sessions / oauth_accounts', desc: '인증', cols: [{ n: 'refresh_hash', t: 'text · 회전 체인' }, { n: 'device / ip / ua', t: 'text — 세션 목록' }, { n: 'expires_at / revoked_at', t: 'timestamptz' }, { n: 'provider / provider_uid', t: 'google|kakao|naver' }] },
+        { name: 'subscriptions / invoices', desc: '결제', cols: [{ n: 'plan / status', t: 'pro|team / active|past_due|…' }, { n: 'period_start / end', t: 'timestamptz' }, { n: 'pg_customer / pg_sub_id', t: 'text (Stripe/토스)' }, { n: 'amount / paid_at', t: 'int / timestamptz' }] },
+        { name: 'decks', desc: '덱 메타', cols: [{ n: 'id', t: 'uuid pk' }, { n: 'owner_id', t: 'fk users' }, { n: 'title / status', t: 'text / enum' }, { n: 'theme / style / variant', t: 'text' }, { n: 'brand_kit', t: 'jsonb (logo,accent,footer)' }] },
+        { name: 'slides', desc: '슬라이드 단위 상태', cols: [{ n: 'id / deck_id / idx', t: 'uuid / fk / int' }, { n: 'layout / viz / viz_note', t: 'text' }, { n: 'content', t: 'jsonb (title,bullets,chartData)' }, { n: 'overrides', t: 'jsonb (size,align,color,bg,pos)' }, { n: 'elements', t: 'jsonb[] (도형·텍스트박스)' }, { n: 'locked / section / note', t: 'bool / text? / text' }, { n: 'status', t: 'queued|running|done|failed' }] },
+        { name: 'deck_versions', desc: '스냅샷 (최근 20)', cols: [{ n: 'id / deck_id', t: 'uuid / fk' }, { n: 'label / created_by', t: 'text / fk' }, { n: 'snapshot', t: 'jsonb 전체 상태' }] },
+        { name: 'comments', desc: '핀 댓글', cols: [{ n: 'id / slide_id', t: 'uuid / fk' }, { n: 'author_id / body', t: 'fk / text' }, { n: 'pin_x / pin_y', t: 'numeric % 좌표' }, { n: 'resolved_at', t: 'timestamptz?' }] },
+        { name: 'jobs / error_groups', desc: '생성 잡 · 오류 집계', cols: [{ n: 'id / kind', t: 'uuid / outline|slide|export|import' }, { n: 'status / stage / duration', t: 'enum / text / interval' }, { n: 'error(type,msg,count)', t: 'jsonb — 관리자 로그' }] }
+      ],
+      stages: [
+        { num: '01', name: 'Outline', desc: 'LLM 1콜 → 카드 단위 SSE push', bg: '#F7F4FF', border: '#DDD2FF', numColor: '#6D4AFF' },
+        { num: '02', name: 'Viz Plan', desc: 'viz 타입·지시문 → 차트 스키마 검증', bg: '#F7F4FF', border: '#DDD2FF', numColor: '#6D4AFF' },
+        { num: '03', name: 'Slide Render', desc: '슬라이드별 병렬 잡 (동시 3)', bg: '#F0EBFF', border: '#C9B8FF', numColor: '#6D4AFF' },
+        { num: '04', name: 'Asset', desc: 'AI 이미지·업로드 → S3', bg: '#F7F4FF', border: '#DDD2FF', numColor: '#6D4AFF' },
+        { num: '05', name: 'Export', desc: 'python-pptx 워커 · PDF/PNG 렌더', bg: '#F7F4FF', border: '#DDD2FF', numColor: '#6D4AFF' }
+      ],
+      rules: [
+        { t: '슬라이드 잡은 개별 실패 격리 — 1장이 실패해도 나머지 계속, 프론트 오류 패널의 재시도는 해당 잡만 재큐잉 (프로토타입의 슬라이드 3 오류 시나리오와 동일)' },
+        { t: 'ChartDataParseError 등 파싱 실패는 스키마 재검증 1회 자동 재시도 후 failed 확정 → error_groups에 집계돼 관리자 오류 로그에 노출' },
+        { t: 'Free 플랜 일일 생성 한도는 Redis 카운터(user:{id}:gen:{date})로 검사 — 관리자 설정에서 실시간 변경' },
+        { t: '점검 모드 ON 시 /generate 계열 503 + 배너 플래그, 조회·편집은 유지' }
+      ],
+      wsEvents: [
+        { ev: 'presence:join/leave', desc: '접속자 목록 → 툴바 아바타 스택 · N명 접속' },
+        { ev: 'cursor:move', desc: '{x, y, slide} — 라이브 커서 (30Hz 스로틀)' },
+        { ev: 'selection:set', desc: '{slide, target, rect} — 협업자 선택 영역 하이라이트' },
+        { ev: 'slide:patch', desc: '콘텐츠·속성 변경 diff 브로드캐스트 (편집 중… 라벨)' },
+        { ev: 'comment:new/resolve', desc: '핀 댓글 실시간 반영 + 배지 카운트' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

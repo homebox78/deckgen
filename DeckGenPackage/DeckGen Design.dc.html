@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+body{margin:0;background:#EBEAE6;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 14px/1.2 'Pretendard Variable',sans-serif;color:#1a1a1a}
+.dv-intro{max-width:820px;font:400 12.5px/1.65 'Pretendard Variable',sans-serif;color:rgba(0,0,0,.62);margin:0 0 28px}
+.dv-group{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:rgba(0,0,0,.45);margin:36px 0 14px}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.3 'Pretendard Variable',sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden}
+.dv-opt:target .dv-oid{background:#6D4AFF;color:#fff}
+.dv-next{margin:26px 0 0;font:12px/1.5 'Pretendard Variable',sans-serif;color:rgba(0,0,0,.5)}
+@keyframes dgPulse{0%,100%{opacity:.4}50%{opacity:1}}
+.mi{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-flex;align-items:center;justify-content:center;letter-spacing:normal;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'opsz' 20,'wght' 400;vertical-align:-2px;user-select:none}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0">
+</helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">DeckGen v2 — 모노크롬 리디자인 · 에디터 컴포넌트 업데이트</span></div>
+<p class="dv-intro">프로토타입 반복 작업에서 확정된 시스템을 반영한 업데이트입니다: <b>블랙/그레이/화이트 모노크롬</b>(액센트 컬러 제거, 레드는 오류·삭제 전용), <b>Google Material Symbols</b> 아이콘 단일화, 협업 심볼 로고. 아래는 새로 추가된 에디터 컴포넌트들입니다. 인터랙션 동작은 <b>DeckGen Prototype</b>에서 실사용 가능합니다.</p>
+
+<!-- 2a FOUNDATION -->
+<div class="dv-group">2a · Foundation v2 — 로고 / 팔레트 / 아이콘</div>
+<div class="dv-opts">
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>모노크롬 파운데이션</div>
+<div class="dv-card" style="width:1160px"><div style="padding:24px 28px;display:grid;grid-template-columns:1fr 1.4fr 1.6fr;gap:24px">
+  <div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px">로고 — 슬라이드 협업 심볼</div>
+    <div style="display:flex;align-items:center;gap:14px;border:1px solid #E4E4E0;border-radius:10px;padding:16px">
+      <svg viewBox="0 0 24 24" style="width:44px;height:44px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg>
+      <svg viewBox="0 0 24 24" style="width:22px;height:22px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg>
+      <div style="font-size:10.5px;color:#6B6B66;line-height:1.5">슬라이드 + 아바타 스택<br>20px에서도 판독 가능</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin:14px 0 10px">팔레트 v2 — 모노크롬</div>
+    <div style="display:flex;gap:6px">
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#1A1A1A"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">#1A1A1A</div></div>
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#55554F"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">#55554F</div></div>
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#8A8A84"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">#8A8A84</div></div>
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#D4D4CE"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">#D4D4CE</div></div>
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#F0F0EE;border:1px solid #E4E4E0"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">#F0F0EE</div></div>
+      <div style="flex:1"><div style="height:34px;border-radius:7px;background:#E5484D"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#6B6B66;margin-top:4px">오류 전용</div></div>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px">아이콘 — Material Symbols Outlined 단일화</div>
+    <div style="border:1px solid #E4E4E0;border-radius:10px;padding:14px;display:grid;grid-template-columns:repeat(8,1fr);gap:10px">
+      <span class="mi" style="font-size:19px;color:#1A1A1A">arrow_selector_tool</span><span class="mi" style="font-size:19px;color:#1A1A1A">pan_tool</span><span class="mi" style="font-size:19px;color:#1A1A1A">chat_bubble</span><span class="mi" style="font-size:19px;color:#1A1A1A">title</span><span class="mi" style="font-size:19px;color:#1A1A1A">smart_display</span><span class="mi" style="font-size:19px;color:#1A1A1A">image</span><span class="mi" style="font-size:19px;color:#1A1A1A">folder_open</span><span class="mi" style="font-size:19px;color:#1A1A1A">square</span>
+      <span class="mi" style="font-size:19px;color:#1A1A1A">auto_awesome</span><span class="mi" style="font-size:19px;color:#1A1A1A">undo</span><span class="mi" style="font-size:19px;color:#1A1A1A">redo</span><span class="mi" style="font-size:19px;color:#1A1A1A">download</span><span class="mi" style="font-size:19px;color:#1A1A1A">share</span><span class="mi" style="font-size:19px;color:#1A1A1A">history</span><span class="mi" style="font-size:19px;color:#1A1A1A">grid_view</span><span class="mi" style="font-size:19px;color:#1A1A1A">play_arrow</span>
+      <span class="mi" style="font-size:19px;color:#1A1A1A">lock</span><span class="mi" style="font-size:19px;color:#1A1A1A">crop</span><span class="mi" style="font-size:19px;color:#1A1A1A">format_paint</span><span class="mi" style="font-size:19px;color:#1A1A1A">map</span><span class="mi" style="font-size:19px;color:#1A1A1A">sticky_note_2</span><span class="mi" style="font-size:19px;color:#1A1A1A">flip_to_front</span><span class="mi" style="font-size:19px;color:#1A1A1A">align_horizontal_center</span><span class="mi" style="font-size:19px;color:#1A1A1A">auto_fix_high</span>
+    </div>
+    <div style="font-size:10.5px;color:#6B6B66;margin-top:8px">이모지·유니코드 글리프 금지 · 라벨 병기 원칙 유지 · 16~18px 기본</div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin:14px 0 10px">캔버스 플로팅 툴바</div>
+    <div style="display:inline-flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:4px 6px;box-shadow:0 6px 24px rgba(0,0,0,.1)">
+      <span style="width:29px;height:29px;border-radius:8px;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:16px">arrow_selector_tool</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">pan_tool</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">chat_bubble</span></span>
+      <span style="width:1px;height:20px;background:#E4E4E0;margin:0 3px"></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">title</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">smart_display</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">image</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">folder_open</span></span>
+      <span style="width:40px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:1px;color:#1A1A1A"><span class="mi" style="font-size:15px">square</span><span class="mi" style="font-size:12px;color:#8A8A84">keyboard_arrow_up</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">auto_awesome</span></span>
+      <span style="width:1px;height:20px;background:#E4E4E0;margin:0 3px"></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#1A1A1A"><span class="mi" style="font-size:16px">undo</span></span>
+      <span style="width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#C9C9C4"><span class="mi" style="font-size:16px">redo</span></span>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-bottom:10px">선택 · 핸들 시스템</div>
+    <div style="border:1px solid #E4E4E0;border-radius:10px;padding:22px;background:#FBFBFA;display:flex;gap:34px;align-items:center;justify-content:center">
+      <div style="position:relative;width:120px;height:74px;background:rgba(26,26,26,.18);border-radius:10px;outline:1.5px solid #1A1A1A;outline-offset:2px">
+        <span style="position:absolute;top:-5px;left:-5px;width:9px;height:9px;background:#fff;border:1.5px solid #1A1A1A;border-radius:2px"></span>
+        <span style="position:absolute;top:-5px;right:-5px;width:9px;height:9px;background:#fff;border:1.5px solid #1A1A1A;border-radius:2px"></span>
+        <span style="position:absolute;bottom:-5px;left:-5px;width:9px;height:9px;background:#fff;border:1.5px solid #1A1A1A;border-radius:2px"></span>
+        <span style="position:absolute;bottom:-6px;right:-6px;width:12px;height:12px;background:#1A1A1A;border:2px solid #fff;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.3)"></span>
+        <span style="position:absolute;top:-22px;left:50%;width:1px;height:16px;background:#8A8A84"></span>
+        <span style="position:absolute;top:-30px;left:50%;margin-left:-6px;width:12px;height:12px;border-radius:50%;background:#fff;border:1.5px solid #1A1A1A;box-shadow:0 1px 4px rgba(0,0,0,.25)"></span>
+        <span style="position:absolute;top:-11px;right:-11px;width:20px;height:20px;border-radius:50%;background:#E5484D;color:#fff;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:13px;color:#fff">close</span></span>
+      </div>
+      <div style="font-size:10.5px;color:#6B6B66;line-height:1.8">↻ 회전 핸들 (Shift=15°)<br>◱ 리사이즈 핸들<br>✕ 삭제 · 점선=그룹/잠금<br>중앙·여백 스냅 가이드<br>마퀴 다중 선택 → Ctrl+G 그룹</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin:14px 0 10px">상태 배지 v2</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6B6B66;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#B4B4AE"></span>Queued</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#1A1A1A;animation:dgPulse 1.2s infinite"></span>Generating</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:4px 10px">Done</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#E5484D;background:#FFF0F0;border:1px solid #F5C6C8;border-radius:99px;padding:4px 10px">오류 · 재시도</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:3px 8px"><span class="mi" style="font-size:11px">lock</span>Plus·Pro</span>
+    </div>
+  </div>
+</div></div>
+</div>
+</div>
+
+<!-- 2b OVERLAYS -->
+<div class="dv-group">2b · 오버레이 — 컨텍스트 메뉴 / 댓글 팝오버 / 미니맵</div>
+<div class="dv-opts">
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>캔버스 오버레이 3종</div>
+<div class="dv-card" style="width:900px"><div style="padding:24px 28px;display:flex;gap:26px;align-items:flex-start">
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:9px">우클릭 컨텍스트 메뉴</div>
+    <div style="min-width:196px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.14);padding:5px">
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:8px 10px"><span class="mi" style="font-size:15px;color:#1A1A1A">lock</span><span style="flex:1;font-size:12.5px;font-weight:500;color:#1A1A1A">요소 잠금</span></div>
+      <div style="height:1px;background:#F0F0EE;margin:4px 6px"></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:8px 10px;background:#F0F0EE"><span class="mi" style="font-size:15px;color:#1A1A1A">content_copy</span><span style="flex:1;font-size:12.5px;font-weight:500;color:#1A1A1A">복사</span><span style="font-size:10.5px;color:#B4B4AE">Ctrl+C</span></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:8px 10px"><span class="mi" style="font-size:15px;color:#1A1A1A">control_point_duplicate</span><span style="flex:1;font-size:12.5px;font-weight:500;color:#1A1A1A">복제</span><span style="font-size:10.5px;color:#B4B4AE">Ctrl+D</span></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:8px 10px"><span class="mi" style="font-size:15px;color:#1A1A1A">flip_to_front</span><span style="flex:1;font-size:12.5px;font-weight:500;color:#1A1A1A">앞으로 가져오기</span><span style="font-size:10.5px;color:#B4B4AE">]</span></div>
+      <div style="height:1px;background:#F0F0EE;margin:4px 6px"></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:8px 10px"><span class="mi" style="font-size:15px;color:#E5484D">delete</span><span style="flex:1;font-size:12.5px;font-weight:500;color:#E5484D">삭제</span><span style="font-size:10.5px;color:#B4B4AE">Del</span></div>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:9px">댓글 핀 팝오버 + 답글 스레드</div>
+    <div style="width:250px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;box-shadow:0 14px 40px rgba(0,0,0,.16);padding:13px 14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:24px;height:24px;border-radius:50%;background:#55554F;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700">김</span>
+        <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1A1A1A">김대리</div><div style="font-size:9px;color:#8A8A84">10분 전</div></div>
+        <span class="mi" style="font-size:12px;color:#6B6B66">close</span>
+      </div>
+      <div style="font-size:11.5px;line-height:1.6;color:#1A1A1A;margin-bottom:9px">42% 막대가 제일 중요한 수치인데 색이 좀 더 강했으면 좋겠어요.</div>
+      <div style="border-top:1px solid #F0F0EE;padding-top:8px;margin-bottom:9px;display:flex;gap:7px">
+        <span style="width:18px;height:18px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700">우</span>
+        <div><span style="font-size:10px;font-weight:700;color:#1A1A1A">우진 (나)</span> <span style="font-size:9px;color:#B4B4AE">방금</span><div style="font-size:10.5px;line-height:1.5;color:#4A4A45">액센트로 강조했어요!</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid #E4E4E0;border-radius:9px;padding:5px 5px 5px 10px;margin-bottom:9px;background:#FBFBFA"><span style="flex:1;font-size:10.5px;color:#9C9C96">답글 달기…</span><span style="width:24px;height:24px;border-radius:7px;background:#C9C9C4;color:#fff;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:13px">arrow_upward</span></span></div>
+      <div style="display:flex;gap:6px">
+        <span style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;background:#1A1A1A;color:#fff;border-radius:8px;padding:7px 0;font-size:10.5px;font-weight:600"><span class="mi" style="font-size:12px">check</span>해결</span>
+        <span style="flex:1;display:inline-flex;align-items:center;justify-content:center;border:1px solid #E4E4E0;color:#1A1A1A;border-radius:8px;padding:7px 0;font-size:10.5px;font-weight:600">패널에서 답글</span>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:9px">슬라이드 미니맵</div>
+    <div style="display:inline-flex;align-items:center;gap:7px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;padding:5px 8px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+      <span class="mi" style="font-size:15px;color:#6B6B66">map</span>
+      <span style="width:18px;height:16px;border-radius:3px;border:1px solid #D4D4CE;background:#FFFFFF"></span>
+      <span style="width:26px;height:16px;border-radius:3px;border:1.5px solid #1A1A1A;background:#FFFFFF"></span>
+      <span style="width:18px;height:16px;border-radius:3px;border:1px solid #D4D4CE;background:#F0F0EE;position:relative"><span style="position:absolute;top:-3px;right:-3px;width:7px;height:7px;border-radius:50%;background:#E5484D;border:1.5px solid #fff"></span></span>
+      <span style="width:18px;height:16px;border-radius:3px;border:1px solid #D4D4CE;background:#FFFFFF;position:relative;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:9px;color:#8A8A84">lock</span></span>
+      <span style="width:18px;height:16px;border-radius:3px;border:1px solid #D4D4CE;background:#F0F0EE"></span>
+      <span style="font-size:10.5px;font-weight:600;color:#6B6B66">2 / 5</span>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin:16px 0 9px">새 슬라이드 드롭다운</div>
+    <div style="min-width:176px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px">
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:9px 11px"><span style="width:14px;font-size:12px;color:#6B6B66">+</span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">빈 슬라이드</span></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:9px 11px;background:#F0F0EE"><span class="mi" style="width:14px;font-size:13px;color:#1A1A1A">auto_awesome</span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">AI로 생성</span></div>
+      <div style="display:flex;align-items:center;gap:9px;border-radius:8px;padding:9px 11px"><span style="width:14px;font-size:12px;color:#6B6B66">≡</span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">덱 다시 생성</span></div>
+    </div>
+  </div>
+</div></div>
+</div>
+</div>
+
+<!-- 2c SHARE + STORYBOARD -->
+<div class="dv-group">2c · 공유 권한 / 스토리보드 라이브러리 / 플랜 게이팅</div>
+<div class="dv-opts">
+<div class="dv-opt" id="2c"><div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>공유 멤버 권한 + 초대 메일</div>
+<div class="dv-card" style="width:420px"><div style="padding:20px 22px">
+  <div style="font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:4px">'경영바우처 지원 제안서' 공유</div>
+  <div style="font-size:11.5px;color:#6B6B66;margin-bottom:12px">멤버별 편집/보기 권한 분리 · 편집 권한자는 실시간 공동 편집</div>
+  <div style="display:flex;gap:6px;margin-bottom:10px">
+    <span style="flex:1;border:1px solid #E4E4E0;border-radius:9px;padding:9px 12px;font-size:12px;color:#9C9C96">이메일로 초대</span>
+    <span style="border:1px solid #E4E4E0;border-radius:9px;padding:9px 10px;font-size:11.5px;font-weight:500;color:#1A1A1A">편집 가능 ▾</span>
+    <span style="border-radius:9px;background:#1A1A1A;color:#fff;padding:9px 14px;font-size:12px;font-weight:600">초대</span>
+  </div>
+  <div style="border:1px solid #F0F0EE;border-radius:11px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #F7F7F5"><span style="width:28px;height:28px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">우</span><div style="flex:1"><div style="font-size:12px;font-weight:600;color:#1A1A1A">우진 (나)</div><div style="font-size:10.5px;color:#8A8A84">woojin@deckgen.app</div></div><span style="font-size:11px;font-weight:600;color:#8A8A84">소유자</span></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px"><span style="width:28px;height:28px;border-radius:50%;background:#55554F;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">김</span><div style="flex:1"><div style="font-size:12px;font-weight:600;color:#1A1A1A">김대리</div><div style="font-size:10.5px;color:#8A8A84">kim@company.co.kr</div></div><span style="width:7px;height:7px;border-radius:50%;background:#1A1A1A;animation:dgPulse 1.4s infinite"></span><span style="font-size:11px;font-weight:500;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:7px;padding:4px 7px">편집 가능 ▾</span></div>
+  </div>
+  <div style="font-size:10.5px;color:#8A8A84;margin-top:10px">초대 메일은 <b style="color:#1A1A1A">DeckGen Invite Email.html</b> 템플릿으로 발송 (테이블 레이아웃 · 변수 치환)</div>
+</div></div>
+</div>
+
+<div class="dv-opt" id="2d"><div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>스토리보드 와이어프레임 카드 (호버 배치 애니메이션)</div>
+<div class="dv-card" style="width:420px"><div style="padding:20px 22px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    <div class="wf-demo" style="border:1px solid #E4E4E0;border-radius:11px;overflow:hidden"><div style="position:relative;aspect-ratio:16/10;background:#FBFBFA;border-bottom:1px solid #F0F0EE"><span style="position:absolute;left:8%;top:12%;width:55%;height:10%;border-radius:3px;background:#B4B4AE"></span><span style="position:absolute;left:8%;top:50%;width:9%;height:32%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:20%;top:38%;width:9%;height:44%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:32%;top:58%;width:9%;height:24%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:55%;top:38%;width:36%;height:6%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:55%;top:52%;width:30%;height:6%;border-radius:3px;background:#DFDFDA"></span></div><div style="padding:7px 10px;display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:600;color:#1A1A1A">차트 + 불릿</span><span style="font-size:10px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
+    <div style="border:1px solid #E4E4E0;border-radius:11px;overflow:hidden"><div style="position:relative;aspect-ratio:16/10;background:#FBFBFA;border-bottom:1px solid #F0F0EE"><span style="position:absolute;left:8%;top:12%;width:55%;height:10%;border-radius:3px;background:#B4B4AE"></span><span style="position:absolute;left:8%;top:38%;width:25%;height:40%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:37.5%;top:38%;width:25%;height:40%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:67%;top:38%;width:25%;height:40%;border-radius:3px;background:#DFDFDA"></span></div><div style="padding:7px 10px;display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:600;color:#1A1A1A">KPI 카드</span><span style="font-size:10px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
+    <div style="border:1px solid #E4E4E0;border-radius:11px;overflow:hidden"><div style="position:relative;aspect-ratio:16/10;background:#FBFBFA;border-bottom:1px solid #F0F0EE"><span style="position:absolute;left:8%;top:12%;width:55%;height:10%;border-radius:3px;background:#B4B4AE"></span><span style="position:absolute;left:8%;top:34%;width:84%;height:11%;border-radius:3px;background:#B4B4AE"></span><span style="position:absolute;left:8%;top:49%;width:84%;height:10%;border-radius:3px;background:#DFDFDA"></span><span style="position:absolute;left:8%;top:63%;width:84%;height:10%;border-radius:3px;background:#DFDFDA"></span></div><div style="padding:7px 10px;display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:600;color:#1A1A1A">표 비교</span><span style="font-size:10px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
+  </div>
+  <div style="font-size:10.5px;color:#8A8A84;margin-top:10px;line-height:1.6">11종 와이어프레임 → 스토리보드 스트립에 담아 드래그 정렬 → 그 순서로 아웃라인 생성. 호버 시 블록이 70ms 스태거로 배치되는 애니메이션.</div>
+</div></div>
+</div>
+
+<div class="dv-opt" id="2e"><div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>Export 플랜 게이팅</div>
+<div class="dv-card" style="width:320px"><div style="padding:18px 20px">
+  <div style="font-size:13px;font-weight:700;color:#1A1A1A;margin-bottom:8px">덱 내보내기</div>
+  <div style="font-size:10.5px;font-weight:600;color:#1A1A1A;background:#F7F7F5;border:1px solid #E9E9E5;border-radius:7px;padding:6px 10px;margin-bottom:10px">현재 플랜: Free — PPTX·FIG 내보내기는 Plus부터</div>
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="display:flex;align-items:center;gap:10px;border:1.5px solid #1A1A1A;background:#F7F7F5;border-radius:10px;padding:9px 11px"><span style="width:15px;height:15px;border-radius:50%;border:5px solid #1A1A1A;box-sizing:border-box;background:#fff"></span><div><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">Images (.png)</div><div style="font-size:10.5px;color:#6B6B66">슬라이드마다 PNG 이미지로 저장</div></div></div>
+    <div style="display:flex;align-items:center;gap:10px;border:1px solid #E4E4E0;border-radius:10px;padding:9px 11px;opacity:.75"><span style="width:15px;height:15px;border-radius:50%;border:1.5px solid #C9C9C4;box-sizing:border-box"></span><div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">Figma (.fig)</span><span style="display:inline-flex;align-items:center;gap:2px;font-size:9.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 7px"><span class="mi" style="font-size:10px">lock</span>Plus·Pro</span></div><div style="font-size:10.5px;color:#6B6B66">텍스트·도형은 native layer로 유지</div></div></div>
+  </div>
+  <div style="margin-top:10px;border-radius:10px;background:#1A1A1A;color:#fff;text-align:center;padding:10px;font-size:12px;font-weight:600"><span class="mi" style="font-size:13px;margin-right:4px;color:#fff">download</span>PNG 다운로드</div>
+</div></div>
+</div>
+
+</div>
+<p class="dv-next">전체 인터랙션(선택·핸들·마퀴·그룹·서식 복사·표 셀 편집·미니맵·발표 모드 등)은 <b>DeckGen Prototype.dc.html</b>에서 동작합니다. 관리자 콘솔은 <b>DeckGen Admin</b>, 백엔드 설계는 <b>DeckGen Backend Spec</b> 참고.</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">DeckGen — 디자인 시스템 → 전체 화면 설계</span></div>
+<p class="dv-intro">스펙 §6.1 기준(라이트 UI · Pretendard · 바이올렛 #6D4AFF · Notion계 미니멀). 첨부한 레퍼런스(Snapdeck류)의 좋은 패턴 — Chat/속성 탭 전환, 생성 중 슬라이드 플레이스홀더, 그리드 오버뷰 — 은 가져오되, <b>가독성 문제를 교정</b>했습니다: 본문 최소 13px, 라벨에 텍스트+색 병용(아이콘 단독 금지), 저대비 회색 텍스트 제거, 상태는 배지로 명시. 화면당 2안 — <b>A안 = 스펙 정석 레이아웃</b>, <b>B안 = 패널 배치·AI 인터랙션(채팅 vs 인라인)·톤 변형</b>. 예시 콘텐츠는 "소상공인 경영바우처 지원 제안서" 5장 덱.</p>
+
+<!-- ============ 1a DESIGN SYSTEM ============ -->
+<div class="dv-group">Design System — Foundation &amp; Components</div>
+<div class="dv-opts">
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>스펙 시트 · 컬러 / 타이포 / 컴포넌트 전체</div>
+<div class="dv-card" style="width:1160px;background:#FFFFFF">
+  <div style="padding:36px 40px;display:flex;flex-direction:column;gap:36px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #E4E4E0;padding-bottom:20px">
+      <div style="display:flex;align-items:baseline;gap:12px">
+        <div style="width:26px;height:26px;border-radius:7px;background:#6D4AFF;position:relative;top:5px"></div>
+        <span style="font-size:22px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">DeckGen Design System</span>
+        <span style="font-size:12px;color:#6B6B66">v1.0 · App UI</span>
+      </div>
+      <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6B6B66">Pretendard · 8pt spacing · radius 10</span>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">01 · Color</div>
+      <div style="display:flex;gap:12px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#F7F7F5;border:1px solid #E4E4E0"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">bg</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#F7F7F5</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#FFFFFF;border:1px solid #E4E4E0"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">surface</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#FFFFFF</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#EDEDEA;border:1px solid #E4E4E0"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">canvas</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#EDEDEA</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#E4E4E0"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">border</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#E4E4E0</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#1A1A1A"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">text.primary</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#1A1A1A</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#6B6B66"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">text.secondary</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#6B6B66</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#6D4AFF;box-shadow:0 4px 12px rgba(109,74,255,.3)"></div><div style="font-size:11px;color:#6D4AFF;font-weight:600">accent</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#6D4AFF</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#F0EBFF"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">accent.soft</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#F0EBFF</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:64px;border-radius:8px;background:#E5484D"></div><div style="font-size:11px;color:#1A1A1A;font-weight:600">danger</div><div style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">#E5484D</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">02 · Typography <span style="font-weight:400;color:#6B6B66">— Pretendard · 본문 13px 미만 금지</span></div>
+        <div style="display:flex;flex-direction:column;border:1px solid #E4E4E0;border-radius:10px;overflow:hidden">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E4E4E0"><span style="font-size:22px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">화면 제목 Display</span><span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">22 / 700 / -1%</span></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E4E4E0"><span style="font-size:16px;font-weight:600;color:#1A1A1A">섹션 제목 Title</span><span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">16 / 600</span></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E4E4E0"><span style="font-size:13.5px;font-weight:400;color:#1A1A1A">본문 Body — 대부분의 UI 텍스트</span><span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">13.5 / 400 / 1.5</span></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #E4E4E0"><span style="font-size:12px;font-weight:400;color:#6B6B66">캡션 Caption — 보조 설명, 메타</span><span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">12 / 400</span></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#1A1A1A">agent.log — 작업 로그 전용</span><span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B66">Mono 11 / 400</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">03 · Buttons &amp; Inputs <span style="font-weight:400;color:#6B6B66">— 아이콘 단독 버튼 금지, 항상 라벨 병기</span></div>
+        <div style="border:1px solid #E4E4E0;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(109,74,255,.25)">✦ 슬라이드 생성</button>
+            <button style="font-family:inherit;background:#1A1A1A;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer">기본 버튼</button>
+            <button style="font-family:inherit;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer">보조</button>
+            <button style="font-family:inherit;background:transparent;color:#6B6B66;border:none;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:500;cursor:pointer">고스트</button>
+            <button style="font-family:inherit;background:#FFF0F0;color:#E5484D;border:1px solid #F5C6C8;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer">삭제</button>
+          </div>
+          <div style="font-size:11px;color:#6B6B66;margin-top:-6px">액센트는 주요 CTA(생성·내보내기)에만. 나머지는 검정/보조.</div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:10px;padding:10px 14px"><span style="font-size:13px;color:#9C9C96">덱 제목을 입력하세요</span></div>
+            <div style="display:flex;align-items:center;border:1px solid #E4E4E0;border-radius:10px;overflow:hidden">
+              <div style="padding:9px 12px;font-size:14px;color:#6B6B66;border-right:1px solid #E4E4E0">−</div>
+              <div style="padding:9px 14px;font-size:13px;font-weight:600;color:#1A1A1A">5장</div>
+              <div style="padding:9px 12px;font-size:14px;color:#6B6B66;border-left:1px solid #E4E4E0">+</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;border:1px solid #E4E4E0;border-radius:10px;padding:9px 14px"><span style="width:12px;height:12px;border-radius:4px;background:#2563EB;display:inline-block"></span><span style="font-size:13px;color:#1A1A1A">Clean Light</span><span style="font-size:10px;color:#6B6B66">▾</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">04 · Status Badges</div>
+        <div style="border:1px solid #E4E4E0;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6B6B66;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#B4B4AE"></span>Queued</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>Generating</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1E7F4F;background:#EAF7F0;border:1px solid #C9EBD9;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#1E7F4F"></span>Done</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#E5484D;background:#FFF0F0;border:1px solid #F5C6C8;border-radius:99px;padding:4px 10px">오류 · 재시도</span>
+          </div>
+          <div style="font-size:11px;color:#6B6B66">썸네일·진행 표시 공용. 색+텍스트 항상 병기(색맹 대응).</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">05 · Agent 작업 로그</div>
+        <div style="border:1px solid #E4E4E0;border-radius:10px;padding:18px;display:flex;flex-direction:column">
+          <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#1E7F4F;margin-top:4px"></span><span style="width:1px;flex:1;background:#E4E4E0"></span></div><div style="padding-bottom:12px"><div style="font-family:ui-monospace,monospace;font-size:11px;color:#1A1A1A">아웃라인 구성 완료</div><div style="font-size:10.5px;color:#8A8A84">5개 슬라이드 · 2.1s</div></div></div>
+          <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#1E7F4F;margin-top:4px"></span><span style="width:1px;flex:1;background:#E4E4E0"></span></div><div style="padding-bottom:12px"><div style="font-family:ui-monospace,monospace;font-size:11px;color:#1A1A1A">시각화 결정 — bar ×1, KPI ×1</div><div style="font-size:10.5px;color:#8A8A84">1.4s</div></div></div>
+          <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#6D4AFF;margin-top:4px;animation:dgPulse 1.2s infinite"></span></div><div><div style="font-family:ui-monospace,monospace;font-size:11px;color:#6D4AFF">슬라이드 3 렌더링 중…</div></div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">06 · AI 채팅 버블</div>
+        <div style="border:1px solid #E4E4E0;border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;background:#FBFBFA">
+          <div style="align-self:flex-end;max-width:85%;background:#1A1A1A;color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:13px;line-height:1.5">차트를 파이로 바꿔줘</div>
+          <div style="align-self:flex-start;max-width:85%;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:13px;line-height:1.5;color:#1A1A1A">차트를 파이형으로 변경했어요. <span style="color:#6D4AFF;font-weight:600">적용됨 · Undo 가능</span></div>
+          <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #E4E4E0;border-radius:10px;padding:8px 12px"><span style="font-size:12.5px;color:#9C9C96;flex:1">이 슬라이드를 어떻게 바꿀까요?</span><span style="width:24px;height:24px;border-radius:7px;background:#6D4AFF;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px">↑</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:24px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">07 · Export 팝오버 <span style="font-weight:400;color:#6B6B66">— 라디오+설명 병기, 선택 항목 강조</span></div>
+        <div style="border:1px solid #E4E4E0;border-radius:10px;padding:18px;background:#FBFBFA;display:flex;justify-content:center">
+          <div style="width:320px;background:#fff;border:1px solid #E4E4E0;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:16px">
+            <div style="font-size:14px;font-weight:700;color:#1A1A1A">덱 내보내기</div>
+            <div style="font-size:12px;color:#6B6B66;margin:4px 0 12px">다운로드할 형식을 선택하세요.</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;border:1.5px solid #6D4AFF;background:#F7F4FF;border-radius:10px;padding:10px 12px"><span style="width:16px;height:16px;border-radius:50%;border:5px solid #6D4AFF;box-sizing:border-box;background:#fff"></span><div><div style="font-size:13px;font-weight:600;color:#1A1A1A">PowerPoint (.pptx)</div><div style="font-size:11.5px;color:#6B6B66">텍스트·차트 편집 가능한 네이티브 슬라이드</div></div></div>
+              <div style="display:flex;align-items:center;gap:10px;border:1px solid #E4E4E0;border-radius:10px;padding:10px 12px"><span style="width:16px;height:16px;border-radius:50%;border:1.5px solid #C9C9C4;box-sizing:border-box"></span><div><div style="font-size:13px;font-weight:600;color:#1A1A1A">PDF (.pdf) <span style="font-size:10.5px;font-weight:600;color:#8A8A84;background:#F0F0EE;border-radius:5px;padding:1px 6px;margin-left:4px">2차</span></div><div style="font-size:11.5px;color:#6B6B66">공유·인쇄용 고정 레이아웃</div></div></div>
+            </div>
+            <button style="font-family:inherit;width:100%;margin-top:12px;background:#6D4AFF;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer">↓ PPTX 다운로드</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:14px">08 · Slide Themes 토큰 <span style="font-weight:400;color:#6B6B66">— 렌더 미리보기는 <a href="#1h" style="color:#6D4AFF;text-decoration:none;font-weight:600">1h</a></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="border:1px solid #E4E4E0;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><span style="width:22px;height:22px;border-radius:6px;background:#FFFFFF;border:1px solid #E4E4E0"></span><span style="width:22px;height:22px;border-radius:6px;background:#2563EB"></span><span style="width:22px;height:22px;border-radius:6px;background:#1A1A1A"></span></div><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">clean-light</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:#6B6B66">bg #FFFFFF · ac #2563EB</div></div>
+          <div style="border:1px solid #E4E4E0;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><span style="width:22px;height:22px;border-radius:6px;background:#14141A"></span><span style="width:22px;height:22px;border-radius:6px;background:#7C9CFF"></span><span style="width:22px;height:22px;border-radius:6px;background:#FFFFFF;border:1px solid #E4E4E0"></span></div><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">ink-dark</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:#6B6B66">bg #14141A · ac #7C9CFF</div></div>
+          <div style="border:1px solid #E4E4E0;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><span style="width:22px;height:22px;border-radius:6px;background:#FAF6EF;border:1px solid #E4E4E0"></span><span style="width:22px;height:22px;border-radius:6px;background:#C25E3A"></span><span style="width:22px;height:22px;border-radius:6px;background:#3A2E24"></span></div><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">warm-craft</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:#6B6B66">bg #FAF6EF · ac #C25E3A</div></div>
+          <div style="border:1px solid #E4E4E0;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><span style="width:22px;height:22px;border-radius:6px;background:#0F0B1E"></span><span style="width:22px;height:22px;border-radius:6px;background:#8B6BFF"></span><span style="width:22px;height:22px;border-radius:6px;background:#FFFFFF;border:1px solid #E4E4E0"></span></div><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">violet-bold</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:#6B6B66">bg #0F0B1E · ac #8B6BFF</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ============ HOME ============ -->
+<div class="dv-group">A. 홈 — 프롬프트 입력 + 내 덱</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>홈 A · 센터 히어로 (스펙 정석 · 라이트)</div>
+<div class="dv-card" style="width:1100px;background:#F7F7F5">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+    <div style="display:flex;align-items:center;gap:9px"><span style="width:22px;height:22px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">DeckGen</span></div>
+    <div style="display:flex;align-items:center;gap:16px"><span style="font-size:13px;color:#6B6B66">가이드</span><span style="font-size:13px;color:#6B6B66">단축키</span><span style="width:28px;height:28px;border-radius:50%;background:#1A1A1A;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">우</span></div>
+  </div>
+  <div style="padding:56px 80px 48px;display:flex;flex-direction:column;align-items:center">
+    <div style="font-size:30px;font-weight:700;color:#1A1A1A;letter-spacing:-.02em">어떤 발표를 만들까요?</div>
+    <div style="font-size:14px;color:#6B6B66;margin:8px 0 28px">주제를 입력하면 AI가 아웃라인을 먼저 설계하고, 확인 후 슬라이드를 만듭니다.</div>
+    <div style="width:720px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.06);padding:20px 20px 14px">
+      <div style="font-size:15px;color:#1A1A1A;line-height:1.6;min-height:64px">소상공인 경영바우처 지원 제안서를 만들어줘<span style="display:inline-block;width:2px;height:18px;background:#6D4AFF;vertical-align:-3px;margin-left:1px"></span></div>
+      <div style="display:flex;align-items:center;gap:10px;border-top:1px solid #F0F0EE;padding-top:12px">
+        <div style="display:flex;align-items:center;border:1px solid #E4E4E0;border-radius:9px;overflow:hidden"><span style="padding:7px 11px;font-size:13px;color:#6B6B66;border-right:1px solid #E4E4E0">−</span><span style="padding:7px 12px;font-size:12.5px;font-weight:600;color:#1A1A1A">5장</span><span style="padding:7px 11px;font-size:13px;color:#6B6B66;border-left:1px solid #E4E4E0">+</span></div>
+        <div style="display:flex;align-items:center;gap:7px;border:1px solid #E4E4E0;border-radius:9px;padding:7px 12px"><span style="width:11px;height:11px;border-radius:3px;background:#2563EB"></span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">Clean Light</span><span style="font-size:9px;color:#6B6B66">▾</span></div>
+        <span style="flex:1"></span>
+        <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(109,74,255,.3)">✦ 아웃라인 생성</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <span style="font-size:12px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:6px 13px">분기 실적 보고</span>
+      <span style="font-size:12px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:6px 13px">스타트업 피치덱</span>
+      <span style="font-size:12px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:6px 13px">신제품 소개</span>
+      <span style="font-size:12px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:6px 13px">강의 자료</span>
+    </div>
+  </div>
+  <div style="padding:0 80px 56px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px"><span style="font-size:16px;font-weight:600;color:#1A1A1A">내 덱</span><span style="font-size:12.5px;color:#6B6B66">로컬에 자동 저장됨</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+        <div style="aspect-ratio:16/9;background:#FFFFFF;border-bottom:1px solid #F0F0EE;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px"><div style="width:8%;height:3px;background:#2563EB"></div><div style="font-size:12px;font-weight:700;color:#1A1A1A;line-height:1.35">소상공인 경쟁력 강화를 위한<br>경영바우처 지원 제안</div><div style="width:40%;height:4px;border-radius:2px;background:#E9E9E5"></div></div>
+        <div style="padding:11px 14px"><div style="font-size:13px;font-weight:600;color:#1A1A1A">경영바우처 지원 제안서</div><div style="font-size:11.5px;color:#8A8A84;margin-top:2px">5장 · 10분 전</div></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+        <div style="aspect-ratio:16/9;background:#14141A;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px"><div style="width:8%;height:3px;background:#7C9CFF"></div><div style="font-size:12px;font-weight:700;color:#FFFFFF;line-height:1.35">2026 상반기<br>제품 로드맵</div><div style="width:40%;height:4px;border-radius:2px;background:#2A2A33"></div></div>
+        <div style="padding:11px 14px"><div style="font-size:13px;font-weight:600;color:#1A1A1A">제품 로드맵 공유</div><div style="font-size:11.5px;color:#8A8A84;margin-top:2px">8장 · 어제</div></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+        <div style="aspect-ratio:16/9;background:#FAF6EF;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px"><div style="width:8%;height:3px;background:#C25E3A"></div><div style="font-size:12px;font-weight:700;color:#3A2E24;line-height:1.35">로컬 브랜드<br>협업 제안서</div><div style="width:40%;height:4px;border-radius:2px;background:#EBE2D3"></div></div>
+        <div style="padding:11px 14px"><div style="font-size:13px;font-weight:600;color:#1A1A1A">브랜드 협업 제안</div><div style="font-size:11.5px;color:#8A8A84;margin-top:2px">6장 · 3일 전</div></div>
+      </div>
+      <div style="border:1.5px dashed #D4D4CE;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px"><span style="width:32px;height:32px;border-radius:50%;background:#F0F0EE;color:#6B6B66;display:inline-flex;align-items:center;justify-content:center;font-size:16px">+</span><span style="font-size:13px;font-weight:500;color:#6B6B66">새 덱 만들기</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>홈 B · 다크 히어로 밴드 + 리스트형 덱 (톤 변형)</div>
+<div class="dv-card" style="width:1100px;background:#F7F7F5">
+  <div style="background:#17151F;padding:0 0 44px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:center;gap:9px"><span style="width:22px;height:22px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:15px;font-weight:700;color:#FFFFFF;letter-spacing:-.01em">DeckGen</span></div>
+      <div style="display:flex;align-items:center;gap:16px"><span style="font-size:13px;color:rgba(255,255,255,.65)">가이드</span><span style="width:28px;height:28px;border-radius:50%;background:#FFFFFF;color:#17151F;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">우</span></div>
+    </div>
+    <div style="padding:44px 80px 0;display:flex;flex-direction:column;align-items:flex-start;max-width:760px">
+      <div style="font-size:28px;font-weight:700;color:#FFFFFF;letter-spacing:-.02em;line-height:1.3">주제만 말하면, 논리 구조부터<br>편집 가능한 PPTX까지.</div>
+      <div style="width:100%;margin-top:22px;background:#FFFFFF;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.35);padding:16px 16px 12px">
+        <div style="font-size:14.5px;color:#9C9C96;min-height:44px">예: 소상공인 경영바우처 지원 제안서를 만들어줘</div>
+        <div style="display:flex;align-items:center;gap:10px;border-top:1px solid #F0F0EE;padding-top:10px">
+          <span style="font-size:12.5px;font-weight:600;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:6px 11px">5장 ▾</span>
+          <span style="font-size:12.5px;font-weight:500;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:6px 11px">테마: Clean Light ▾</span>
+          <span style="flex:1"></span>
+          <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer">✦ 아웃라인 생성</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:28px 80px 48px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px"><span style="font-size:16px;font-weight:600;color:#1A1A1A">내 덱</span><button style="font-family:inherit;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:9px;padding:7px 14px;font-size:12.5px;font-weight:500;color:#1A1A1A;cursor:pointer">+ 새 덱</button></div>
+    <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:16px;padding:13px 18px;border-bottom:1px solid #F0F0EE">
+        <div style="width:96px;aspect-ratio:16/9;border:1px solid #F0F0EE;border-radius:6px;background:#FFFFFF;padding:8px;display:flex;flex-direction:column;justify-content:center;gap:3px"><div style="width:12%;height:2px;background:#2563EB"></div><div style="font-size:6.5px;font-weight:700;color:#1A1A1A;line-height:1.4">소상공인 경쟁력 강화를 위한 경영바우처 지원 제안</div></div>
+        <div style="flex:1"><div style="font-size:13.5px;font-weight:600;color:#1A1A1A">경영바우처 지원 제안서</div><div style="font-size:12px;color:#8A8A84;margin-top:2px">5장 · Clean Light · 10분 전 수정</div></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1E7F4F;background:#EAF7F0;border:1px solid #C9EBD9;border-radius:99px;padding:4px 10px">Done</span>
+        <button style="font-family:inherit;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer">열기</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;padding:13px 18px;border-bottom:1px solid #F0F0EE">
+        <div style="width:96px;aspect-ratio:16/9;border-radius:6px;background:#14141A;padding:8px;display:flex;flex-direction:column;justify-content:center;gap:3px"><div style="width:12%;height:2px;background:#7C9CFF"></div><div style="font-size:6.5px;font-weight:700;color:#fff;line-height:1.4">2026 상반기 제품 로드맵</div></div>
+        <div style="flex:1"><div style="font-size:13.5px;font-weight:600;color:#1A1A1A">제품 로드맵 공유</div><div style="font-size:12px;color:#8A8A84;margin-top:2px">8장 · Ink Dark · 어제 수정</div></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>Generating 4/8</span>
+        <button style="font-family:inherit;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer">보기</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;padding:13px 18px">
+        <div style="width:96px;aspect-ratio:16/9;border-radius:6px;background:#FAF6EF;padding:8px;display:flex;flex-direction:column;justify-content:center;gap:3px"><div style="width:12%;height:2px;background:#C25E3A"></div><div style="font-size:6.5px;font-weight:700;color:#3A2E24;line-height:1.4">로컬 브랜드 협업 제안서</div></div>
+        <div style="flex:1"><div style="font-size:13.5px;font-weight:600;color:#1A1A1A">브랜드 협업 제안</div><div style="font-size:12px;color:#8A8A84;margin-top:2px">6장 · Warm Craft · 3일 전 수정</div></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1E7F4F;background:#EAF7F0;border:1px solid #C9EBD9;border-radius:99px;padding:4px 10px">Done</span>
+        <button style="font-family:inherit;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer">열기</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- ============ OUTLINE ============ -->
+<div class="dv-group">B. 아웃라인 — 확인 / 수정 (SSE 스트리밍)</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>아웃라인 A · 좌측 단계 레일 + 카드 폼 (스펙 정석)</div>
+<div class="dv-card" style="width:1100px;background:#F7F7F5">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+    <div style="display:flex;align-items:center;gap:9px"><span style="width:20px;height:20px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:14px;font-weight:700;color:#1A1A1A">DeckGen</span><span style="font-size:12.5px;color:#8A8A84;margin-left:6px">/ 경영바우처 지원 제안서</span></div>
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>아웃라인 생성 중</span>
+  </div>
+  <div style="display:flex;gap:0">
+    <div style="width:280px;flex:none;padding:28px 24px;border-right:1px solid #E4E4E0;background:#FFFFFF;display:flex;flex-direction:column;gap:20px;min-height:640px">
+      <div style="display:flex;flex-direction:column;gap:0">
+        <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#6D4AFF;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">1</span><span style="width:1.5px;height:26px;background:#E4E4E0"></span></div><div><div style="font-size:13.5px;font-weight:600;color:#1A1A1A;padding-top:2px">아웃라인 확인</div><div style="font-size:11.5px;color:#8A8A84">지금 단계</div></div></div>
+        <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:22px;height:22px;border-radius:50%;background:#F0F0EE;color:#8A8A84;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">2</span><span style="width:1.5px;height:26px;background:#E4E4E0"></span></div><div style="font-size:13.5px;color:#8A8A84;padding-top:3px">슬라이드 생성</div></div>
+        <div style="display:flex;gap:10px"><span style="width:22px;height:22px;border-radius:50%;background:#F0F0EE;color:#8A8A84;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">3</span><div style="font-size:13.5px;color:#8A8A84;padding-top:3px">편집 · 내보내기</div></div>
+      </div>
+      <div style="background:#F7F7F5;border:1px solid #E9E9E5;border-radius:10px;padding:14px"><div style="font-size:13px;font-weight:600;color:#1A1A1A;margin-bottom:4px">AI가 콘텐츠 구조를 먼저 정리합니다</div><div style="font-size:12.5px;color:#6B6B66;line-height:1.55">제목·핵심 포인트·시각화를 여기서 수정하면 다음 단계 슬라이드에 그대로 반영됩니다.</div></div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+        <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(109,74,255,.25)">✦ 슬라이드 생성 (5장)</button>
+        <button style="font-family:inherit;background:#FFFFFF;color:#6B6B66;border:1px solid #E4E4E0;border-radius:10px;padding:11px;font-size:13px;font-weight:500;cursor:pointer">← 주제 다시 입력</button>
+      </div>
+    </div>
+    <div style="flex:1;padding:24px 28px;display:flex;flex-direction:column;gap:12px">
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px;display:flex;gap:14px">
+        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:#F0EBFF;color:#6D4AFF;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">1</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:14.5px;font-weight:600;color:#1A1A1A;border-bottom:1px dashed #E4E4E0;padding-bottom:6px">소상공인 경쟁력 강화를 위한 경영바우처 지원 제안</div>
+          <div style="font-size:13px;color:#4A4A45;line-height:1.7">제안 기관 및 발표자 소개<br>제안 배경 한 줄 요약</div>
+        </div>
+        <div style="flex:none;display:flex;align-items:flex-start"><span style="font-size:12px;font-weight:500;color:#6B6B66;border:1px solid #E4E4E0;border-radius:8px;padding:6px 11px;background:#FFFFFF">시각화: 없음 ▾</span></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px;display:flex;gap:14px">
+        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:#F0EBFF;color:#6D4AFF;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">2</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:14.5px;font-weight:600;color:#1A1A1A;border-bottom:1px dashed #E4E4E0;padding-bottom:6px">고물가·디지털 격차로 인한 경영 위기 진단</div>
+          <div style="font-size:13px;color:#4A4A45;line-height:1.7">원자재 가격·인건비 부담 급증으로 영업이익률 저하<br>배달 플랫폼·온라인 시장 확대로 오프라인 경쟁력 약화<br>디지털 활용 능력 격차에 따른 성과 양극화</div>
+        </div>
+        <div style="flex:none;display:flex;align-items:flex-start"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#6D4AFF;border:1px solid #DDD2FF;background:#F7F4FF;border-radius:8px;padding:6px 11px">▥ Bar 차트 ▾</span></div>
+      </div>
+      <div style="background:#FFFFFF;border:1.5px solid #6D4AFF;border-radius:12px;padding:16px 18px;display:flex;gap:14px;box-shadow:0 2px 12px rgba(109,74,255,.1)">
+        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:#6D4AFF;color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">3</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:14.5px;font-weight:600;color:#1A1A1A;border-bottom:1px dashed #E4E4E0;padding-bottom:6px">3대 핵심 바우처 지원 솔루션<span style="display:inline-block;width:2px;height:15px;background:#6D4AFF;vertical-align:-2px;margin-left:1px"></span></div>
+          <div style="font-size:13px;color:#4A4A45;line-height:1.7">디지털 전환(DX): 스마트 오더·재고 관리 시스템<br>맞춤형 컨설팅: 세무·노무·상권 분석 전문가 1:1 매칭<br>브랜드 마케팅: SNS 홍보·온라인 입점 제작 지원</div>
+          <div style="font-size:11.5px;color:#8A8A84">편집 중 — 변경 사항은 자동 저장됩니다</div>
+        </div>
+        <div style="flex:none;display:flex;align-items:flex-start"><span style="font-size:12px;font-weight:500;color:#6B6B66;border:1px solid #E4E4E0;border-radius:8px;padding:6px 11px;background:#FFFFFF">시각화: 없음 ▾</span></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px;display:flex;gap:14px">
+        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:#F0EBFF;color:#6D4AFF;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">4</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:14.5px;font-weight:600;color:#1A1A1A;border-bottom:1px dashed #E4E4E0;padding-bottom:6px">기대 효과와 지원 사업 목표</div>
+          <div style="font-size:13px;color:#4A4A45;line-height:1.7">운영 효율 30% 향상, 마케팅 도달 2배<br>경영 만족도 95% 달성 목표</div>
+        </div>
+        <div style="flex:none;display:flex;align-items:flex-start"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#6D4AFF;border:1px solid #DDD2FF;background:#F7F4FF;border-radius:8px;padding:6px 11px">▦ KPI 카드 ▾</span></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px dashed #D4D4CE;border-radius:12px;padding:16px 18px;display:flex;gap:14px">
+        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:#F0F0EE;color:#B4B4AE;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">5</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding-top:3px">
+          <div style="width:45%;height:12px;border-radius:6px;background:#EFEFEC;animation:dgPulse 1.4s infinite"></div>
+          <div style="width:85%;height:9px;border-radius:5px;background:#F3F3F0;animation:dgPulse 1.4s .2s infinite"></div>
+          <div style="width:70%;height:9px;border-radius:5px;background:#F3F3F0;animation:dgPulse 1.4s .4s infinite"></div>
+        </div>
+        <span style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>작성 중</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e"><div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>아웃라인 B · 문서형 에디팅 + 시각화 미리보기 블록 (레퍼런스 개선형)</div>
+<div class="dv-card" style="width:860px;background:#FFFFFF">
+  <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:13px 32px;border-bottom:1px solid #E4E4E0;background:#FFFFFF">
+    <div style="display:flex;align-items:center;gap:9px"><span style="width:20px;height:20px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:14px;font-weight:700;color:#1A1A1A">경영바우처 지원 제안서</span><span style="font-size:12px;color:#8A8A84">아웃라인 · 5장</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:12.5px;font-weight:500;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:6px 11px">테마: Clean Light ▾</span>
+      <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer">✦ 슬라이드 생성</button>
+    </div>
+  </div>
+  <div style="padding:32px 56px 40px;display:flex;flex-direction:column;gap:4px">
+    <div style="font-size:12px;color:#8A8A84;margin-bottom:10px">문서처럼 바로 수정하세요. 제목·불릿·시각화 블록 모두 클릭해 편집할 수 있습니다.</div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #F0F0EE">
+      <span style="flex:none;width:26px;font-size:12px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:4px">01</span>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">소상공인 경쟁력 강화를 위한 경영바우처 지원 제안</div>
+        <div style="font-size:13.5px;color:#4A4A45;line-height:1.8;margin-top:6px">•&nbsp; 제안 기관 및 발표자 소개<br>•&nbsp; 제안 배경 한 줄 요약</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #F0F0EE">
+      <span style="flex:none;width:26px;font-size:12px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:4px">02</span>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">고물가·디지털 격차로 인한 경영 위기 진단</div>
+        <div style="font-size:13.5px;color:#4A4A45;line-height:1.8;margin-top:6px">•&nbsp; 원자재 가격·인건비 부담 급증으로 영업이익률 저하<br>•&nbsp; 배달 플랫폼·온라인 시장 확대로 오프라인 경쟁력 약화<br>•&nbsp; 디지털 활용 능력 격차에 따른 성과 양극화</div>
+        <div style="margin-top:12px;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;background:#F7F7F5;border-bottom:1px solid #E4E4E0;padding:9px 14px">
+            <span style="font-size:11.5px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border-radius:6px;padding:3px 8px">BAR 차트</span>
+            <span style="font-size:12.5px;font-weight:500;color:#1A1A1A">경영 애로사항 설문 결과 (%)</span>
+            <span style="flex:1"></span><span style="font-size:11.5px;color:#8A8A84">클릭해서 지시문 수정</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:96px;font-size:12px;color:#4A4A45;text-align:right">인건비 부담</span><div style="flex:1;height:14px;border-radius:4px;background:linear-gradient(90deg,#6D4AFF 42%,#F0F0EE 42%)"></div><span style="font-size:12px;font-weight:700;color:#1A1A1A;width:34px">42%</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:96px;font-size:12px;color:#4A4A45;text-align:right">마케팅 어려움</span><div style="flex:1;height:14px;border-radius:4px;background:linear-gradient(90deg,#9B82FF 28%,#F0F0EE 28%)"></div><span style="font-size:12px;font-weight:700;color:#1A1A1A;width:34px">28%</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:96px;font-size:12px;color:#4A4A45;text-align:right">디지털 지연</span><div style="flex:1;height:14px;border-radius:4px;background:linear-gradient(90deg,#C4B5FF 20%,#F0F0EE 20%)"></div><span style="font-size:12px;font-weight:700;color:#1A1A1A;width:34px">20%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #F0F0EE">
+      <span style="flex:none;width:26px;font-size:12px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:4px">03</span>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">경영 효율화를 위한 3대 핵심 바우처 솔루션</div>
+        <div style="font-size:13.5px;color:#4A4A45;line-height:1.8;margin-top:6px">•&nbsp; 디지털 전환(DX): 스마트 오더·재고 관리 시스템 도입<br>•&nbsp; 맞춤형 컨설팅: 세무·노무·상권 분석 전문가 1:1 매칭<br>•&nbsp; 브랜드 마케팅: SNS 홍보·온라인 입점 제작 지원</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #F0F0EE">
+      <span style="flex:none;width:26px;font-size:12px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:4px">04</span>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">기대 효과와 지원 사업 목표</div>
+        <div style="font-size:13.5px;color:#4A4A45;line-height:1.8;margin-top:6px">•&nbsp; 운영 비용 절감·매출 증대·자생력 강화</div>
+        <div style="margin-top:12px;border:1px solid #E4E4E0;border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:8px;background:#F7F7F5;border-bottom:1px solid #E4E4E0;padding:9px 14px"><span style="font-size:11.5px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border-radius:6px;padding:3px 8px">KPI 카드</span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">지원 사업 목표 3종</span></div>
+          <div style="display:flex;gap:10px;padding:14px 16px">
+            <div style="flex:1;border:1px solid #F0F0EE;background:#FBFBFA;border-radius:10px;padding:12px 14px"><div style="font-size:20px;font-weight:800;color:#1A1A1A">30%</div><div style="font-size:11.5px;color:#6B6B66;margin-top:2px">운영 효율 향상</div></div>
+            <div style="flex:1;border:1px solid #F0F0EE;background:#FBFBFA;border-radius:10px;padding:12px 14px"><div style="font-size:20px;font-weight:800;color:#1A1A1A">2배</div><div style="font-size:11.5px;color:#6B6B66;margin-top:2px">마케팅 도달 증대</div></div>
+            <div style="flex:1;border:1px solid #F0F0EE;background:#FBFBFA;border-radius:10px;padding:12px 14px"><div style="font-size:20px;font-weight:800;color:#1A1A1A">95%</div><div style="font-size:11.5px;color:#6B6B66;margin-top:2px">경영 만족도 달성</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;padding:18px 0">
+      <span style="flex:none;width:26px;font-size:12px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:4px">05</span>
+      <div style="flex:1;display:flex;flex-direction:column;gap:10px;padding-top:4px">
+        <div style="width:40%;height:13px;border-radius:6px;background:#EFEFEC;animation:dgPulse 1.4s infinite"></div>
+        <div style="width:80%;height:9px;border-radius:5px;background:#F3F3F0;animation:dgPulse 1.4s .2s infinite"></div>
+        <div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>스트리밍 수신 중</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- ============ EDITOR ============ -->
+<div class="dv-group">C. 에디터 — 3패널 · 생성 진행 · AI 수정</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1f"><div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>에디터 A · AI 채팅 패널 + 에이전트 작업 로그 (스펙 정석 · 생성 진행 상태 포함)</div>
+<div class="dv-card" style="width:1360px;background:#EDEDEA">
+  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+    <span style="width:28px;height:28px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#6B6B66">←</span>
+    <div style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:14px;font-weight:700;color:#1A1A1A;border-bottom:1px dashed transparent">경영바우처 지원 제안서</span><span style="font-size:11px;color:#B4B4AE">✎</span></div>
+    <div style="display:flex;align-items:center;gap:4px;margin-left:12px">
+      <span style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#1A1A1A" title="Undo">↺</span>
+      <span style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#B4B4AE" title="Redo">↻</span>
+    </div>
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>생성 중 3/5</span>
+    <span style="flex:1"></span>
+    <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid #E4E4E0;border-radius:9px;padding:7px 12px"><span style="width:11px;height:11px;border-radius:3px;background:#2563EB"></span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">Clean Light</span><span style="font-size:9px;color:#6B6B66">▾</span></span>
+    <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(109,74,255,.25)">↓ PPTX 내보내기</button>
+  </div>
+  <div style="display:flex;height:640px">
+    <div style="width:216px;flex:none;background:#FFFFFF;border-right:1px solid #E4E4E0;padding:14px 12px;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+      <div style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;font-weight:700;color:#8A8A84;width:14px;text-align:right;padding-top:2px">1</span><div style="flex:1"><div style="aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:7px;background:#FFFFFF;padding:9px 10px;display:flex;flex-direction:column;justify-content:center;gap:3px"><div style="width:14%;height:2px;background:#2563EB"></div><div style="font-size:7px;font-weight:700;color:#1A1A1A;line-height:1.4">소상공인 경쟁력 강화를 위한 경영바우처 지원 제안</div><div style="width:38%;height:3px;border-radius:2px;background:#EFEFEC"></div></div></div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;font-weight:700;color:#6D4AFF;width:14px;text-align:right;padding-top:2px">2</span><div style="flex:1"><div style="aspect-ratio:16/9;border:2px solid #6D4AFF;border-radius:7px;background:#FFFFFF;padding:8px 9px;display:flex;flex-direction:column;gap:3px;box-shadow:0 2px 8px rgba(109,74,255,.18)"><div style="font-size:6.5px;font-weight:700;color:#1A1A1A">경영 위기 진단</div><div style="display:flex;gap:4px;flex:1"><div style="flex:1;background:#F5F7FF;border-radius:3px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:3px"><div style="width:85%;height:2.5px;background:#2563EB;border-radius:1px"></div><div style="width:60%;height:2.5px;background:#7FA3F0;border-radius:1px"></div><div style="width:42%;height:2.5px;background:#B8CCF7;border-radius:1px"></div></div><div style="flex:1;display:flex;flex-direction:column;gap:2.5px;justify-content:center"><div style="width:90%;height:2px;background:#DADAD5;border-radius:1px"></div><div style="width:75%;height:2px;background:#DADAD5;border-radius:1px"></div><div style="width:85%;height:2px;background:#DADAD5;border-radius:1px"></div></div></div></div></div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;font-weight:700;color:#8A8A84;width:14px;text-align:right;padding-top:2px">3</span><div style="flex:1"><div style="aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:7px;background:#FFFFFF;padding:8px 9px;display:flex;flex-direction:column;gap:3px"><div style="font-size:6.5px;font-weight:700;color:#1A1A1A">3대 핵심 바우처 솔루션</div><div style="display:flex;gap:3px;flex:1;align-items:center"><div style="flex:1;height:70%;background:#F5F7FF;border-radius:3px"></div><div style="flex:1;height:70%;background:#F5F7FF;border-radius:3px"></div><div style="flex:1;height:70%;background:#F5F7FF;border-radius:3px"></div></div></div></div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;font-weight:700;color:#8A8A84;width:14px;text-align:right;padding-top:2px">4</span><div style="flex:1;position:relative"><div style="aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:7px;background:#FBFBFA;padding:8px 9px;display:flex;flex-direction:column;gap:4px;justify-content:center"><div style="width:55%;height:4px;border-radius:2px;background:#EFEFEC;animation:dgPulse 1.4s infinite"></div><div style="width:80%;height:3px;border-radius:2px;background:#F3F3F0;animation:dgPulse 1.4s .2s infinite"></div><div style="width:70%;height:3px;border-radius:2px;background:#F3F3F0;animation:dgPulse 1.4s .35s infinite"></div></div><span style="position:absolute;top:6px;right:6px;display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border:1px solid #DDD2FF;border-radius:99px;padding:2px 7px"><span style="width:4px;height:4px;border-radius:50%;background:#6D4AFF;animation:dgPulse 1.2s infinite"></span>Generating</span></div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:11px;font-weight:700;color:#B4B4AE;width:14px;text-align:right;padding-top:2px">5</span><div style="flex:1;position:relative"><div style="aspect-ratio:16/9;border:1px dashed #D4D4CE;border-radius:7px;background:#FBFBFA"></div><span style="position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;color:#8A8A84;background:#F7F7F5;border:1px solid #E4E4E0;border-radius:99px;padding:2px 7px">Queued</span></div></div>
+      <button style="font-family:inherit;margin-top:2px;background:#FFFFFF;border:1px dashed #D4D4CE;border-radius:8px;padding:8px;font-size:12px;font-weight:500;color:#6B6B66;cursor:pointer">+ 슬라이드 추가</button>
+    </div>
+    <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#EDEDEA">
+      <div style="width:748px;aspect-ratio:16/9;background:#FFFFFF;box-shadow:0 8px 28px rgba(0,0,0,.14);border-radius:4px;position:relative;padding:38px 42px;box-sizing:border-box">
+        <div style="font-size:24px;font-weight:800;color:#1A1A1A;letter-spacing:-.01em">고물가·디지털 격차로 인한 경영 위기 진단</div>
+        <div style="width:100%;height:2px;background:#2563EB;margin:12px 0 20px"></div>
+        <div style="display:flex;gap:28px">
+          <div style="width:46%;position:relative">
+            <div style="border:1.5px solid #6D4AFF;border-radius:2px;background:#F8FAFF;padding:16px 18px;position:relative">
+              <span style="position:absolute;top:-5px;left:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;top:-5px;right:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;bottom:-5px;left:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;bottom:-5px;right:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span>
+              <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:12px">경영 애로사항 설문 결과 (%)</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div><div style="font-size:10.5px;color:#4A4A45;margin-bottom:3px">인건비 부담</div><div style="display:flex;align-items:center;gap:7px"><div style="height:13px;width:76%;background:#2563EB;border-radius:2px"></div><span style="font-size:11px;font-weight:800;color:#1A1A1A">42%</span></div></div>
+                <div><div style="font-size:10.5px;color:#4A4A45;margin-bottom:3px">마케팅 어려움</div><div style="display:flex;align-items:center;gap:7px"><div style="height:13px;width:51%;background:#5B85E8;border-radius:2px"></div><span style="font-size:11px;font-weight:800;color:#1A1A1A">28%</span></div></div>
+                <div><div style="font-size:10.5px;color:#4A4A45;margin-bottom:3px">디지털 전환 지연</div><div style="display:flex;align-items:center;gap:7px"><div style="height:13px;width:36%;background:#9DB7F0;border-radius:2px"></div><span style="font-size:11px;font-weight:800;color:#1A1A1A">20%</span></div></div>
+                <div><div style="font-size:10.5px;color:#4A4A45;margin-bottom:3px">기타</div><div style="display:flex;align-items:center;gap:7px"><div style="height:13px;width:18%;background:#2B2B33;border-radius:2px"></div><span style="font-size:11px;font-weight:800;color:#1A1A1A">10%</span></div></div>
+              </div>
+            </div>
+            <span style="position:absolute;top:-24px;left:0;font-size:10px;font-weight:700;color:#fff;background:#6D4AFF;border-radius:5px;padding:3px 8px">차트 · chart-bar-01</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;padding-top:4px">
+            <div style="display:flex;gap:9px"><span style="flex:none;width:17px;height:17px;border-radius:4px;background:#2563EB;color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">1</span><div><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">영업이익률 급감</div><div style="font-size:11px;color:#5A6B8C;margin-top:1px">원자재 가격 및 인건비 부담 가중</div></div></div>
+            <div style="display:flex;gap:9px"><span style="flex:none;width:17px;height:17px;border-radius:4px;background:#2563EB;color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">2</span><div><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">오프라인 경쟁력 약화</div><div style="font-size:11px;color:#5A6B8C;margin-top:1px">배달 플랫폼·온라인 시장 지배력 강화</div></div></div>
+            <div style="display:flex;gap:9px"><span style="flex:none;width:17px;height:17px;border-radius:4px;background:#2563EB;color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">3</span><div><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">디지털 활용 능력 격차</div><div style="font-size:11px;color:#5A6B8C;margin-top:1px">운영 효율성·마케팅 성과 양극화</div></div></div>
+            <div style="display:flex;gap:9px"><span style="flex:none;width:17px;height:17px;border-radius:4px;background:#2563EB;color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center">4</span><div><div style="font-size:13.5px;font-weight:700;color:#1A1A1A">전략 수립 기반 부재</div><div style="font-size:11px;color:#5A6B8C;margin-top:1px">체계적 경영 진단 인프라 부족</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:10px;padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+        <span style="padding:5px 10px;font-size:12px;color:#6B6B66">−</span><span style="padding:5px 8px;font-size:12px;font-weight:600;color:#1A1A1A">72%</span><span style="padding:5px 10px;font-size:12px;color:#6B6B66">+</span><span style="width:1px;height:16px;background:#E4E4E0"></span><span style="padding:5px 10px;font-size:11.5px;font-weight:500;color:#1A1A1A">화면 맞춤</span>
+      </div>
+    </div>
+    <div style="width:320px;flex:none;background:#FFFFFF;border-left:1px solid #E4E4E0;display:flex;flex-direction:column">
+      <div style="display:flex;padding:10px 14px 0;gap:4px;border-bottom:1px solid #E4E4E0">
+        <span style="font-size:13px;font-weight:600;color:#1A1A1A;padding:8px 12px;border-bottom:2px solid #6D4AFF">AI 채팅</span>
+        <span style="font-size:13px;font-weight:500;color:#8A8A84;padding:8px 12px">속성</span>
+      </div>
+      <div style="padding:14px;border-bottom:1px solid #F0F0EE;background:#FBFBFA">
+        <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:10px">작업 로그</div>
+        <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#1E7F4F;margin-top:4px"></span><span style="width:1px;flex:1;background:#E4E4E0"></span></div><div style="padding-bottom:10px"><div style="font-family:ui-monospace,monospace;font-size:11px;color:#1A1A1A">아웃라인 구성 완료 <span style="color:#8A8A84">2.1s</span></div></div></div>
+        <div style="display:flex;gap:10px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:#1E7F4F;margin-top:4px"></span><span style="width:1px;flex:1;background:#E4E4E0"></span></div><div style="padding-bottom:10px"><div style="font-family:ui-monospace,monospace;font-size:11px;color:#1A1A1A">슬라이드 1–3 렌더링 완료</div></div></div>
+        <div style="display:flex;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#6D4AFF;margin-top:4px;animation:dgPulse 1.2s infinite"></span><div style="font-family:ui-monospace,monospace;font-size:11px;color:#6D4AFF">슬라이드 4 렌더링 중…</div></div>
+      </div>
+      <div style="flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+        <div style="align-self:center;font-size:11px;color:#8A8A84;background:#F7F7F5;border-radius:99px;padding:3px 12px">현재 슬라이드 2를 수정합니다</div>
+        <div style="align-self:flex-end;max-width:88%;background:#1A1A1A;color:#fff;border-radius:14px 14px 4px 14px;padding:10px 13px;font-size:13px;line-height:1.55">막대 색을 테마 색으로 통일하고 42% 항목을 강조해줘</div>
+        <div style="align-self:flex-start;max-width:88%;background:#F7F7F5;border:1px solid #E9E9E5;border-radius:14px 14px 14px 4px;padding:10px 13px;font-size:13px;line-height:1.55;color:#1A1A1A">적용했어요. 차트 팔레트를 Clean Light 기준으로 바꾸고 '인건비 부담' 막대만 진한 액센트로 강조했습니다.<div style="margin-top:8px;display:flex;gap:6px"><span style="font-size:11.5px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border-radius:6px;padding:3px 9px">적용됨</span><span style="font-size:11.5px;font-weight:500;color:#6B6B66;border:1px solid #E4E4E0;border-radius:6px;padding:3px 9px;background:#fff">↺ 되돌리기</span></div></div>
+      </div>
+      <div style="padding:12px 14px 14px;border-top:1px solid #F0F0EE">
+        <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap">
+          <span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:4px 10px;background:#FFFFFF">제목 더 임팩트 있게</span>
+          <span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:4px 10px;background:#FFFFFF">파이 차트로 변경</span>
+          <span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:4px 10px;background:#FFFFFF">불릿 추가</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;border:1px solid #E4E4E0;border-radius:11px;padding:10px 12px;background:#FFFFFF"><span style="flex:1;font-size:13px;color:#9C9C96">이 슬라이드를 어떻게 바꿀까요?</span><span style="width:26px;height:26px;border-radius:8px;background:#6D4AFF;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px">↑</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="1g"><div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>에디터 B · 인라인 AI 팝오버 + 속성 패널 + 하단 필름스트립 (패널 배치 변형)</div>
+<div class="dv-card" style="width:1360px;background:#E7E7E3">
+  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+    <span style="width:28px;height:28px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#6B6B66">←</span>
+    <div style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:6px;background:#6D4AFF"></span><span style="font-size:14px;font-weight:700;color:#1A1A1A">경영바우처 지원 제안서</span></div>
+    <div style="display:flex;align-items:center;gap:4px;margin-left:12px">
+      <span style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#1A1A1A">↺</span>
+      <span style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#B4B4AE">↻</span>
+    </div>
+    <span style="flex:1"></span>
+    <span style="display:inline-flex;align-items:center;gap:7px;border:1px solid #E4E4E0;border-radius:9px;padding:7px 12px"><span style="width:11px;height:11px;border-radius:3px;background:#2563EB"></span><span style="font-size:12.5px;font-weight:500;color:#1A1A1A">Clean Light</span><span style="font-size:9px;color:#6B6B66">▾</span></span>
+    <button style="font-family:inherit;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer">공유</button>
+    <button style="font-family:inherit;background:#6D4AFF;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(109,74,255,.25)">↓ PPTX 내보내기</button>
+  </div>
+  <div style="display:flex;height:560px">
+    <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#E7E7E3">
+      <div style="width:760px;aspect-ratio:16/9;background:#FFFFFF;box-shadow:0 8px 28px rgba(0,0,0,.14);border-radius:4px;position:relative;padding:38px 42px;box-sizing:border-box">
+        <div style="font-size:24px;font-weight:800;color:#1A1A1A;letter-spacing:-.01em">기대 효과와 지원 사업 목표</div>
+        <div style="width:100%;height:2px;background:#2563EB;margin:12px 0 26px"></div>
+        <div style="display:flex;gap:18px">
+          <div style="flex:1;position:relative">
+            <div style="border:1.5px solid #6D4AFF;border-radius:10px;background:#F8FAFF;padding:22px 20px;text-align:center;position:relative">
+              <span style="position:absolute;top:-5px;left:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;top:-5px;right:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;bottom:-5px;left:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span><span style="position:absolute;bottom:-5px;right:-5px;width:8px;height:8px;background:#fff;border:1.5px solid #6D4AFF;border-radius:2px"></span>
+              <div style="font-size:34px;font-weight:800;color:#2563EB;letter-spacing:-.02em">30%</div>
+              <div style="font-size:12px;font-weight:600;color:#4A4A45;margin-top:6px">운영 효율 향상</div>
+            </div>
+          </div>
+          <div style="flex:1"><div style="border:1px solid #E9E9E5;border-radius:10px;background:#FBFBFA;padding:22px 20px;text-align:center"><div style="font-size:34px;font-weight:800;color:#1A1A1A;letter-spacing:-.02em">2배</div><div style="font-size:12px;font-weight:600;color:#4A4A45;margin-top:6px">마케팅 도달 증대</div></div></div>
+          <div style="flex:1"><div style="border:1px solid #E9E9E5;border-radius:10px;background:#FBFBFA;padding:22px 20px;text-align:center"><div style="font-size:34px;font-weight:800;color:#1A1A1A;letter-spacing:-.02em">95%</div><div style="font-size:12px;font-weight:600;color:#4A4A45;margin-top:6px">경영 만족도 달성</div></div></div>
+        </div>
+        <div style="position:absolute;left:42px;bottom:-88px;width:400px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18);padding:12px 14px;z-index:2">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px"><span style="width:18px;height:18px;border-radius:5px;background:#6D4AFF;color:#fff;font-size:10px;display:inline-flex;align-items:center;justify-content:center">✦</span><span style="font-size:12px;font-weight:700;color:#1A1A1A">선택한 KPI 카드 수정</span><span style="flex:1"></span><span style="font-size:11px;color:#B4B4AE">Esc 닫기</span></div>
+          <div style="display:flex;align-items:center;gap:8px;border:1px solid #E4E4E0;border-radius:10px;padding:9px 12px"><span style="flex:1;font-size:13px;color:#1A1A1A">수치를 더 크게, 배경을 액센트 톤으로<span style="display:inline-block;width:2px;height:14px;background:#6D4AFF;vertical-align:-2px;margin-left:1px"></span></span><span style="width:24px;height:24px;border-radius:7px;background:#6D4AFF;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px">↑</span></div>
+          <div style="display:flex;gap:6px;margin-top:8px"><span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:3px 10px">강조하기</span><span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:3px 10px">문구 다듬기</span><span style="font-size:11.5px;color:#6B6B66;border:1px solid #E4E4E0;border-radius:99px;padding:3px 10px">카드 추가</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="width:300px;flex:none;background:#FFFFFF;border-left:1px solid #E4E4E0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #F0F0EE;display:flex;align-items:center;justify-content:space-between"><span style="font-size:13.5px;font-weight:700;color:#1A1A1A">속성 — KPI 카드</span><span style="font-size:11.5px;color:#8A8A84">kpi-01</span></div>
+      <div style="padding:14px 16px;border-bottom:1px solid #F0F0EE">
+        <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:10px">위치 · 크기 (1920 기준)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">X</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">96</span></div>
+          <div style="border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">Y</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">330</span></div>
+          <div style="border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">W</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">544</span></div>
+          <div style="border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">H</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">300</span></div>
+        </div>
+      </div>
+      <div style="padding:14px 16px;border-bottom:1px solid #F0F0EE">
+        <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:10px">채우기 · 모서리</div>
+        <div style="display:flex;align-items:center;gap:8px;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;margin-bottom:8px"><span style="width:16px;height:16px;border-radius:4px;background:#F8FAFF;border:1px solid #D8E2FF"></span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A;font-family:ui-monospace,monospace">#F8FAFF</span><span style="flex:1"></span><span style="font-size:11.5px;color:#8A8A84">테마 surface</span></div>
+        <div style="display:flex;gap:8px"><div style="flex:1;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">Radius</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">20</span></div><div style="flex:1;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">불투명</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">100%</span></div></div>
+      </div>
+      <div style="padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:#8A8A84;letter-spacing:.06em;margin-bottom:10px">텍스트 (kpi-value)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px"><div style="flex:1.4;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">크기</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">64</span></div><div style="flex:1;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8A8A84">굵기</span><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">800</span></div></div>
+        <div style="display:flex;border:1px solid #E4E4E0;border-radius:8px;overflow:hidden"><span style="flex:1;text-align:center;padding:7px;font-size:12px;color:#8A8A84">왼쪽</span><span style="flex:1;text-align:center;padding:7px;font-size:12px;font-weight:600;color:#1A1A1A;background:#F0EBFF;border-left:1px solid #E4E4E0;border-right:1px solid #E4E4E0">가운데</span><span style="flex:1;text-align:center;padding:7px;font-size:12px;color:#8A8A84">오른쪽</span></div>
+      </div>
+      <div style="margin-top:auto;padding:12px 16px;border-top:1px solid #F0F0EE;background:#FBFBFA"><div style="font-size:11.5px;color:#6B6B66;line-height:1.5">색·크기를 비워두면 테마 기본값을 따릅니다. 테마 변경 시 자동 재해석.</div></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border-top:1px solid #E4E4E0;padding:10px 16px">
+    <span style="font-size:11.5px;font-weight:600;color:#8A8A84">슬라이드</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="width:88px;aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:6px;background:#fff;padding:6px 7px;display:flex;flex-direction:column;justify-content:center;gap:2px"><div style="width:14%;height:2px;background:#2563EB"></div><div style="font-size:5px;font-weight:700;color:#1A1A1A;line-height:1.4">소상공인 경쟁력 강화 경영바우처 제안</div></div>
+      <div style="width:88px;aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:6px;background:#fff;padding:6px 7px;display:flex;flex-direction:column;gap:2px"><div style="font-size:5px;font-weight:700;color:#1A1A1A">경영 위기 진단</div><div style="display:flex;gap:2px;flex:1"><div style="flex:1;background:#F5F7FF;border-radius:2px"></div><div style="flex:1;display:flex;flex-direction:column;gap:1.5px;justify-content:center"><div style="height:1.5px;background:#DADAD5"></div><div style="height:1.5px;background:#DADAD5;width:80%"></div><div style="height:1.5px;background:#DADAD5;width:90%"></div></div></div></div>
+      <div style="width:88px;aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:6px;background:#fff;padding:6px 7px;display:flex;flex-direction:column;gap:2px"><div style="font-size:5px;font-weight:700;color:#1A1A1A">3대 핵심 솔루션</div><div style="display:flex;gap:2px;flex:1;align-items:center"><div style="flex:1;height:65%;background:#F5F7FF;border-radius:2px"></div><div style="flex:1;height:65%;background:#F5F7FF;border-radius:2px"></div><div style="flex:1;height:65%;background:#F5F7FF;border-radius:2px"></div></div></div>
+      <div style="width:88px;aspect-ratio:16/9;border:2px solid #6D4AFF;border-radius:6px;background:#fff;padding:5px 6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 2px 8px rgba(109,74,255,.2)"><div style="font-size:5px;font-weight:700;color:#1A1A1A">기대 효과·목표</div><div style="display:flex;gap:2px;flex:1;align-items:center"><div style="flex:1;height:70%;background:#F5F7FF;border-radius:2px"></div><div style="flex:1;height:70%;background:#FBFBFA;border:1px solid #F0F0EE;border-radius:2px"></div><div style="flex:1;height:70%;background:#FBFBFA;border:1px solid #F0F0EE;border-radius:2px"></div></div></div>
+      <div style="width:88px;aspect-ratio:16/9;border:1px solid #E4E4E0;border-radius:6px;background:#fff;padding:6px 7px;display:flex;align-items:center;justify-content:center"><div style="font-size:5.5px;font-weight:700;color:#1A1A1A;text-align:center">함께 시작하세요</div></div>
+      <span style="width:88px;aspect-ratio:16/9;border:1px dashed #D4D4CE;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#B4B4AE">+</span>
+    </div>
+    <span style="flex:1"></span>
+    <span style="font-size:12px;color:#6B6B66">4 / 5</span>
+  </div>
+</div>
+</div>
+
+</div>
+
+<!-- ============ THEMES ============ -->
+<div class="dv-group">D. 슬라이드 테마 4종 — 동일 표지 렌더 비교</div>
+<div class="dv-opts">
+<div class="dv-opt" id="1h"><div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>테마 미리보기 · cover 레이아웃 기준</div>
+<div class="dv-card" style="width:1160px;background:#FFFFFF"><div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div>
+    <div style="aspect-ratio:16/9;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:8px;padding:30px 34px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
+      <div style="width:34px;height:4px;background:#2563EB;margin-bottom:16px"></div>
+      <div style="font-size:26px;font-weight:800;color:#1A1A1A;line-height:1.32;letter-spacing:-.02em">소상공인 경쟁력 강화를 위한<br>경영바우처 지원 제안</div>
+      <div style="font-size:13px;color:#6B7280;margin-top:12px">중소벤처기업부 산하 지원기관 · 2026. 07</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">Clean Light</span><span style="font-size:11.5px;color:#8A8A84">밝은 비즈니스 기본 · #2563EB</span></div>
+  </div>
+  <div>
+    <div style="aspect-ratio:16/9;background:#14141A;border-radius:8px;padding:30px 34px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
+      <div style="width:34px;height:4px;background:#7C9CFF;margin-bottom:16px"></div>
+      <div style="font-size:26px;font-weight:800;color:#FFFFFF;line-height:1.32;letter-spacing:-.02em">소상공인 경쟁력 강화를 위한<br>경영바우처 지원 제안</div>
+      <div style="font-size:13px;color:#9AA3B8;margin-top:12px">중소벤처기업부 산하 지원기관 · 2026. 07</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">Ink Dark</span><span style="font-size:11.5px;color:#8A8A84">다크 발표용 · #7C9CFF</span></div>
+  </div>
+  <div>
+    <div style="aspect-ratio:16/9;background:#FAF6EF;border:1px solid #EBE2D3;border-radius:8px;padding:30px 34px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
+      <div style="width:34px;height:4px;background:#C25E3A;margin-bottom:16px"></div>
+      <div style="font-size:26px;font-weight:800;color:#3A2E24;line-height:1.32;letter-spacing:-.02em">소상공인 경쟁력 강화를 위한<br>경영바우처 지원 제안</div>
+      <div style="font-size:13px;color:#8C7B66;margin-top:12px">중소벤처기업부 산하 지원기관 · 2026. 07</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">Warm Craft</span><span style="font-size:11.5px;color:#8A8A84">웜톤 제안서 · #C25E3A</span></div>
+  </div>
+  <div>
+    <div style="aspect-ratio:16/9;background:#0F0B1E;border-radius:8px;padding:30px 34px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">
+      <div style="width:34px;height:4px;background:#8B6BFF;margin-bottom:16px"></div>
+      <div style="font-size:26px;font-weight:800;color:#FFFFFF;line-height:1.32;letter-spacing:-.02em">소상공인 경쟁력 강화를 위한<br>경영바우처 지원 제안</div>
+      <div style="font-size:13px;color:#A79ACB;margin-top:12px">중소벤처기업부 산하 지원기관 · 2026. 07</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:9px"><span style="font-size:12.5px;font-weight:600;color:#1A1A1A">Violet Bold</span><span style="font-size:11.5px;color:#8A8A84">스타트업 피치 · #8B6BFF</span></div>
+  </div>
+</div></div>
+</div>
+</div>
+
+<p class="dv-next">다음 시도: "<a class="dv-oid" href="#1b">1b</a> 홈에 <a class="dv-oid" href="#1c">1c</a>의 리스트형 덱 목록을 결합해줘" · "<a class="dv-oid" href="#1f">1f</a> 에디터에 <a class="dv-oid" href="#1g">1g</a>의 인라인 팝오버를 얹은 하이브리드" · "빈 상태·오류 상태 화면도 그려줘"</p>
+</section>
+</x-dc>
+</body>
+</html>

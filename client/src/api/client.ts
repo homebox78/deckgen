@@ -111,6 +111,15 @@ export async function postEdit(
   return json.slide;
 }
 
+/** §14 이벤트 집계 (fire-and-forget) — 내보내기/가져오기 대시보드 반영 */
+export function trackEvent(kind: "export" | "import", ok: boolean, ms: number, meta: string): void {
+  void fetch(apiUrl("/api/track"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, ok, ms, meta }),
+  }).catch(() => {});
+}
+
 // ===== 사용 가능한 LLM 모델 목록 (config.php 키 기반) =====
 export interface ModelInfo {
   id: string;

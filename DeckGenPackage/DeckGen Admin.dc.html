@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+body{margin:0;background:#F7F7F5;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif}
+@keyframes dgPulse{0%,100%{opacity:.4}50%{opacity:1}}
+button,input,select{font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif}
+input:focus{outline:2px solid #6D4AFF33}
+</style>
+</helmet>
+
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="height:100vh;background:#17151F;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:380px;max-width:94vw;background:#FFFFFF;border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.45);padding:30px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:18px">
+        <span style="width:24px;height:24px;border-radius:7px;background:#6D4AFF"></span>
+        <span style="font-size:15px;font-weight:700;color:#1A1A1A">DeckGen</span>
+        <span style="font-size:10px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border-radius:5px;padding:2px 7px">ADMIN</span>
+      </div>
+      <sc-if value="{{ stepCreds }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:19px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">관리자 로그인</div>
+        <div style="font-size:12.5px;color:#6B6B66;margin:6px 0 16px">허용된 IP에서만 접속 가능합니다 · role=admin</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <input value="{{ admEmail }}" onChange="{{ onAdmEmail }}" placeholder="admin@deckgen.app" style="width:100%;box-sizing:border-box;border:1px solid #E4E4E0;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#1A1A1A"></input>
+          <input type="password" value="{{ admPw }}" onChange="{{ onAdmPw }}" onKeyDown="{{ onAdmKey }}" placeholder="비밀번호" style="width:100%;box-sizing:border-box;border:1px solid {{ admPwBorder }};border-radius:10px;padding:12px 14px;font-size:13.5px;color:#1A1A1A"></input>
+          <sc-if value="{{ hasAdmError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#E5484D;margin-top:-2px">{{ admError }}</div></sc-if>
+          <button onClick="{{ admSubmit }}" style="width:100%;background:{{ admBtnBg }};color:#fff;border:none;border-radius:10px;padding:13px;font-size:13.5px;font-weight:600;cursor:pointer">{{ admBtnLabel }}</button>
+        </div>
+        <div style="font-size:11px;color:#B4B4AE;text-align:center;margin-top:14px">데모 계정: admin@deckgen.app / 아무 8자 이상</div>
+      </sc-if>
+      <sc-if value="{{ stepOtp }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:19px;font-weight:700;color:#1A1A1A;letter-spacing:-.01em">2단계 인증</div>
+        <div style="font-size:12.5px;color:#6B6B66;margin:6px 0 16px">인증 앱(TOTP)의 6자리 코드를 입력하세요. <b style="color:#1A1A1A">데모 코드: 000000</b></div>
+        <input value="{{ admOtp }}" onChange="{{ onAdmOtp }}" onKeyDown="{{ onOtpKey }}" placeholder="6자리 코드" maxLength="{{ 6 }}" style="width:100%;box-sizing:border-box;border:1px solid {{ otpBorder }};border-radius:10px;padding:13px 14px;font-size:19px;font-weight:700;letter-spacing:.4em;text-align:center;color:#1A1A1A;font-family:ui-monospace,Menlo,monospace"></input>
+        <sc-if value="{{ hasAdmError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#E5484D;margin-top:8px">{{ admError }}</div></sc-if>
+        <button onClick="{{ otpSubmit }}" style="width:100%;margin-top:12px;background:{{ admBtnBg }};color:#fff;border:none;border-radius:10px;padding:13px;font-size:13.5px;font-weight:600;cursor:pointer">{{ otpBtnLabel }}</button>
+        <button onClick="{{ backToCreds }}" style="width:100%;background:transparent;color:#6B6B66;border:none;padding:11px;font-size:12.5px;cursor:pointer;margin-top:4px">← 다시 로그인</button>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showConsole }}" hint-placeholder-val="{{ false }}">
+<div style="height:100vh;display:flex;background:#F7F7F5;overflow:hidden">
+
+  <!-- SIDEBAR -->
+  <div style="width:216px;flex:none;background:#17151F;display:flex;flex-direction:column;padding:16px 12px">
+    <div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px">
+      <span style="width:22px;height:22px;border-radius:6px;background:#6D4AFF"></span>
+      <span style="font-size:14px;font-weight:700;color:#fff">DeckGen</span>
+      <span style="font-size:10px;font-weight:700;color:#8B6BFF;background:rgba(139,107,255,.15);border-radius:5px;padding:2px 6px">ADMIN</span>
+    </div>
+    <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="6">
+      <button onClick="{{ nv.pick }}" style="display:flex;align-items:center;gap:10px;border:none;background:{{ nv.bg }};border-radius:9px;padding:10px 12px;cursor:pointer;text-align:left;margin-bottom:2px">
+        <span style="width:7px;height:7px;border-radius:2px;background:{{ nv.dot }};flex:none"></span>
+        <span style="flex:1;font-size:13px;font-weight:{{ nv.weight }};color:{{ nv.color }}">{{ nv.name }}</span>
+        <sc-if value="{{ nv.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;color:#fff;background:#E5484D;border-radius:99px;padding:2px 7px">{{ nv.badge }}</span></sc-if>
+      </button>
+    </sc-for>
+    <div style="margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;display:flex;align-items:center;gap:9px;padding-left:10px">
+      <span style="width:26px;height:26px;border-radius:50%;background:#6D4AFF;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">관</span>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#fff">관리자</div><div style="font-size:10.5px;color:rgba(255,255,255,.45)">admin@deckgen.app</div></div>
+      <button onClick="{{ admLogout }}" title="로그아웃" style="border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.65);border-radius:7px;padding:5px 9px;font-size:10.5px;font-weight:600;cursor:pointer">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:12px;padding:13px 24px;background:#FFFFFF;border-bottom:1px solid #E4E4E0">
+      <span style="font-size:16px;font-weight:700;color:#1A1A1A">{{ pageTitle }}</span>
+      <span style="font-size:12px;color:#8A8A84">{{ pageDesc }}</span>
+      <span style="flex:1"></span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#1E7F4F;background:#EAF7F0;border:1px solid #C9EBD9;border-radius:99px;padding:4px 10px"><span style="width:6px;height:6px;border-radius:50%;background:#1E7F4F"></span>API 정상 · p95 1.2s</span>
+      <span style="font-size:12px;color:#8A8A84">2026-07-06 20:14 KST</span>
+    </div>
+
+    <div style="flex:1;overflow:auto;padding:22px 24px">
+
+      <!-- DASHBOARD -->
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:16px 18px">
+              <div style="font-size:12px;color:#6B6B66">{{ k.name }}</div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+                <span style="font-size:24px;font-weight:800;color:#1A1A1A;letter-spacing:-.01em">{{ k.value }}</span>
+                <span style="font-size:11.5px;font-weight:700;color:{{ k.deltaColor }}">{{ k.delta }}</span>
+              </div>
+              <div style="font-size:11px;color:#8A8A84;margin-top:3px">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:20px">
+          <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px"><span style="font-size:13.5px;font-weight:700;color:#1A1A1A">일별 덱 생성</span><span style="font-size:11.5px;color:#8A8A84">최근 14일</span></div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:140px">
+              <sc-for list="{{ genBars }}" as="gb" hint-placeholder-count="14">
+                <div title="{{ gb.tip }}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+                  <div style="height:{{ gb.h }};background:{{ gb.color }};border-radius:3px 3px 0 0"></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:#8A8A84">6/23</span><span style="font-size:10px;color:#8A8A84">6/29</span><span style="font-size:10px;color:#8A8A84">7/6</span></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+            <div style="font-size:13.5px;font-weight:700;color:#1A1A1A;margin-bottom:14px">테마 사용 비율</div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:110px;height:110px;border-radius:50%;background:conic-gradient(#2563EB 0 148deg,#14141A 148deg 234deg,#C25E3A 234deg 306deg,#8B6BFF 306deg 360deg);flex:none"></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:#2563EB"></span><span style="font-size:11.5px;color:#4A4A45">Clean Light 41%</span></div>
+                <div style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:#14141A"></span><span style="font-size:11.5px;color:#4A4A45">Ink Dark 24%</span></div>
+                <div style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:#C25E3A"></span><span style="font-size:11.5px;color:#4A4A45">Warm Craft 20%</span></div>
+                <div style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:2px;background:#8B6BFF"></span><span style="font-size:11.5px;color:#4A4A45">Violet Bold 15%</span></div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#8A8A84;margin-top:14px;border-top:1px solid #F0F0EE;padding-top:10px">내보내기: PPTX 78% · PDF 16% · PNG 6%</div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+          <div style="font-size:13.5px;font-weight:700;color:#1A1A1A;margin-bottom:12px">파이프라인 단계별 평균 소요 (p50)</div>
+          <sc-for list="{{ pipeline }}" as="pp" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:7px 0">
+              <span style="width:130px;flex:none;font-size:12px;color:#4A4A45">{{ pp.name }}</span>
+              <div style="flex:1;height:12px;border-radius:4px;background:#F0F0EE;overflow:hidden"><div style="height:100%;width:{{ pp.w }};background:{{ pp.color }};border-radius:4px"></div></div>
+              <span style="width:52px;flex:none;font-size:11.5px;font-weight:700;color:#1A1A1A;text-align:right">{{ pp.time }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- USERS -->
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="flex:1;max-width:340px;display:flex;align-items:center;gap:7px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:9px;padding:8px 12px">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px" fill="none" stroke="#8A8A84" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            <input value="{{ userQuery }}" onChange="{{ onUserQuery }}" placeholder="이름·이메일 검색" style="flex:1;border:none;font-size:12.5px;color:#1A1A1A;background:transparent"></input>
+          </div>
+          <sc-for list="{{ planFilters }}" as="pf" hint-placeholder-count="3">
+            <button onClick="{{ pf.pick }}" style="border:1px solid {{ pf.border }};background:{{ pf.bg }};color:{{ pf.color }};border-radius:99px;padding:7px 13px;font-size:11.5px;font-weight:600;cursor:pointer">{{ pf.label }}</button>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+          <div style="display:flex;background:#FBFBFA;border-bottom:1px solid #E4E4E0;padding:10px 18px">
+            <span style="flex:1.6;font-size:11px;font-weight:700;color:#8A8A84">사용자</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">플랜</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">덱 수</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">이번 달 생성</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">최근 접속</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">상태</span>
+            <span style="width:110px;flex:none"></span>
+          </div>
+          <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;padding:11px 18px;border-bottom:1px solid #F0F0EE">
+              <div style="flex:1.6;display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="width:28px;height:28px;flex:none;border-radius:50%;background:{{ u.avatarBg }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{{ u.initial }}</span>
+                <div style="min-width:0"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">{{ u.name }}</div><div style="font-size:11px;color:#8A8A84;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.email }}</div></div>
+              </div>
+              <span style="flex:1"><span style="font-size:10.5px;font-weight:700;color:{{ u.planColor }};background:{{ u.planBg }};border-radius:6px;padding:3px 8px">{{ u.plan }}</span></span>
+              <span style="flex:1;font-size:12.5px;color:#1A1A1A">{{ u.decks }}</span>
+              <span style="flex:1;font-size:12.5px;color:#1A1A1A">{{ u.gens }}</span>
+              <span style="flex:1;font-size:12px;color:#6B6B66">{{ u.last }}</span>
+              <span style="flex:1"><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:{{ u.stColor }};background:{{ u.stBg }};border:1px solid {{ u.stBorder }};border-radius:99px;padding:3px 8px">{{ u.status }}</span></span>
+              <span style="width:110px;flex:none;display:flex;gap:5px;justify-content:flex-end">
+                <button onClick="{{ u.toggleBlock }}" style="border:1px solid #E4E4E0;background:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:{{ u.blockColor }};cursor:pointer">{{ u.blockLabel }}</button>
+              </span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noUsers }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px;text-align:center;font-size:12.5px;color:#8A8A84">검색 결과가 없습니다</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- JOBS -->
+      <sc-if value="{{ isJobs }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <sc-for list="{{ jobStats }}" as="js" hint-placeholder-count="4">
+            <div style="flex:1;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ js.dot }};animation:{{ js.anim }}"></span>
+              <span style="font-size:12px;color:#6B6B66;flex:1">{{ js.name }}</span>
+              <span style="font-size:17px;font-weight:800;color:#1A1A1A">{{ js.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+          <div style="display:flex;background:#FBFBFA;border-bottom:1px solid #E4E4E0;padding:10px 18px">
+            <span style="width:90px;flex:none;font-size:11px;font-weight:700;color:#8A8A84">Job ID</span>
+            <span style="flex:1.6;font-size:11px;font-weight:700;color:#8A8A84">덱 제목</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">사용자</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">단계</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">소요</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">상태</span>
+            <span style="width:90px;flex:none"></span>
+          </div>
+          <sc-for list="{{ jobRows }}" as="j" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;padding:11px 18px;border-bottom:1px solid #F0F0EE;background:{{ j.rowBg }}">
+              <span style="width:90px;flex:none;font-size:11.5px;color:#6B6B66;font-family:ui-monospace,Menlo,monospace">{{ j.id }}</span>
+              <span style="flex:1.6;font-size:12.5px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px">{{ j.title }}</span>
+              <span style="flex:1;font-size:12px;color:#6B6B66">{{ j.user }}</span>
+              <span style="flex:1;font-size:12px;color:#4A4A45">{{ j.stage }}</span>
+              <span style="flex:1;font-size:12px;color:#6B6B66">{{ j.dur }}</span>
+              <span style="flex:1"><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:{{ j.stColor }};background:{{ j.stBg }};border:1px solid {{ j.stBorder }};border-radius:99px;padding:3px 8px"><span style="width:5px;height:5px;border-radius:50%;background:{{ j.stColor }};animation:{{ j.anim }}"></span>{{ j.status }}</span></span>
+              <span style="width:90px;flex:none;display:flex;justify-content:flex-end">
+                <sc-if value="{{ j.failed }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ j.retry }}" style="border:1px solid #DDD2FF;background:#F7F4FF;color:#6D4AFF;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer">↻ 재시도</button>
+                </sc-if>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ERRORS -->
+      <sc-if value="{{ isErrors }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+          <sc-for list="{{ errorRows }}" as="er" hint-placeholder-count="4">
+            <div style="display:flex;gap:14px;padding:14px 18px;border-bottom:1px solid #F0F0EE">
+              <span style="flex:none;width:8px;height:8px;border-radius:50%;background:{{ er.dot }};margin-top:5px"></span>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:12.5px;font-weight:700;color:#1A1A1A">{{ er.type }}</span>
+                  <span style="font-size:10.5px;font-weight:700;color:{{ er.sevColor }};background:{{ er.sevBg }};border-radius:5px;padding:2px 7px">{{ er.sev }}</span>
+                  <span style="font-size:11px;color:#8A8A84">{{ er.time }} · {{ er.count }}회 발생</span>
+                </div>
+                <div style="font-size:12px;color:#6B6B66;margin-top:4px;font-family:ui-monospace,Menlo,monospace;background:#FBFBFA;border:1px solid #F0F0EE;border-radius:7px;padding:8px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ er.msg }}</div>
+                <div style="font-size:11.5px;color:#8A8A84;margin-top:5px">{{ er.hint }}</div>
+              </div>
+              <button onClick="{{ er.resolve }}" style="align-self:flex-start;border:1px solid #E4E4E0;background:#fff;border-radius:7px;padding:6px 12px;font-size:11.5px;font-weight:600;color:#1E7F4F;cursor:pointer">✓ 해결 처리</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noErrors }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:36px;text-align:center;font-size:13px;color:#1E7F4F;font-weight:600">✓ 미해결 오류가 없습니다</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- TEMPLATES -->
+      <sc-if value="{{ isTemplates }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:12.5px;color:#6B6B66">홈의 "템플릿으로 시작" 갤러리에 노출되는 항목을 관리합니다. 순서는 노출 순.</span>
+          <span style="flex:1"></span>
+          <button onClick="{{ tpAdd }}" style="border:none;background:#6D4AFF;color:#fff;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer">+ 새 템플릿</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">
+          <sc-for list="{{ tplRows }}" as="tp" hint-placeholder-count="4">
+            <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden;opacity:{{ tp.opacity }}">
+              <div style="aspect-ratio:16/9;background:{{ tp.bg }};border-bottom:1px solid #F0F0EE;padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px">
+                <div style="width:14%;height:3px;background:{{ tp.accent }}"></div>
+                <div style="font-size:11px;font-weight:700;line-height:1.4;color:{{ tp.ink }}">{{ tp.cover }}</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <input value="{{ tp.name }}" onChange="{{ tp.onName }}" style="flex:1;min-width:0;border:none;background:transparent;font-size:13px;font-weight:700;color:#1A1A1A;padding:0"></input>
+                  <sc-if value="{{ tp.isPro }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border-radius:5px;padding:2px 6px">PRO</span></sc-if>
+                </div>
+                <div style="font-size:11px;color:#8A8A84;margin:3px 0 10px">{{ tp.meta }} · 사용 {{ tp.uses }}회</div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <button onClick="{{ tp.moveUp }}" title="앞으로" style="flex:none;white-space:nowrap;border:1px solid #E4E4E0;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;color:#6B6B66;cursor:pointer">←</button>
+                  <button onClick="{{ tp.moveDown }}" title="뒤로" style="flex:none;white-space:nowrap;border:1px solid #E4E4E0;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;color:#6B6B66;cursor:pointer">→</button>
+                  <button onClick="{{ tp.togglePro }}" style="flex:none;white-space:nowrap;border:1px solid #DDD2FF;background:#F7F4FF;color:#6D4AFF;border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:600;cursor:pointer">{{ tp.proLabel }}</button>
+                  <span style="flex:1;min-width:2px"></span>
+                  <button onClick="{{ tp.toggle }}" style="flex:none;width:34px;min-width:34px;height:20px;border-radius:99px;border:none;cursor:pointer;background:{{ tp.toggleBg }};position:relative;transition:background .2s"><span style="position:absolute;top:2px;left:{{ tp.knob }};width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s"></span></button>
+                  <button onClick="{{ tp.del }}" style="flex:none;white-space:nowrap;border:1px solid #F5C6C8;background:#FFF0F0;color:#E5484D;border-radius:7px;padding:4px 9px;font-size:10.5px;font-weight:600;cursor:pointer">삭제</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11px;color:#8A8A84;margin-top:12px">비활성 템플릿은 갤러리에서 숨겨집니다 · PRO 지정 시 Free 사용자에게 업그레이드 안내 노출 · 이름은 카드에서 바로 수정</div>
+      </sc-if>
+
+      <!-- BANNERS -->
+      <sc-if value="{{ isBanners }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:16px 18px;margin-bottom:16px">
+          <div style="font-size:13.5px;font-weight:700;color:#1A1A1A;margin-bottom:12px">새 공지 만들기</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;border:1px solid #E4E4E0;border-radius:9px;overflow:hidden;flex:none">
+              <sc-for list="{{ bnTypes }}" as="bt" hint-placeholder-count="3">
+                <button onClick="{{ bt.pick }}" style="border:none;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer;background:{{ bt.bg }};color:{{ bt.color }};border-right:1px solid #F0F0EE">{{ bt.label }}</button>
+              </sc-for>
+            </div>
+            <input value="{{ bnDraft }}" onChange="{{ onBnDraft }}" placeholder="공지 문구 — 예: 7/10 02:00~04:00 점검이 예정되어 있습니다" style="flex:1;border:1px solid #E4E4E0;border-radius:9px;padding:10px 13px;font-size:12.5px;color:#1A1A1A"></input>
+            <button onClick="{{ bnAdd }}" style="flex:none;border:none;background:#6D4AFF;color:#fff;border-radius:9px;padding:10px 18px;font-size:12.5px;font-weight:600;cursor:pointer">게시</button>
+          </div>
+          <div style="margin-top:12px;border:1px dashed #E4E4E0;border-radius:10px;padding:10px 12px">
+            <div style="font-size:10.5px;font-weight:700;color:#8A8A84;margin-bottom:7px">미리보기 — 사용자 화면 상단</div>
+            <div style="display:flex;align-items:center;gap:9px;background:{{ bnPrevBg }};border:1px solid {{ bnPrevBorder }};border-radius:9px;padding:9px 14px">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{ bnPrevDot }};flex:none"></span>
+              <span style="font-size:12.5px;font-weight:500;color:{{ bnPrevColor }}">{{ bnPrevText }}</span>
+              <span style="flex:1"></span><span style="font-size:11px;color:{{ bnPrevColor }};opacity:.6">✕</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+          <sc-for list="{{ bannerRows }}" as="bn" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #F0F0EE;opacity:{{ bn.opacity }}">
+              <span style="flex:none;font-size:10.5px;font-weight:700;color:{{ bn.typeColor }};background:{{ bn.typeBg }};border-radius:6px;padding:3px 9px">{{ bn.typeLabel }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12.5px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ bn.text }}</div>
+                <div style="font-size:11px;color:#8A8A84;margin-top:2px">{{ bn.meta }}</div>
+              </div>
+              <button onClick="{{ bn.toggle }}" style="flex:none;width:38px;height:22px;border-radius:99px;border:none;cursor:pointer;background:{{ bn.toggleBg }};position:relative;transition:background .2s"><span style="position:absolute;top:2px;left:{{ bn.knob }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s"></span></button>
+              <button onClick="{{ bn.del }}" style="flex:none;border:1px solid #F5C6C8;background:#FFF0F0;color:#E5484D;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer">삭제</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noBanners }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px;text-align:center;font-size:12.5px;color:#8A8A84">게시된 공지가 없습니다</div>
+          </sc-if>
+        </div>
+        <div style="font-size:11px;color:#8A8A84;margin-top:10px">활성 공지는 노출 순서대로 최대 1개만 사용자 홈·에디터 상단에 표시됩니다 · 게시/해제는 감사 로그에 기록</div>
+      </sc-if>
+
+      <!-- AUDIT LOG -->
+      <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="flex:1;max-width:340px;display:flex;align-items:center;gap:7px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:9px;padding:8px 12px">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px" fill="none" stroke="#8A8A84" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            <input value="{{ auditQuery }}" onChange="{{ onAuditQuery }}" placeholder="행위자·대상·액션 검색" style="flex:1;border:none;font-size:12.5px;color:#1A1A1A;background:transparent"></input>
+          </div>
+          <sc-for list="{{ auditFilters }}" as="af" hint-placeholder-count="4">
+            <button onClick="{{ af.pick }}" style="border:1px solid {{ af.border }};background:{{ af.bg }};color:{{ af.color }};border-radius:99px;padding:7px 13px;font-size:11.5px;font-weight:600;cursor:pointer">{{ af.label }}</button>
+          </sc-for>
+          <span style="flex:1"></span>
+          <button onClick="{{ auditExport }}" style="border:1px solid #E4E4E0;background:#FFFFFF;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:#1A1A1A;cursor:pointer">↓ CSV 내보내기</button>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;overflow:hidden">
+          <div style="display:flex;background:#FBFBFA;border-bottom:1px solid #E4E4E0;padding:10px 18px">
+            <span style="width:130px;flex:none;font-size:11px;font-weight:700;color:#8A8A84">시각</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">행위자</span>
+            <span style="flex:1;font-size:11px;font-weight:700;color:#8A8A84">액션</span>
+            <span style="flex:1.6;font-size:11px;font-weight:700;color:#8A8A84">대상 · 상세</span>
+            <span style="width:110px;flex:none;font-size:11px;font-weight:700;color:#8A8A84">IP</span>
+          </div>
+          <sc-for list="{{ auditRows }}" as="ar" hint-placeholder-count="8">
+            <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid #F0F0EE">
+              <span style="width:130px;flex:none;font-size:11.5px;color:#6B6B66;font-family:ui-monospace,Menlo,monospace">{{ ar.time }}</span>
+              <span style="flex:1;display:flex;align-items:center;gap:7px"><span style="width:20px;height:20px;flex:none;border-radius:50%;background:{{ ar.actorBg }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">{{ ar.actorInitial }}</span><span style="font-size:12px;color:#1A1A1A">{{ ar.actor }}</span></span>
+              <span style="flex:1"><span style="font-size:10.5px;font-weight:700;color:{{ ar.catColor }};background:{{ ar.catBg }};border-radius:6px;padding:3px 8px">{{ ar.action }}</span></span>
+              <span style="flex:1.6;font-size:12px;color:#4A4A45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px">{{ ar.detail }}</span>
+              <span style="width:110px;flex:none;font-size:11px;color:#8A8A84;font-family:ui-monospace,Menlo,monospace">{{ ar.ip }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noAudit }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px;text-align:center;font-size:12.5px;color:#8A8A84">조건에 맞는 기록이 없습니다</div>
+          </sc-if>
+        </div>
+        <div style="font-size:11px;color:#8A8A84;margin-top:10px">보존 기간 1년 · 변경 불가(append-only) · 관리자 차단·설정 변경·데이터 삭제·로그인이 자동 기록됩니다</div>
+      </sc-if>
+
+      <!-- PLANS -->
+      <sc-if value="{{ isPlans }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+          <sc-for list="{{ plans }}" as="pl" hint-placeholder-count="3">
+            <div style="background:#FFFFFF;border:{{ pl.frame }};border-radius:13px;padding:18px 20px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:700;color:#1A1A1A">{{ pl.name }}</span><sc-if value="{{ pl.popular }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;color:#6D4AFF;background:#F0EBFF;border-radius:5px;padding:2px 7px">인기</span></sc-if></div>
+              <div style="font-size:22px;font-weight:800;color:#1A1A1A;margin:8px 0 2px">{{ pl.price }}</div>
+              <div style="font-size:11.5px;color:#8A8A84;margin-bottom:12px">{{ pl.limit }}</div>
+              <div style="border-top:1px solid #F0F0EE;padding-top:10px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#6B6B66">가입자</span><span style="font-size:12.5px;font-weight:700;color:#1A1A1A">{{ pl.users }}</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:12px;color:#6B6B66">월 매출 기여</span><span style="font-size:12.5px;font-weight:700;color:#1A1A1A">{{ pl.rev }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px;padding:18px 20px">
+          <div style="font-size:13.5px;font-weight:700;color:#1A1A1A;margin-bottom:12px">이번 달 요약</div>
+          <div style="display:flex;gap:24px">
+            <div><div style="font-size:11.5px;color:#8A8A84">MRR</div><div style="font-size:19px;font-weight:800;color:#1A1A1A">₩4,180,000</div></div>
+            <div><div style="font-size:11.5px;color:#8A8A84">신규 유료 전환</div><div style="font-size:19px;font-weight:800;color:#1A1A1A">38명</div></div>
+            <div><div style="font-size:11.5px;color:#8A8A84">이탈률</div><div style="font-size:19px;font-weight:800;color:#1A1A1A">2.1%</div></div>
+            <div><div style="font-size:11.5px;color:#8A8A84">ARPU</div><div style="font-size:19px;font-weight:800;color:#1A1A1A">₩9,600</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- SETTINGS -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:640px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:13px">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #F0F0EE">
+            <div style="flex:1"><div style="font-size:13px;color:#1A1A1A">신규 가입 허용</div><div style="font-size:11px;color:#8A8A84;margin-top:1px">끄면 초대 링크로만 가입 가능</div></div>
+            <button onClick="{{ tSignup }}" style="width:38px;height:22px;border-radius:99px;border:none;cursor:pointer;background:{{ signupBg }};position:relative;transition:background .2s"><span style="position:absolute;top:2px;left:{{ signupKnob }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s"></span></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #F0F0EE">
+            <div style="flex:1"><div style="font-size:13px;color:#1A1A1A">Free 플랜 일일 생성 한도</div><div style="font-size:11px;color:#8A8A84;margin-top:1px">한도 초과 시 업그레이드 안내 노출</div></div>
+            <div style="display:flex;align-items:center;border:1px solid #E4E4E0;border-radius:8px;overflow:hidden">
+              <button onClick="{{ limDec }}" style="border:none;background:#fff;padding:7px 11px;font-size:13px;color:#6B6B66;cursor:pointer;border-right:1px solid #E4E4E0">−</button>
+              <span style="padding:7px 12px;font-size:12.5px;font-weight:600;color:#1A1A1A">{{ freeLimit }}회</span>
+              <button onClick="{{ limInc }}" style="border:none;background:#fff;padding:7px 11px;font-size:13px;color:#6B6B66;cursor:pointer;border-left:1px solid #E4E4E0">+</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #F0F0EE">
+            <div style="flex:1"><div style="font-size:13px;color:#1A1A1A">점검 모드</div><div style="font-size:11px;color:#8A8A84;margin-top:1px">전체 사용자에게 점검 배너 표시, 생성 중단</div></div>
+            <button onClick="{{ tMaint }}" style="width:38px;height:22px;border-radius:99px;border:none;cursor:pointer;background:{{ maintBg }};position:relative;transition:background .2s"><span style="position:absolute;top:2px;left:{{ maintKnob }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s"></span></button>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px">
+            <div style="flex:1"><div style="font-size:13px;color:#1A1A1A">생성 모델</div><div style="font-size:11px;color:#8A8A84;margin-top:1px">아웃라인·슬라이드 생성에 사용할 LLM</div></div>
+            <div style="display:flex;border:1px solid #E4E4E0;border-radius:8px;overflow:hidden">
+              <sc-for list="{{ modelBtns }}" as="mb" hint-placeholder-count="2">
+                <button onClick="{{ mb.pick }}" style="border:none;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;background:{{ mb.bg }};color:{{ mb.color }};border-right:1px solid #F0F0EE">{{ mb.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50">{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    admAuthed: false,
+    admStep: 'creds',
+    admEmail: 'admin@deckgen.app',
+    admPw: '',
+    admOtp: '',
+    admError: '',
+    admLoading: false,
+    page: 'dash',
+    userQuery: '',
+    planFilter: 'all',
+    blocked: {},
+    jobs: [
+      { id: 'J-88213', title: '경영바우처 지원 제안서', user: '우진', stage: '완료', dur: '46s', status: 'done' },
+      { id: 'J-88212', title: '헬스케어 AI 피치덱', user: 'mina@·', stage: '슬라이드 5/8 렌더링', dur: '31s…', status: 'running' },
+      { id: 'J-88211', title: '2026 Q2 실적 보고', user: 'jay@·', stage: '차트 데이터 파싱', dur: '12s', status: 'failed' },
+      { id: 'J-88210', title: '로컬 브랜드 협업 제안', user: 'sora@·', stage: '대기열 3번째', dur: '—', status: 'queued' },
+      { id: 'J-88209', title: '신제품 런칭 키노트', user: 'kim@·', stage: '완료', dur: '58s', status: 'done' },
+      { id: 'J-88208', title: '사내 원격근무 정책 제안', user: 'lee@·', stage: '완료', dur: '41s', status: 'done' }
+    ],
+    errors: [
+      { id: 1, type: 'ChartDataParseError', sev: 'HIGH', time: '4분 전', count: 3, msg: 'JSON parse failed at slides[2].chart.data — unexpected token "%"', hint: '생성 프롬프트의 차트 스키마 검증 강화 필요 · J-88211 외 2건', dot: '#E5484D' },
+      { id: 2, type: 'ExportTimeout', sev: 'MED', time: '38분 전', count: 1, msg: 'PPTX render worker timeout after 30s (deck: 24 slides)', hint: '대형 덱 내보내기 워커 타임아웃 상향 검토', dot: '#F59E0B' },
+      { id: 3, type: 'RateLimitExceeded', sev: 'LOW', time: '2시간 전', count: 12, msg: '429 from LLM provider — burst at 19:00 KST', hint: '큐 스로틀링 정상 동작, 자동 재시도 완료', dot: '#8A8A84' }
+    ],
+    tpls: [
+      { id: 1, name: '지원사업 제안서', cover: '소상공인 경영바우처 지원 제안', theme: ['#FFFFFF', '#1A1A1A', '#2563EB'], meta: '5장 · Clean Light · Presentation', uses: 412, on: true, pro: false },
+      { id: 2, name: '스타트업 피치덱', cover: '헬스케어 AI 피치덱', theme: ['#0F0B1E', '#FFFFFF', '#8B6BFF'], meta: '8장 · Violet Bold · Keynote', uses: 388, on: true, pro: false },
+      { id: 3, name: '분기 실적 보고', cover: '2026 Q2 실적 보고', theme: ['#14141A', '#FFFFFF', '#7C9CFF'], meta: '6장 · Ink Dark · Report', uses: 245, on: true, pro: true },
+      { id: 4, name: '브랜드 협업 제안', cover: '로컬 브랜드 협업 제안서', theme: ['#FAF6EF', '#3A2E24', '#C25E3A'], meta: '6장 · Warm Craft · Standard', uses: 173, on: false, pro: false }
+    ],
+    bnType: 'info',
+    bnDraft: '',
+    banners: [
+      { id: 1, type: 'maint', text: '7/10(금) 02:00–04:00 시스템 점검이 예정되어 있습니다. 생성 기능이 일시 중단됩니다.', on: true, meta: '7/7 09:20 게시 · 전체 사용자 · 관리자' },
+      { id: 2, type: 'info', text: '새 기능: 브랜드 킷으로 모든 슬라이드에 로고·푸터를 한 번에 적용해 보세요.', on: false, meta: '7/1 게시 · Pro 사용자 · 박운영' }
+    ],
+    signup: true,
+    maint: false,
+    freeLimit: 5,
+    model: 'Claude Sonnet',
+    toast: ''
+  };
+
+  USERS = [
+    { name: '우진', email: 'woojin@example.com', plan: 'Free', decks: 4, gens: 9, last: '방금', avatarBg: '#1A1A1A' },
+    { name: '미나', email: 'mina@studio.kr', plan: 'Pro', decks: 22, gens: 48, last: '5분 전', avatarBg: '#6D4AFF' },
+    { name: '제이', email: 'jay@agency.co', plan: 'Pro', decks: 17, gens: 31, last: '1시간 전', avatarBg: '#0FA968' },
+    { name: '소라', email: 'sora@brand.io', plan: 'Team', decks: 41, gens: 120, last: '어제', avatarBg: '#E8853D' },
+    { name: '김대리', email: 'kim@corp.com', plan: 'Free', decks: 3, gens: 5, last: '3일 전', avatarBg: '#2563EB' },
+    { name: '이팀장', email: 'lee@corp.com', plan: 'Team', decks: 28, gens: 77, last: '어제', avatarBg: '#D6336C' }
+  ];
+
+  _toast(m) { this.setState({ toast: m }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast: '' }), 2200); }
+  componentWillUnmount() { clearTimeout(this._tt); }
+
+  renderVals() {
+    const s = this.state;
+    const pages = {
+      dash: ['대시보드', '서비스 전체 현황 · 실시간'],
+      users: ['사용자 관리', '검색·플랜 필터·차단'],
+      jobs: ['생성 작업 큐', 'AI 파이프라인 잡 모니터링'],
+      errors: ['오류 로그', '미해결 오류 ' + s.errors.length + '건'],
+      audit: ['감사 로그', 'append-only · 1년 보존'],
+      banners: ['공지 / 배너', '사용자 화면 상단 안내 관리'],
+      templates: ['템플릿 관리', '홈 갤러리 노출·순서·PRO 지정'],
+      plans: ['플랜 · 결제', '구독 현황과 매출'],
+      settings: ['서비스 설정', '가입·한도·모델 정책']
+    };
+    const q = s.userQuery.trim().toLowerCase();
+    const users = this.USERS.filter(u =>
+      (s.planFilter === 'all' || u.plan === s.planFilter) &&
+      (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+    );
+    const barVals = [12, 18, 15, 22, 30, 26, 19, 24, 34, 29, 38, 33, 41, 46];
+    const runningCount = s.jobs.filter(j => j.status === 'running').length;
+
+    const admSubmit = () => {
+      if (s.admLoading) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.admEmail.trim())) { this.setState({ admError: '올바른 이메일을 입력하세요.' }); return; }
+      if (this.state.admPw.length < 8) { this.setState({ admError: '비밀번호는 8자 이상이어야 해요.' }); return; }
+      this.setState({ admError: '', admLoading: true });
+      setTimeout(() => this.setState({ admLoading: false, admStep: 'otp', admOtp: '' }), 800);
+    };
+    const otpSubmit = () => {
+      if (this.state.admOtp === '000000') {
+        this.setState({ admAuthed: true, admError: '', admPw: '', admOtp: '' });
+        this._toast('관리자 로그인 완료 · 감사 로그에 기록됨');
+      } else this.setState({ admError: '코드가 올바르지 않아요. 데모 코드는 000000 입니다.' });
+    };
+    return {
+      showLogin: !s.admAuthed,
+      showConsole: s.admAuthed,
+      stepCreds: s.admStep === 'creds',
+      stepOtp: s.admStep === 'otp',
+      admEmail: s.admEmail,
+      onAdmEmail: (e) => this.setState({ admEmail: e.target.value, admError: '' }),
+      admPw: s.admPw,
+      onAdmPw: (e) => this.setState({ admPw: e.target.value, admError: '' }),
+      onAdmKey: (e) => { if (e.key === 'Enter') admSubmit(); },
+      admPwBorder: s.admError && s.admPw.length < 8 ? '#E5484D' : '#E4E4E0',
+      hasAdmError: !!s.admError,
+      admError: s.admError,
+      admSubmit,
+      admBtnBg: s.admLoading ? '#C9C4E8' : '#6D4AFF',
+      admBtnLabel: s.admLoading ? '확인 중…' : '계속',
+      admOtp: s.admOtp,
+      onAdmOtp: (e) => this.setState({ admOtp: e.target.value.replace(/[^0-9]/g, '').slice(0, 6), admError: '' }),
+      onOtpKey: (e) => { if (e.key === 'Enter') otpSubmit(); },
+      otpBorder: s.admError ? '#E5484D' : '#E4E4E0',
+      otpSubmit,
+      otpBtnLabel: '인증하고 콘솔 열기',
+      backToCreds: () => this.setState({ admStep: 'creds', admError: '' }),
+      admLogout: () => { this.setState({ admAuthed: false, admStep: 'creds', admPw: '', admOtp: '' }); this._toast('로그아웃됐어요'); },
+      pageTitle: pages[s.page][0],
+      pageDesc: pages[s.page][1],
+      navItems: [
+        { id: 'dash', name: '대시보드' },
+        { id: 'users', name: '사용자 관리' },
+        { id: 'jobs', name: '생성 작업 큐', badge: String(runningCount + s.jobs.filter(j => j.status === 'queued').length) },
+        { id: 'errors', name: '오류 로그', badge: s.errors.length ? String(s.errors.length) : '' },
+        { id: 'audit', name: '감사 로그' },
+        { id: 'banners', name: '공지 / 배너', badge: String((s.banners || []).filter(b => b.on).length) },
+        { id: 'templates', name: '템플릿 관리' },
+        { id: 'plans', name: '플랜 · 결제' },
+        { id: 'settings', name: '서비스 설정' }
+      ].map(n => ({
+        name: n.name,
+        bg: s.page === n.id ? 'rgba(139,107,255,.16)' : 'transparent',
+        color: s.page === n.id ? '#FFFFFF' : 'rgba(255,255,255,.6)',
+        weight: s.page === n.id ? 700 : 500,
+        dot: s.page === n.id ? '#8B6BFF' : 'rgba(255,255,255,.2)',
+        hasBadge: !!n.badge && n.badge !== '0',
+        badge: n.badge || '',
+        pick: () => this.setState({ page: n.id })
+      })),
+      isDash: s.page === 'dash',
+      isUsers: s.page === 'users',
+      isJobs: s.page === 'jobs',
+      isErrors: s.page === 'errors',
+      isAudit: s.page === 'audit',
+      isBanners: s.page === 'banners',
+      isTemplates: s.page === 'templates',
+      tpAdd: () => {
+        this.setState(st => ({
+          tpls: [...st.tpls, { id: Date.now(), name: '새 템플릿', cover: '표지 제목을 입력하세요', theme: ['#FFFFFF', '#1A1A1A', '#2563EB'], meta: '5장 · Clean Light · Presentation', uses: 0, on: false, pro: false }]
+        }));
+        this._toast('새 템플릿이 초안(비활성)으로 추가됐어요');
+      },
+      tplRows: s.tpls.map((t, i) => ({
+        name: t.name, cover: t.cover, meta: t.meta, uses: String(t.uses),
+        bg: t.theme[0], ink: t.theme[1], accent: t.theme[2],
+        opacity: t.on ? 1 : 0.55,
+        isPro: t.pro,
+        proLabel: t.pro ? 'PRO 해제' : 'PRO 지정',
+        toggleBg: t.on ? '#6D4AFF' : '#D4D4CE',
+        knob: t.on ? '16px' : '2px',
+        onName: (e) => this.setState(st => ({ tpls: st.tpls.map(x => x.id === t.id ? { ...x, name: e.target.value } : x) })),
+        toggle: () => this.setState(st => ({ tpls: st.tpls.map(x => x.id === t.id ? { ...x, on: !x.on } : x) })),
+        togglePro: () => this.setState(st => ({ tpls: st.tpls.map(x => x.id === t.id ? { ...x, pro: !x.pro } : x) })),
+        moveUp: () => this.setState(st => {
+          if (i === 0) return {};
+          const arr = [...st.tpls]; [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; return { tpls: arr };
+        }),
+        moveDown: () => this.setState(st => {
+          if (i === st.tpls.length - 1) return {};
+          const arr = [...st.tpls]; [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]]; return { tpls: arr };
+        }),
+        del: () => { this.setState(st => ({ tpls: st.tpls.filter(x => x.id !== t.id) })); this._toast("'" + t.name + "' 템플릿 삭제됨"); }
+      })),
+      ...(() => {
+        const TYPES = { info: ['안내', '#2563EB', '#EFF4FF', '#D8E4FB'], warn: ['주의', '#B45309', '#FEF3E2', '#F5DFC0'], maint: ['점검', '#E5484D', '#FFF0F0', '#F5C6C8'] };
+        const t = s.bnType || 'info';
+        const T = TYPES[t];
+        return {
+          bnTypes: [['info', '안내'], ['warn', '주의'], ['maint', '점검']].map(([id, label]) => ({
+            label,
+            bg: t === id ? '#F0EBFF' : '#FFFFFF',
+            color: t === id ? '#6D4AFF' : '#8A8A84',
+            pick: () => this.setState({ bnType: id })
+          })),
+          bnDraft: s.bnDraft || '',
+          onBnDraft: (e) => this.setState({ bnDraft: e.target.value }),
+          bnPrevText: (s.bnDraft || '').trim() || '공지 문구가 여기에 표시됩니다',
+          bnPrevColor: T[1], bnPrevBg: T[2], bnPrevBorder: T[3], bnPrevDot: T[1],
+          bnAdd: () => {
+            const text = (this.state.bnDraft || '').trim();
+            if (!text) { this._toast('공지 문구를 입력하세요'); return; }
+            this.setState(st => ({
+              banners: [{ id: Date.now(), type: st.bnType || 'info', text, on: true, meta: '방금 게시 · 전체 사용자 · 관리자' }, ...(st.banners || [])],
+              bnDraft: ''
+            }));
+            this._toast('공지가 게시됐어요 — 사용자 화면 상단에 표시됩니다');
+          },
+          bannerRows: (s.banners || []).map(b => {
+            const bt = TYPES[b.type];
+            return {
+              text: b.text, meta: b.meta,
+              typeLabel: bt[0], typeColor: bt[1], typeBg: bt[2],
+              opacity: b.on ? 1 : 0.55,
+              toggleBg: b.on ? '#6D4AFF' : '#D4D4CE',
+              knob: b.on ? '18px' : '2px',
+              toggle: () => this.setState(st => ({ banners: st.banners.map(x => x.id === b.id ? { ...x, on: !x.on } : x) })),
+              del: () => { this.setState(st => ({ banners: st.banners.filter(x => x.id !== b.id) })); this._toast('공지 삭제됨'); }
+            };
+          }),
+          noBanners: (s.banners || []).length === 0
+        };
+      })(),
+      ...(() => {
+        const CATS = {
+          auth: ['로그인', '#2563EB', '#EFF4FF'],
+          user: ['사용자', '#E5484D', '#FFF0F0'],
+          settings: ['설정', '#B45309', '#FEF3E2'],
+          data: ['데이터', '#6D4AFF', '#F0EBFF'],
+          billing: ['결제', '#0E8345', '#EAF7F0']
+        };
+        const LOGS = [
+          { time: '07-07 09:42', actor: '관리자', ab: '#6D4AFF', cat: 'auth', action: 'admin.login', detail: '2FA 통과 · 세션 발급', ip: '211.34.0.12' },
+          { time: '07-07 09:44', actor: '관리자', ab: '#6D4AFF', cat: 'settings', action: 'settings.update', detail: 'free_daily_limit 5 → 7', ip: '211.34.0.12' },
+          { time: '07-07 09:51', actor: '관리자', ab: '#6D4AFF', cat: 'user', action: 'user.block', detail: 'kim@corp.com 차단 — 어뷰징 신고 3건', ip: '211.34.0.12' },
+          { time: '07-06 22:10', actor: 'system', ab: '#1A1A1A', cat: 'data', action: 'job.retry', detail: 'J-88211 재시도 (ChartDataParseError)', ip: 'worker-3' },
+          { time: '07-06 20:14', actor: '관리자', ab: '#6D4AFF', cat: 'settings', action: 'maintenance.on', detail: '점검 모드 활성화 (12분간)', ip: '211.34.0.12' },
+          { time: '07-06 19:03', actor: 'system', ab: '#1A1A1A', cat: 'billing', action: 'webhook.paid', detail: 'mina@studio.kr Pro 갱신 ₩12,000', ip: 'pg-callback' },
+          { time: '07-06 15:27', actor: '박운영', ab: '#E8853D', cat: 'user', action: 'user.unblock', detail: 'lee@corp.com 차단 해제', ip: '211.34.0.87' },
+          { time: '07-06 11:02', actor: '박운영', ab: '#E8853D', cat: 'data', action: 'user.data_purge', detail: 'sora@brand.io 요청 — 덱 3개 soft delete', ip: '211.34.0.87' },
+          { time: '07-05 18:40', actor: 'system', ab: '#1A1A1A', cat: 'auth', action: 'login.lockout', detail: 'jay@agency.co 5회 실패 → 10분 잠금', ip: '58.121.9.4' }
+        ];
+        const q = (s.auditQuery || '').trim().toLowerCase();
+        const f = s.auditFilter || 'all';
+        const rows = LOGS.filter(l =>
+          (f === 'all' || l.cat === f) &&
+          (!q || l.actor.toLowerCase().includes(q) || l.action.includes(q) || l.detail.toLowerCase().includes(q))
+        );
+        return {
+          auditQuery: s.auditQuery || '',
+          onAuditQuery: (e) => this.setState({ auditQuery: e.target.value }),
+          auditFilters: [['all', '전체'], ['auth', '로그인'], ['user', '사용자'], ['settings', '설정'], ['data', '데이터'], ['billing', '결제']].map(([id, label]) => ({
+            label,
+            border: f === id ? '#6D4AFF' : '#E4E4E0',
+            bg: f === id ? '#F0EBFF' : '#FFFFFF',
+            color: f === id ? '#6D4AFF' : '#8A8A84',
+            pick: () => this.setState({ auditFilter: id })
+          })),
+          auditRows: rows.map(l => ({
+            time: l.time, actor: l.actor, actorInitial: l.actor[0], actorBg: l.ab,
+            action: l.action, detail: l.detail, ip: l.ip,
+            catColor: CATS[l.cat][1], catBg: CATS[l.cat][2]
+          })),
+          noAudit: rows.length === 0,
+          auditExport: () => this._toast('audit-log.csv 다운로드 시작 (시뮬레이션)')
+        };
+      })(),
+      isPlans: s.page === 'plans',
+      isSettings: s.page === 'settings',
+
+      kpis: [
+        { name: '오늘 생성된 덱', value: '46', delta: '+21%', deltaColor: '#1E7F4F', sub: '어제 38 · 실패율 2.2%' },
+        { name: 'DAU', value: '312', delta: '+8%', deltaColor: '#1E7F4F', sub: 'WAU 1,204 · MAU 3,880' },
+        { name: 'PPTX 내보내기', value: '128', delta: '+14%', deltaColor: '#1E7F4F', sub: '이번 주 누적 517' },
+        { name: '평균 생성 시간', value: '47s', delta: '-6s', deltaColor: '#1E7F4F', sub: '아웃라인 8s + 슬라이드 39s' }
+      ],
+      genBars: barVals.map((v, i) => ({
+        h: Math.round(v / 46 * 100) + '%',
+        color: i === barVals.length - 1 ? '#6D4AFF' : '#C9B8FF',
+        tip: v + '건'
+      })),
+      pipeline: [
+        { name: '아웃라인 생성', time: '8.2s', w: '18%', color: '#6D4AFF' },
+        { name: '시각화 결정', time: '3.1s', w: '7%', color: '#9B82FF' },
+        { name: '슬라이드 렌더', time: '31.4s', w: '68%', color: '#C4B5FF' },
+        { name: 'PPTX 변환', time: '4.6s', w: '10%', color: '#E0D8F9' }
+      ],
+
+      userQuery: s.userQuery,
+      onUserQuery: (e) => this.setState({ userQuery: e.target.value }),
+      planFilters: ['all', 'Free', 'Pro', 'Team'].map(p => ({
+        label: p === 'all' ? '전체' : p,
+        border: s.planFilter === p ? '#6D4AFF' : '#E4E4E0',
+        bg: s.planFilter === p ? '#F0EBFF' : '#FFFFFF',
+        color: s.planFilter === p ? '#6D4AFF' : '#8A8A84',
+        pick: () => this.setState({ planFilter: p })
+      })),
+      userRows: users.map(u => {
+        const blocked = !!s.blocked[u.email];
+        return {
+          ...u,
+          initial: u.name[0],
+          planColor: u.plan === 'Free' ? '#6B6B66' : u.plan === 'Pro' ? '#6D4AFF' : '#0E8345',
+          planBg: u.plan === 'Free' ? '#F0F0EE' : u.plan === 'Pro' ? '#F0EBFF' : '#EAF7F0',
+          decks: String(u.decks), gens: String(u.gens),
+          status: blocked ? '차단됨' : '활성',
+          stColor: blocked ? '#E5484D' : '#1E7F4F',
+          stBg: blocked ? '#FFF0F0' : '#EAF7F0',
+          stBorder: blocked ? '#F5C6C8' : '#C9EBD9',
+          blockLabel: blocked ? '차단 해제' : '차단',
+          blockColor: blocked ? '#1E7F4F' : '#E5484D',
+          toggleBlock: () => {
+            this.setState(st => ({ blocked: { ...st.blocked, [u.email]: !st.blocked[u.email] } }));
+            this._toast(u.name + ' ' + (blocked ? '차단 해제됨' : '차단됨'));
+          }
+        };
+      }),
+      noUsers: users.length === 0,
+
+      jobStats: [
+        { name: '실행 중', count: String(s.jobs.filter(j => j.status === 'running').length), dot: '#6D4AFF', anim: 'dgPulse 1.2s infinite' },
+        { name: '대기', count: String(s.jobs.filter(j => j.status === 'queued').length), dot: '#B4B4AE', anim: 'none' },
+        { name: '완료 (오늘)', count: '43', dot: '#1E7F4F', anim: 'none' },
+        { name: '실패', count: String(s.jobs.filter(j => j.status === 'failed').length), dot: '#E5484D', anim: 'none' }
+      ],
+      jobRows: s.jobs.map(j => ({
+        id: j.id, title: j.title, user: j.user, stage: j.stage, dur: j.dur,
+        status: j.status === 'done' ? 'Done' : j.status === 'running' ? 'Running' : j.status === 'failed' ? 'Failed' : 'Queued',
+        stColor: j.status === 'done' ? '#1E7F4F' : j.status === 'running' ? '#6D4AFF' : j.status === 'failed' ? '#E5484D' : '#8A8A84',
+        stBg: j.status === 'done' ? '#EAF7F0' : j.status === 'running' ? '#F0EBFF' : j.status === 'failed' ? '#FFF0F0' : '#F7F7F5',
+        stBorder: j.status === 'done' ? '#C9EBD9' : j.status === 'running' ? '#DDD2FF' : j.status === 'failed' ? '#F5C6C8' : '#E4E4E0',
+        anim: j.status === 'running' ? 'dgPulse 1.2s infinite' : 'none',
+        rowBg: j.status === 'failed' ? '#FFFBFB' : 'transparent',
+        failed: j.status === 'failed',
+        retry: () => {
+          this.setState(st => ({ jobs: st.jobs.map(x => x.id === j.id ? { ...x, status: 'running', stage: '재시도 — 차트 재생성', dur: '0s…' } : x) }));
+          this._toast(j.id + ' 재시도 시작');
+          setTimeout(() => {
+            this.setState(st => ({ jobs: st.jobs.map(x => x.id === j.id ? { ...x, status: 'done', stage: '완료', dur: '18s' } : x) }));
+          }, 2600);
+        }
+      })),
+
+      errorRows: s.errors.map(er => ({
+        type: er.type, time: er.time, count: String(er.count), msg: er.msg, hint: er.hint, dot: er.dot,
+        sev: er.sev,
+        sevColor: er.sev === 'HIGH' ? '#E5484D' : er.sev === 'MED' ? '#B45309' : '#6B6B66',
+        sevBg: er.sev === 'HIGH' ? '#FFF0F0' : er.sev === 'MED' ? '#FEF3E2' : '#F0F0EE',
+        resolve: () => {
+          this.setState(st => ({ errors: st.errors.filter(x => x.id !== er.id) }));
+          this._toast(er.type + ' 해결 처리됨');
+        }
+      })),
+      noErrors: s.errors.length === 0,
+
+      plans: [
+        { name: 'Free', price: '₩0', limit: '일 ' + s.freeLimit + '회 생성 · 워터마크 포함', users: '3,214명', rev: '—', frame: '1px solid #E4E4E0', popular: false },
+        { name: 'Pro', price: '₩12,000/월', limit: '무제한 생성 · 브랜드 킷 · 협업 3명', users: '402명', rev: '₩3,530,000', frame: '2px solid #6D4AFF', popular: true },
+        { name: 'Team', price: '₩29,000/월', limit: '무제한 · SSO · 관리자 콘솔 · 협업 무제한', users: '58팀', rev: '₩650,000', frame: '1px solid #E4E4E0', popular: false }
+      ],
+
+      tSignup: () => this.setState(st => ({ signup: !st.signup })),
+      signupBg: s.signup ? '#6D4AFF' : '#D4D4CE',
+      signupKnob: s.signup ? '18px' : '2px',
+      tMaint: () => { this.setState(st => ({ maint: !st.maint })); this._toast(s.maint ? '점검 모드 해제' : '점검 모드 활성화 — 사용자에게 배너 표시'); },
+      maintBg: s.maint ? '#E5484D' : '#D4D4CE',
+      maintKnob: s.maint ? '18px' : '2px',
+      freeLimit: String(s.freeLimit),
+      limDec: () => this.setState(st => ({ freeLimit: Math.max(1, st.freeLimit - 1) })),
+      limInc: () => this.setState(st => ({ freeLimit: Math.min(20, st.freeLimit + 1) })),
+      modelBtns: ['Claude Sonnet', 'Claude Opus'].map(m => ({
+        label: m,
+        bg: s.model === m ? '#F0EBFF' : '#FFFFFF',
+        color: s.model === m ? '#6D4AFF' : '#8A8A84',
+        pick: () => { this.setState({ model: m }); this._toast('생성 모델: ' + m); }
+      })),
+
+      hasToast: !!s.toast,
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

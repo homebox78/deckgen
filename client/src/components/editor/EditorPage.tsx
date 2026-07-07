@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { trackEvent } from "../../api/client";
 import { fetchShared } from "../../api/collab";
 import { renderSlideToDataURL } from "../../engine/fabricRenderer";
 import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
@@ -407,6 +408,7 @@ export function EditorPage() {
   const runExport = (format: ExportFormat) => {
     setExportOpen(false);
     setExporting(true);
+    const t0 = Date.now();
     const job =
       format === "pptx"
         ? exportDeckToPptx(deck).then(() =>
@@ -416,7 +418,11 @@ export function EditorPage() {
             showToast("Figma용 SVG 묶음 다운로드 — 압축 풀어 Figma에 드래그하세요"),
           );
     job
-      .catch((e) => showToast(`내보내기 실패: ${e instanceof Error ? e.message : e}`))
+      .then(() => trackEvent("export", true, Date.now() - t0, `${format} · ${deck.title.slice(0, 40)}`))
+      .catch((e) => {
+        trackEvent("export", false, Date.now() - t0, `${format} · ${deck.title.slice(0, 40)}`);
+        showToast(`내보내기 실패: ${e instanceof Error ? e.message : e}`);
+      })
       .finally(() => setExporting(false));
   };
 

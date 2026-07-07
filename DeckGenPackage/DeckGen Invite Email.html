@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>DeckGen 덱 공유 초대</title>
+<!--
+  DeckGen 공유 초대 메일 템플릿
+  - 메일 클라이언트 호환을 위해 table 레이아웃 + 인라인 스타일만 사용 (외부 CSS/폰트/JS 없음)
+  - 발송 시 아래 플레이스홀더를 치환하세요:
+    {{INVITER_NAME}}   초대한 사람 이름          예: 우진
+    {{INVITER_EMAIL}}  초대한 사람 이메일        예: woojin@deckgen.app
+    {{DECK_TITLE}}     덱 제목                   예: 경영바우처 지원 제안서
+    {{ROLE_LABEL}}     부여 권한 라벨            예: 편집 가능 | 보기 전용
+    {{ROLE_DESC}}      권한 설명 한 줄           예: 아웃라인·슬라이드를 수정하고 실시간 공동 편집할 수 있어요.
+    {{INVITE_URL}}     초대 수락/열기 링크       예: https://deckgen.app/d/kv8x2m?invite=abc123
+    {{DECK_META}}      덱 메타 정보              예: 5장 · Clean Light · 오늘 수정됨
+    {{RECIPIENT_EMAIL}} 수신자 이메일 (푸터 표기용)
+-->
+</head>
+<body style="margin:0;padding:0;background-color:#F0F0EE;-webkit-text-size-adjust:100%;">
+  <!-- 미리보기 텍스트 (받은편지함 프리뷰) -->
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{{INVITER_NAME}}님이 '{{DECK_TITLE}}' 덱에 초대했어요 — 권한: {{ROLE_LABEL}}</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F0F0EE;">
+    <tr>
+      <td align="center" style="padding:36px 16px;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:560px;max-width:100%;">
+
+          <!-- 로고 -->
+          <tr>
+            <td style="padding:0 4px 18px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:26px;height:26px;background-color:#1A1A1A;border-radius:7px;font-size:0;line-height:0;">&nbsp;</td>
+                  <td style="padding-left:9px;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:17px;font-weight:700;color:#1A1A1A;">DeckGen</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 본문 카드 -->
+          <tr>
+            <td style="background-color:#FFFFFF;border:1px solid #E4E4E0;border-radius:16px;padding:36px 36px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+                <!-- 아바타 + 헤드라인 -->
+                <tr>
+                  <td align="center" style="padding-bottom:6px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="width:52px;height:52px;background-color:#1A1A1A;border-radius:26px;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:20px;font-weight:700;color:#FFFFFF;text-align:center;vertical-align:middle;">{{INVITER_NAME}}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:20px;line-height:1.45;font-weight:700;color:#1A1A1A;padding:12px 0 6px;">
+                    {{INVITER_NAME}}님이 덱에 초대했어요
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:13.5px;line-height:1.65;color:#6B6B66;padding-bottom:24px;">
+                    {{INVITER_EMAIL}} 계정에서 아래 덱을 함께 작업하도록 요청했습니다.
+                  </td>
+                </tr>
+
+                <!-- 덱 카드 -->
+                <tr>
+                  <td style="border:1px solid #E4E4E0;border-radius:12px;padding:16px 18px;background-color:#FBFBFA;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="width:44px;vertical-align:top;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr><td style="width:40px;height:26px;background-color:#FFFFFF;border:1px solid #E4E4E0;border-radius:5px;border-bottom:3px solid #1A1A1A;font-size:0;">&nbsp;</td></tr>
+                          </table>
+                        </td>
+                        <td style="padding-left:12px;vertical-align:top;">
+                          <div style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:15px;font-weight:700;color:#1A1A1A;line-height:1.4;">{{DECK_TITLE}}</div>
+                          <div style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:12px;color:#8A8A84;padding-top:3px;">{{DECK_META}}</div>
+                        </td>
+                        <td align="right" style="vertical-align:top;white-space:nowrap;">
+                          <span style="display:inline-block;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:11px;font-weight:700;color:#1A1A1A;background-color:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:5px 12px;">{{ROLE_LABEL}}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- 권한 설명 -->
+                <tr>
+                  <td align="center" style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:12.5px;line-height:1.65;color:#6B6B66;padding:16px 8px 22px;">
+                    부여된 권한: <b style="color:#1A1A1A;">{{ROLE_LABEL}}</b> — {{ROLE_DESC}}
+                  </td>
+                </tr>
+
+                <!-- CTA 버튼 (bulletproof) -->
+                <tr>
+                  <td align="center" style="padding-bottom:14px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="background-color:#1A1A1A;border-radius:10px;">
+                          <a href="{{INVITE_URL}}" target="_blank" style="display:inline-block;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;padding:13px 40px;border-radius:10px;">덱 열기</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- 링크 폴백 -->
+                <tr>
+                  <td align="center" style="font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:11.5px;line-height:1.7;color:#8A8A84;padding-bottom:4px;">
+                    버튼이 열리지 않으면 아래 주소를 브라우저에 붙여넣으세요.<br>
+                    <a href="{{INVITE_URL}}" target="_blank" style="color:#55554F;text-decoration:underline;word-break:break-all;">{{INVITE_URL}}</a>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- 안내 박스 -->
+          <tr>
+            <td style="padding:14px 4px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;">
+                <tr>
+                  <td style="padding:14px 18px;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:11.5px;line-height:1.75;color:#6B6B66;">
+                    <b style="color:#1A1A1A;">권한 안내</b><br>
+                    · <b style="color:#1A1A1A;">편집 가능</b> — 아웃라인·슬라이드 수정, 실시간 공동 편집, 댓글<br>
+                    · <b style="color:#1A1A1A;">보기 전용</b> — 열람과 댓글만 가능, 편집 불가<br>
+                    권한은 덱 소유자가 공유 설정에서 언제든 변경하거나 해제할 수 있습니다.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- 푸터 -->
+          <tr>
+            <td align="center" style="padding:22px 8px 0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:11px;line-height:1.8;color:#9C9C96;">
+              이 메일은 {{RECIPIENT_EMAIL}} 주소로 발송된 DeckGen 공유 초대 메일입니다.<br>
+              본인이 요청하지 않았다면 이 메일을 무시하셔도 됩니다. 링크는 초대 대상 계정으로만 활성화됩니다.<br>
+              <a href="https://deckgen.app" target="_blank" style="color:#8A8A84;text-decoration:underline;">DeckGen</a>
+              &nbsp;·&nbsp;
+              <a href="{{INVITE_URL}}" target="_blank" style="color:#8A8A84;text-decoration:underline;">초대 관리</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

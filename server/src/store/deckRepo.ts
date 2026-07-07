@@ -93,6 +93,26 @@ export function replaceDeck(deckId: string, deck: ServerDeck): StoredDeck | null
   return rec;
 }
 
+/** 관리자 콘솔용 요약 목록 */
+export function listDeckSummaries(): {
+  id: string;
+  title: string;
+  slides: number;
+  rev: number;
+  updatedAt: number;
+}[] {
+  ensureLoaded();
+  return [...cache.values()]
+    .map((r) => ({
+      id: r.deck.id,
+      title: r.deck.title,
+      slides: r.deck.slides.length,
+      rev: r.rev,
+      updatedAt: r.updatedAt,
+    }))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
 export function replaceSlide(
   deckId: string,
   slide: ServerDeck["slides"][number],

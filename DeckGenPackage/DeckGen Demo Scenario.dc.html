@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+body{margin:0;background:#F7F7F5;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif}
+</style>
+</helmet>
+
+<div style="max-width:860px;margin:0 auto;padding:48px 32px 72px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <span style="width:24px;height:24px;border-radius:7px;background:#6D4AFF"></span>
+    <span style="font-size:15px;font-weight:700;color:#1A1A1A">DeckGen</span>
+    <span style="font-size:11px;font-weight:600;color:#6D4AFF;background:#F0EBFF;border-radius:5px;padding:2px 7px">Demo Script</span>
+  </div>
+  <div style="font-size:26px;font-weight:800;color:#1A1A1A;letter-spacing:-.02em">전체 플로우 데모 시나리오</div>
+  <div style="font-size:13.5px;color:#6B6B66;margin:8px 0 10px;line-height:1.6">약 7분 · <a href="DeckGen Prototype.dc.html" style="color:#6D4AFF;font-weight:600;text-decoration:none">프로토타입 열기 →</a> · 순서대로 따라가면 전 기능을 한 번씩 거칩니다.</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:28px">
+    <span style="font-size:11.5px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:4px 11px">온보딩</span>
+    <span style="font-size:11.5px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:4px 11px">생성 파이프라인</span>
+    <span style="font-size:11.5px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:4px 11px">에디터</span>
+    <span style="font-size:11.5px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:4px 11px">협업</span>
+    <span style="font-size:11.5px;color:#6B6B66;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:4px 11px">발표·내보내기</span>
+  </div>
+
+  <sc-for list="{{ acts }}" as="act" hint-placeholder-count="3">
+    <div style="margin-bottom:26px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="width:26px;height:26px;flex:none;border-radius:8px;background:#1A1A1A;color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">{{ act.num }}</span>
+        <span style="font-size:16px;font-weight:700;color:#1A1A1A">{{ act.title }}</span>
+        <span style="font-size:11.5px;color:#8A8A84">{{ act.time }}</span>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;overflow:hidden">
+        <sc-for list="{{ act.steps }}" as="st">
+          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid #F0F0EE">
+            <span style="flex:none;width:20px;font-size:11.5px;font-weight:700;color:#B4B4AE;text-align:right;padding-top:1px">{{ st.n }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#1A1A1A;line-height:1.55"><b>{{ st.action }}</b> — {{ st.expect }}</div>
+              <sc-if value="{{ st.hasTip }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11.5px;color:#6D4AFF;margin-top:3px">✦ {{ st.tip }}</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="background:#17151F;border-radius:14px;padding:20px 22px;margin-top:8px">
+    <div style="font-size:13.5px;font-weight:700;color:#FFFFFF;margin-bottom:8px">클로징 멘트 제안</div>
+    <div style="font-size:12.5px;color:rgba(255,255,255,.75);line-height:1.7">"주제 한 줄에서 시작해 — 구조 확인, 순차 생성, 대화형 수정, 협업 리뷰, 발표, PPTX 내보내기까지 — 발표 준비의 전 과정을 한 화면에서 끝냈습니다. 모든 상태(로딩·오류·빈 화면)가 설계돼 있어 실제 구현 스펙으로 바로 사용할 수 있습니다."</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (steps) => steps.map((x, i) => ({ n: String(i + 1), action: x[0], expect: x[1], tip: x[2] || '', hasTip: !!x[2] }));
+    return {
+      acts: [
+        {
+          num: '1', title: '온보딩 (첫 실행)', time: '~40초',
+          steps: mk([
+            ['언어 선택에서 한국어 확인', 'CSS로 그린 국기 아이콘 그리드, 선택 시 블랙 하이라이트'],
+            ['계속 → 용도에서 Sales Deck 외 1개 추가 선택', '멀티 선택 체크카드'],
+            ['계속 → [생성 시작하기]', '다크 완료 카드에 선택한 언어·용도 배지가 반영됨', '건너뛰기·설정에서 재실행도 시연 포인트']
+          ])
+        },
+        {
+          num: '2', title: '홈 — 시작점 3가지', time: '~1분',
+          steps: mk([
+            ['프롬프트 카드 확인', '기본 주제 "소상공인 경영바우처 지원 제안서" 입력돼 있음, 슬라이드 수 ±·테마 드롭다운(레이어 메뉴)'],
+            ['템플릿 갤러리에서 카드 하나 클릭했다가 뒤로', '주제·장수·테마·스타일이 한 번에 채워지는 것 확인'],
+            ['[PPTX 가져오기] 클릭 → 아무 파일 선택', '3단계 변환 로그 후 아웃라인으로 자동 이동 — 뒤로 나와서 계속'],
+            ['내 덱에서 검색·필터 시연', '"로드맵" 검색, [생성 중] 필터, 검색 결과 없음 상태'],
+            ['덱 하나 [삭제] 후 계속 삭제해 빈 상태 확인 → [예시 덱 복원]', '빈 상태 일러스트 + 복원']
+          ])
+        },
+        {
+          num: '3', title: '설정 단계 → 아웃라인', time: '~1분 30초',
+          steps: mk([
+            ['[✦ 아웃라인 생성] → 새 덱 설정 화면', '스타일 4종(Report/Standard/Presentation/Keynote) + 테마 갤러리 + 변형 A–E'],
+            ['테마를 Ink Dark로 바꿨다가 Clean Light로 복귀', '선택 프레임·Aa 미리보기 확인'],
+            ['[아웃라인 생성 →]', '카드가 650ms 간격 순차 스트리밍, 마지막 카드 작성 중 셔머'],
+            ['슬라이드 2 제목·불릿 직접 수정', '문서형 인라인 편집'],
+            ['시각화 드롭다운을 표→이미지→막대 차트로 전환', '미리보기 블록(테이블/이미지 슬롯/막대)이 즉시 전환', '지시문 입력이 슬라이드 차트 캡션으로 전달됨']
+          ])
+        },
+        {
+          num: '4', title: '생성 파이프라인 + 오류 복구', time: '~1분',
+          steps: mk([
+            ['[✦ 슬라이드 생성 (5장)]', '에디터 진입, 썸네일이 Queued→Generating→Done 순차 진행, 우측 작업 로그 갱신'],
+            ['슬라이드 3에서 오류 발생 확인', '빨간 배지 + 캔버스 오류 패널 (첫 생성에서 1회만 발생)'],
+            ['[↻ 다시 생성]', '재생성 후 정상 렌더, 로그에 완료 기록', '건너뛰기=삭제 옵션도 언급']
+          ])
+        },
+        {
+          num: '5', title: '에디터 심화', time: '~2분',
+          steps: mk([
+            ['슬라이드 2에서 차트 클릭 → 속성 탭', 'CHART · chart-01, 막대/파이 토글, 너비 슬라이더'],
+            ['데이터 섹션에서 값 42→60 수정, 항목 추가', '막대·파이·범례가 즉시 다시 그려짐'],
+            ['제목 더블클릭으로 즉석 수정, 드래그로 위치 이동', '요소 오프셋이 속성 패널 X/Y에 반영'],
+            ['AI 채팅에서 "차트를 파이로 바꿔줘"', '적용 후 ↺ Undo로 되돌리기'],
+            ['노트 탭에 메모 입력, 댓글 탭에서 [+ 핀 찍기] 후 슬라이드 클릭', '번호 핀 + 스레드, 김대리 시드 댓글 ✓ 해결'],
+            ['썸네일 [잠금] → 편집 시도', '차단 토스트 + AI 채팅 거부 응답 확인 후 해제'],
+            ['[▦ 개요] 그리드 뷰에서 드래그 순서 변경, [+ 섹션]', '섹션 헤더가 레일·그리드 양쪽에 표시'],
+            ['[버전]에서 자동 스냅샷 확인 → 이전 버전 [복원]', 'AI 수정 전 상태로 복귀, 이후 버전 보존']
+          ])
+        },
+        {
+          num: '6', title: '이미지 · 발표 · 공유 · 내보내기', time: '~1분 30초',
+          steps: mk([
+            ['이미지 슬라이드에서 [✦ AI로 이미지 생성]', '프롬프트+스타일(사진/일러스트/3D) → 생성 아트워크가 슬롯에 채워짐', '실제 파일 드래그&드롭도 지원'],
+            ['[▶ 발표] 진입', '전체화면 재생, 클릭/→ 진행, N으로 발표자 노트 토글, 전환 효과(설정에서 슬라이드/페이드/줌) 시연'],
+            ['Esc → [공유]', '보기/편집 권한 라디오 + 발표 링크 토글 → URL 파라미터 변화, [복사]'],
+            ['[↓ PPTX 내보내기]', 'PPTX/PDF/PNG(zip) 라디오 → 선택 형식으로 다운로드 토스트']
+          ])
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

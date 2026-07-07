@@ -12,6 +12,7 @@ import {
   replaceSlide,
   upsertShared,
 } from "../store/deckRepo.js";
+import { getBlocked } from "../store/adminStore.js";
 import { initSSE, sendEvent } from "../sse.js";
 
 export const collabRouter = Router();
@@ -42,6 +43,15 @@ function broadcast(deckId: string, event: string, data: unknown): void {
 
 function peersOf(deckId: string): Peer[] {
   return [...(presence.get(deckId)?.values() ?? [])];
+}
+
+/** 관리자 콘솔용 — 전체 프레즌스 스냅샷 (이름·덱·최근 활동) */
+export function listPresence(): { name: string; deckId: string; ts: number }[] {
+  const out: { name: string; deckId: string; ts: number }[] = [];
+  for (const [deckId, peers] of presence) {
+    for (const p of peers.values()) out.push({ name: p.name, deckId, ts: p.ts });
+  }
+  return out;
 }
 
 function broadcastPresence(deckId: string): void {
@@ -192,6 +202,10 @@ collabRouter.post("/collab/:deckId/presence", (req: Request, res: Response) => {
     res.status(403).json({ error: "권한이 없습니다." });
     return;
   }
+  if (getBlocked().includes(name)) {
+    res.status(403).json({ error: "차단된 사용자입니다. 관리자에게 문의하세요." });
+    return;
+  }
   const deckId = req.params.deckId;
   if (!presence.has(deckId)) presence.set(deckId, new Map());
   const prev = presence.get(deckId)!.get(clientId);
@@ -212,6 +226,11 @@ collabRouter.get("/collab/:deckId/events", (req: Request, res: Response) => {
     res.status(403).json({ error: "권한이 없습니다." });
     return;
   }
+  const name = String(req.query.name ?? "게스트").slice(0, 40);
+  if (getBlocked().includes(name)) {
+    res.status(403).json({ error: "차단된 사용자입니다." });
+    return;
+  }
 
   initSSE(res);
   const sub = { res, clientId };
@@ -219,7 +238,6 @@ collabRouter.get("/collab/:deckId/events", (req: Request, res: Response) => {
   subscribers.get(deckId)!.add(sub);
 
   // 접속 즉시 프레즌스 등록
-  const name = String(req.query.name ?? "게스트").slice(0, 40);
   const color = String(req.query.color ?? "#8A8A84").slice(0, 16);
   const slideIndex = Number(req.query.slideIndex ?? 0) || 0;
   if (!presence.has(deckId)) presence.set(deckId, new Map());

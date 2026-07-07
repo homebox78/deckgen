@@ -1,7 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+import { getSettings } from "../store/adminStore.js";
+
 // env는 index.ts에서 dotenv로 로드되므로 (ESM import 호이스팅 때문에) 항상 지연 조회한다.
+// 관리자 콘솔 "생성 모델" 설정(§14)이 있으면 그것이 우선.
 export function getModel(): string {
+  try {
+    const override = getSettings().genModel.trim();
+    if (override) return override;
+  } catch {
+    /* 설정 로드 실패 시 기본값 */
+  }
   return process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 }
 

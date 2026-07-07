@@ -15,9 +15,42 @@ import {
 } from "../ai/prompts.js";
 import type { OutlineSlide, ServerSlide, SlideSpec } from "../ai/validate.js";
 import { outlineSlideSchema, slideSchema, slideSpecSchema } from "../ai/validate.js";
+import { getSettings, logError, logEvent } from "../store/adminStore.js";
 import { endSSE, initSSE, sendEvent, sendSSEError } from "../sse.js";
 
 export const aiRouter = Router();
+
+/** §14 이벤트 로깅 — 대시보드/작업 큐/오류 로그의 실데이터 소스 */
+function track(kind: "outline" | "slides" | "edit", startMs: number, ok: boolean, meta?: string, err?: string): void {
+  try {
+    logEvent({ ts: Date.now(), kind, ok, ms: Date.now() - startMs, meta, err });
+    if (!ok && err) logError(err, meta ?? "");
+  } catch {
+    /* 로깅 실패가 응답을 막지 않게 */
+  }
+}
+
+/** §14 점검 모드 + IP당 일일 생성 한도 */
+const dailyGen = new Map<string, { day: string; count: number }>();
+
+function guardGenerate(req: Request, res: Response): boolean {
+  const settings = getSettings();
+  if (settings.maintenance) {
+    res.status(503).json({ error: "점검 중입니다. 잠시 후 다시 시도해주세요." });
+    return false;
+  }
+  const ip = req.ip ?? "unknown";
+  const today = new Date().toISOString().slice(0, 10);
+  const cur = dailyGen.get(ip);
+  const count = cur?.day === today ? cur.count : 0;
+  if (count >= settings.freeDailyLimit) {
+    res.status(429).json({ error: `일일 생성 한도(${settings.freeDailyLimit}회)를 초과했습니다.` });
+    return false;
+  }
+  dailyGen.set(ip, { day: today, count: count + 1 });
+  return true;
+}
+
 
 // ===== GET /api/models — 사용 가능한 LLM 목록 (rate limit 제외, 재생성 레이어 셀렉트용) =====
 aiRouter.get("/models", (_req: Request, res: Response) => {
@@ -73,13 +106,20 @@ aiRouter.post("/outline", (req: Request, res: Response) => {
     res.status(400).json({ error: "prompt가 필요합니다." });
     return;
   }
+  if (!guardGenerate(req, res)) return;
   const count = Math.min(12, Math.max(3, Number(slideCount) || 5));
+  const t0 = Date.now();
+  const meta = prompt.trim().slice(0, 60);
 
   if (!hasApiKey()) {
-    void streamMockOutline(res, prompt.trim(), count, isCarousel(format));
+    void streamMockOutline(res, prompt.trim(), count, isCarousel(format)).then(
+      () => track("outline", t0, true, meta + " (mock)"),
+    );
     return;
   }
-  void streamOutline(res, prompt.trim(), count, isCarousel(format));
+  void streamOutline(res, prompt.trim(), count, isCarousel(format)).then(
+    (ok) => track("outline", t0, ok, meta, ok ? undefined : "OutlineGenerationError"),
+  );
 });
 
 async function streamOutline(
@@ -87,7 +127,7 @@ async function streamOutline(
   prompt: string,
   count: number,
   carousel: boolean,
-) {
+): Promise<boolean> {
   initSSE(res);
   let emitted = 0;
   let buffer = "";
@@ -136,14 +176,16 @@ async function streamOutline(
     timer.clear();
     if (emitted === 0) {
       sendSSEError(res, "아웃라인을 생성하지 못했습니다. 다시 시도해주세요.");
-      return;
+      return false;
     }
     endSSE(res);
+    return true;
   } catch (e) {
     timer.clear();
     if (!res.writableEnded) {
       sendSSEError(res, `아웃라인 생성 실패: ${e instanceof Error ? e.message : "unknown"}`);
     }
+    return false;
   }
 }
 
@@ -170,14 +212,23 @@ aiRouter.post("/slides", (req: Request, res: Response) => {
     return;
   }
 
+  if (!guardGenerate(req, res)) return;
+  const t0 = Date.now();
+  const meta = `${items.length}장`;
   if (!hasApiKey()) {
-    void streamMockSlides(res, items);
+    void streamMockSlides(res, items).then(() => track("slides", t0, true, meta + " (mock)"));
     return;
   }
-  void streamSlides(res, items, carousel);
+  void streamSlides(res, items, carousel).then((ok) =>
+    track("slides", t0, ok, meta, ok ? undefined : "SlideGenerationError"),
+  );
 });
 
-async function streamSlides(res: Response, outline: OutlineSlide[], carousel: boolean) {
+async function streamSlides(
+  res: Response,
+  outline: OutlineSlide[],
+  carousel: boolean,
+): Promise<boolean> {
   initSSE(res);
   const outlineJson = JSON.stringify(outline);
   let emitted = 0;
@@ -188,7 +239,7 @@ async function streamSlides(res: Response, outline: OutlineSlide[], carousel: bo
       : "");
 
   for (const item of outline) {
-    if (res.writableEnded) return;
+    if (res.writableEnded) return false;
     try {
       const spec = await completeValidatedJson(
         {
@@ -210,9 +261,10 @@ async function streamSlides(res: Response, outline: OutlineSlide[], carousel: bo
   }
   if (emitted === 0) {
     sendSSEError(res, "슬라이드를 생성하지 못했습니다. 다시 시도해주세요.");
-    return;
+    return false;
   }
   endSSE(res);
+  return true;
 }
 
 // ===== ③ POST /api/edit (Magic Edit / 슬라이드 재생성) =====
@@ -229,6 +281,11 @@ aiRouter.post("/edit", async (req: Request, res: Response) => {
     res.status(400).json({ error: "instruction이 필요합니다." });
     return;
   }
+  if (getSettings().maintenance) {
+    res.status(503).json({ error: "점검 중입니다. 잠시 후 다시 시도해주세요." });
+    return;
+  }
+  const t0 = Date.now();
   let parsedSlide: ServerSlide;
   try {
     parsedSlide = slideSchema.parse(slide);
@@ -256,6 +313,7 @@ aiRouter.post("/edit", async (req: Request, res: Response) => {
         slideSchema.parse(raw),
       );
       // id는 원본 유지 (교체 대상 식별)
+      track("edit", t0, true, `${instruction.trim().slice(0, 50)} · ${m}`);
       res.json({ slide: { ...edited, id: parsedSlide.id }, model: m });
       return;
     } catch (e) {
@@ -264,6 +322,7 @@ aiRouter.post("/edit", async (req: Request, res: Response) => {
     }
   }
   console.warn("[edit] 전 모델 실패:", lastError);
+  track("edit", t0, false, instruction.trim().slice(0, 50), "MagicEditError");
   res.status(502).json({ error: "AI 수정에 실패했습니다. 다시 시도해주세요." });
 });
 
