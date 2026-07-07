@@ -285,15 +285,15 @@ aiRouter.post("/ai-image", async (req: Request, res: Response) => {
     const r = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      // gpt-image 계열은 response_format 미지원(b64_json 기본 반환) → 파라미터 생략
       body: JSON.stringify({
         model,
         prompt: prompt.trim(),
         n: 1,
         size: typeof size === "string" ? size : "1024x1024",
-        response_format: "b64_json",
       }),
     });
-    if (!r.ok) throw new Error(`OpenAI ${r.status}: ${(await r.text()).slice(0, 200)}`);
+    if (!r.ok) throw new Error(`OpenAI ${r.status}: ${(await r.text()).slice(0, 300)}`);
     const j = (await r.json()) as { data?: { b64_json?: string; url?: string }[] };
     const item = j.data?.[0];
     const image = item?.b64_json ? `data:image/png;base64,${item.b64_json}` : item?.url;

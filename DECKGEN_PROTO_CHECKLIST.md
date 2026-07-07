@@ -10,8 +10,8 @@
 
 ## B. 실 API 연동 (server/config 키 사용)
 - [x] B1. 아웃라인 생성 = 실 Anthropic API (SSE 스트리밍) 동작 확인 — /api/outline 실 스트림·모델 keyed 검증
-- [ ] B2. Magic Edit(AI 채팅) = 실 API 동작
-- [ ] B3. AI 이미지 생성 = 실 API(gpt-image) 동작
+- [x] B2. Magic Edit(AI 채팅) = 실 API 동작
+- [x] B3. AI 이미지 생성 = 실 API(gpt-image) 동작
 - [x] B4. 모델 드롭다운 = 실제 키 있는 모델만 노출 — /api/models keyed(claude/gpt/gemini)
 
 ## C. 협업 — 실시간 커서 (공유 입장자 상호 표시)
@@ -35,8 +35,8 @@
 
 ## F. 에디터 — 삽입 툴바
 - [x] F1. 도형 드롭다운: 사각형/원/타원/삼각형/다이아몬드/별/평행사변형 — 평행사변형 신규(schema/renderer/pptx/zod)
-- [ ] F2. AI 이미지 생성 모달(프롬프트 + 모델 셀렉트 + 생성 후 삽입)
-- [ ] F3. 표 요소(항목/지원전/지원후 + 개선 + 행추가 + 셀 편집)
+- [x] F2. AI 이미지 생성 모달(프롬프트 + 모델 셀렉트 + 생성 후 삽입)
+- [x] F3. 표 요소(항목/지원전/지원후 + 개선 + 행추가 + 셀 편집)
 
 ## G. 에디터 — 상단/알림
 - [ ] G1. 알림 센터 패널(리스트 + 슬라이드 점프 + red dot + 모두읽음)
