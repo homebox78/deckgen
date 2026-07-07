@@ -650,7 +650,6 @@ export function EditorPage() {
         >
           <span className="mi text-[16px]">arrow_back</span>
         </button>
-        <span className="h-5 w-5 shrink-0 rounded-md bg-app-accent" />
         <input
           className="w-56 rounded-md border-b border-dashed border-transparent px-1 py-0.5 text-[14px] font-bold hover:border-app-border focus:border-app-accent focus:!outline-none read-only:hover:border-transparent"
           value={deck.title}
@@ -749,43 +748,43 @@ export function EditorPage() {
         <button
           onClick={() => setGridOpen(true)}
           title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
-          className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+          className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
         >
-          개요
+          <span className="mi align-middle text-[15px] mr-1">grid_view</span>개요
         </button>
-        {!readOnly && (
-          <button
-            onClick={() => setVersionsOpen(true)}
-            title="버전 히스토리 — 스냅샷 저장/복원"
-            className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
-          >
-            버전
-          </button>
-        )}
         {!readOnly && (
           <button
             onClick={() => setMotionOpen((v) => !v)}
             title="모션 타임라인 — 요소 등장 애니"
-            className={`rounded-[9px] border px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent ${
+            className={`rounded-[9px] border px-3 py-2 text-[13px] font-semibold hover:border-app-accent ${
               motionOpen ? "border-app-accent bg-app-accent-soft" : "border-app-border bg-white"
             }`}
           >
             <span className="mi align-middle text-[15px] mr-1">movie</span>모션
           </button>
         )}
+        {!readOnly && (
+          <button
+            onClick={() => setVersionsOpen(true)}
+            title="버전 히스토리 — 스냅샷 저장/복원"
+            className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
+          >
+            <span className="mi align-middle text-[15px] mr-1">history</span>버전
+          </button>
+        )}
         <button
           onClick={() => setPresenting(true)}
           title="발표 모드 — 클릭/→ 진행 · N 노트 · Esc 종료"
-          className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+          className="rounded-[9px] bg-app-text px-3 py-2 text-[13px] font-semibold text-white hover:opacity-90"
         >
           <span className="mi align-middle text-[15px] mr-1">play_arrow</span>발표
         </button>
         {!collab.isGuest && (
           <button
             onClick={() => setShareOpen(true)}
-            className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+            className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
           >
-            공유
+            <span className="mi align-middle text-[15px] mr-1">share</span>공유
           </button>
         )}
         <button
@@ -793,7 +792,7 @@ export function EditorPage() {
           disabled={exporting}
           className="rounded-[9px] bg-app-accent px-4 py-2 text-[13px] font-semibold text-white shadow-[0_2px_6px_rgba(26,26,26,.25)] hover:opacity-90 disabled:opacity-50"
         >
-          {exporting ? "내보내는 중…" : <><span className="mi align-middle text-[14px] mr-1">download</span>PPTX 내보내기</>}
+          {exporting ? "내보내는 중…" : <><span className="mi align-middle text-[14px] mr-1">download</span>내보내기<span className="mi align-middle text-[13px] ml-0.5">keyboard_arrow_down</span></>}
         </button>
         {exportOpen && (
           <ExportPopover
