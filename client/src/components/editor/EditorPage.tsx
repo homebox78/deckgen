@@ -26,6 +26,7 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
+import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
 import { PropertiesPanel } from "./PropertiesPanel";
@@ -294,6 +295,7 @@ export function EditorPage() {
   const [presenting, setPresenting] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
+  const [gridOpen, setGridOpen] = useState(false);
   const [slideQuery, setSlideQuery] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -537,6 +539,13 @@ export function EditorPage() {
             <span className="text-[9px] text-app-faint">▾</span>
           </Dropdown>
         )}
+        <button
+          onClick={() => setGridOpen(true)}
+          title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
+          className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+        >
+          개요
+        </button>
         {!readOnly && (
           <button
             onClick={() => setVersionsOpen(true)}
@@ -592,6 +601,18 @@ export function EditorPage() {
           />
         )}
         {versionsOpen && <VersionHistory deck={deck} onClose={() => setVersionsOpen(false)} />}
+        {gridOpen && (
+          <GridOverview
+            deck={deck}
+            theme={theme}
+            dims={dims}
+            onClose={() => setGridOpen(false)}
+            onJump={(i) => {
+              setCurrentSlideIndex(i);
+              setGridOpen(false);
+            }}
+          />
+        )}
         {regen &&
           (() => {
             const target = deck.slides.find((s) => s.id === regen.slideId);

@@ -11,6 +11,7 @@ interface DeckState {
   setThemeId: (themeId: string) => void;
   replaceSlide: (slideId: string, slide: Slide) => void;
   addSlide: (afterIndex: number) => void;
+  moveSlide: (from: number, to: number) => void;
   duplicateSlide: (slideId: string) => void;
   deleteSlide: (slideId: string) => void;
   addElement: (slideId: string, element: SlideElement) => void;
@@ -67,6 +68,16 @@ export const useDeckStore = create<DeckState>()(
               }
             : s,
         ),
+      moveSlide: (from, to) =>
+        set((s) => {
+          if (!s.deck) return s;
+          const slides = [...s.deck.slides];
+          if (from < 0 || from >= slides.length || to < 0 || to >= slides.length || from === to)
+            return s;
+          const [m] = slides.splice(from, 1);
+          slides.splice(to, 0, m);
+          return { deck: mapSlides(s.deck, () => slides) };
+        }),
       addSlide: (afterIndex) =>
         set((s) => {
           if (!s.deck) return s;
