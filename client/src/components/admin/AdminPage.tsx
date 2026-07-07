@@ -25,6 +25,11 @@ type PageId =
   | "audit"
   | "banners"
   | "templates"
+  | "decks"
+  | "collab"
+  | "models"
+  | "apikeys"
+  | "credits"
   | "plans"
   | "settings";
 
@@ -36,6 +41,11 @@ const PAGES: { id: PageId; name: string; desc: string }[] = [
   { id: "audit", name: "감사 로그", desc: "append-only 관리자 기록" },
   { id: "banners", name: "공지 / 배너", desc: "사용자 화면 상단 안내 관리" },
   { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정" },
+  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크 · 멤버 · 강제 잠금" },
+  { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션" },
+  { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용" },
+  { id: "apikeys", name: "API 키 관리", desc: "서버 연동 키 · 회전 · 폐기" },
+  { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그" },
   { id: "plans", name: "플랜 · 결제", desc: "플랜 정의 (결제 연동 2차)" },
   { id: "settings", name: "서비스 설정", desc: "한도·점검 모드·모델 정책" },
 ];
@@ -844,6 +854,254 @@ function SettingsPage() {
   );
 }
 
+// ===== 덱·공유 관리 (실데이터) =====
+function DecksPage() {
+  const [decks, setDecks] = useState<{ id: string; title: string; slides: number; updatedAt: number }[]>([]);
+  const [locked, setLocked] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    void adminApi.decks().then((r) => setDecks(r.decks)).catch((e) => showToast(String(e.message ?? e)));
+  }, []);
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
+        <span className="flex-[1.8]">덱</span>
+        <span className="flex-1">슬라이드</span>
+        <span className="flex-1">최근 수정</span>
+        <span className="flex-1">공유 링크</span>
+        <span className="w-[150px] flex-none">조치</span>
+      </div>
+      {decks.map((d) => (
+        <div key={d.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
+          <div className="flex-[1.8]">
+            <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+              {d.title}
+              {locked[d.id] && (
+                <span className="rounded bg-[#FFF0F0] px-1.5 py-0.5 text-[9.5px] font-bold text-app-danger">잠김</span>
+              )}
+            </div>
+            <div className="font-mono text-[10.5px] text-app-faint">/s/{d.id}</div>
+          </div>
+          <span className="flex-1 text-[12.5px]">{d.slides}장</span>
+          <span className="flex-1 text-[12px] text-app-muted">{rel(d.updatedAt)}</span>
+          <span className="flex-1 text-[12px] text-[#1E7F4F]">활성</span>
+          <span className="flex w-[150px] flex-none gap-1.5">
+            <button
+              onClick={() => {
+                setLocked((p) => ({ ...p, [d.id]: !p[d.id] }));
+                showToast(locked[d.id] ? "잠금 해제됨" : "강제 잠금 — 소유자 외 편집 차단");
+              }}
+              className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold"
+            >
+              {locked[d.id] ? "잠금 해제" : "강제 잠금"}
+            </button>
+          </span>
+        </div>
+      ))}
+      {decks.length === 0 && (
+        <div className="p-[26px] text-center text-[12.5px] text-app-faint">공유된 덱이 없습니다</div>
+      )}
+    </Card>
+  );
+}
+
+// ===== 초대 · 댓글 (초대=events 실데이터 / 댓글=시뮬레이션) =====
+function CollabPage() {
+  const [invites, setInvites] = useState<{ meta: string; ts: number }[]>([]);
+  const [comments, setComments] = useState([
+    { id: 1, deck: "경영바우처 지원 제안서", author: "김대리", text: "42% 막대 색을 더 강하게 해주세요.", flagged: false, resolved: false },
+    { id: 2, deck: "제품 로드맵 공유", author: "guest_9f2", text: "무료 크레딧 나눠드립니다 → bit.ly/xxxx", flagged: true, resolved: false },
+    { id: 3, deck: "브랜드 협업 제안", author: "박과장", text: "3장 수치 최신화 부탁해요.", flagged: false, resolved: true },
+  ]);
+  useEffect(() => {
+    void adminApi.jobs().then((r) => setInvites(r.jobs.filter((j) => j.meta.includes("초대 메일")).map((j) => ({ meta: j.meta, ts: j.ts })))).catch(() => {});
+  }, []);
+  return (
+    <div className="grid grid-cols-2 gap-3.5">
+      <Card className="overflow-hidden">
+        <div className="border-b border-app-border bg-[#FBFBFA] px-4 py-2.5 text-[12.5px] font-bold">
+          초대 메일 <span className="text-[11px] font-normal text-app-faint">· DeckGen Invite Email 발송</span>
+        </div>
+        {invites.map((iv, i) => (
+          <div key={i} className="flex items-center justify-between border-b border-[#F0F0EE] px-4 py-2.5">
+            <div className="min-w-0">
+              <div className="truncate text-[12px]">{iv.meta.replace("초대 메일 · ", "")}</div>
+              <div className="text-[10.5px] text-app-faint">{fmtTime(iv.ts)}</div>
+            </div>
+            <StatusPill ok label="발송됨" />
+          </div>
+        ))}
+        {invites.length === 0 && (
+          <div className="p-6 text-center text-[12px] text-app-faint">발송된 초대가 없습니다 — 공유 다이얼로그에서 초대하면 기록됩니다</div>
+        )}
+      </Card>
+      <Card className="overflow-hidden">
+        <div className="border-b border-app-border bg-[#FBFBFA] px-4 py-2.5 text-[12.5px] font-bold">
+          댓글 모더레이션 <span className="text-[11px] font-normal text-app-danger">신고 {comments.filter((c) => c.flagged && !c.resolved).length}건</span>
+        </div>
+        {comments.map((c) => (
+          <div key={c.id} className="border-b border-[#F0F0EE] px-4 py-2.5" style={{ background: c.flagged && !c.resolved ? "#FFFBFB" : "transparent" }}>
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-[11.5px] font-semibold">{c.author}</span>
+              <span className="text-[10.5px] text-app-faint">{c.deck}</span>
+              {c.flagged && <span className="rounded bg-[#FFF0F0] px-1.5 py-0.5 text-[9.5px] font-bold text-app-danger">스팸 신고</span>}
+              {c.resolved && <span className="rounded bg-[#EAF7F0] px-1.5 py-0.5 text-[9.5px] font-bold text-[#1E7F4F]">해결됨</span>}
+            </div>
+            <p className="text-[11.5px] text-app-muted">{c.text}</p>
+            {!c.resolved && (
+              <div className="mt-1.5 flex gap-1.5">
+                <button onClick={() => { setComments((p) => p.map((x) => x.id === c.id ? { ...x, resolved: true } : x)); showToast("해결 처리됐어요"); }} className="rounded-[6px] border border-app-border bg-white px-2 py-0.5 text-[10.5px] font-semibold text-[#1E7F4F]">해결 처리</button>
+                <button onClick={() => { setComments((p) => p.filter((x) => x.id !== c.id)); showToast("댓글이 삭제됐어요"); }} className="rounded-[6px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-0.5 text-[10.5px] font-semibold text-app-danger">삭제</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
+// ===== AI 모델 (config 모델 + 시뮬레이션 정책) =====
+function ModelsPage() {
+  const [rows, setRows] = useState([
+    { id: "auto", name: "자동", cost: 1, free: true, on: true },
+    { id: "deckgen-1.1", name: "DeckGen 1.1", cost: 1, free: true, on: true },
+    { id: "deckgen-1.0-pro", name: "DeckGen 1.0 Pro", cost: 2, free: false, on: true },
+    { id: "claude-fable-5", name: "Claude Fable 5", cost: 3, free: false, on: true },
+    { id: "gemini-3.1-pro", name: "Gemini 3.1 Pro", cost: 3, free: false, on: true },
+    { id: "gpt-5.5", name: "GPT-5.5", cost: 4, free: false, on: false },
+  ]);
+  const upd = (id: string, patch: Partial<(typeof rows)[number]>) =>
+    setRows((p) => p.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  return (
+    <Card className="overflow-hidden">
+      <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
+        <span className="flex-[1.6]">모델</span>
+        <span className="flex-1">크레딧 / 생성</span>
+        <span className="flex-1">Free 노출</span>
+        <span className="flex-1">서비스 상태</span>
+      </div>
+      {rows.map((r) => (
+        <div key={r.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
+          <div className="flex-[1.6]">
+            <div className="text-[12.5px] font-semibold">{r.name}</div>
+            <div className="text-[10.5px] text-app-faint">{r.free ? "모든 플랜 노출" : "Plus 이상 전용"}</div>
+          </div>
+          <span className="flex flex-1 items-center gap-1.5">
+            <button onClick={() => upd(r.id, { cost: Math.max(1, r.cost - 1) })} className="rounded border border-app-border px-1.5 text-[12px]">−</button>
+            <span className="w-4 text-center text-[12.5px] font-semibold">{r.cost}</span>
+            <button onClick={() => upd(r.id, { cost: Math.min(9, r.cost + 1) })} className="rounded border border-app-border px-1.5 text-[12px]">+</button>
+          </span>
+          <span className="flex-1"><Toggle on={r.free} onClick={() => upd(r.id, { free: !r.free })} /></span>
+          <span className="flex-1">
+            <button onClick={() => upd(r.id, { on: !r.on })} className={`rounded-[7px] border px-2.5 py-[5px] text-[11px] font-semibold ${r.on ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : "border-app-border bg-white text-app-faint"}`}>{r.on ? "운영 중" : "중지됨"}</button>
+          </span>
+        </div>
+      ))}
+      <p className="px-[18px] py-3 text-[11px] text-app-faint">Free 노출 OFF 모델은 프론트 모델 드롭다운에서 Plus 배지 + 잠금으로 표시됩니다.</p>
+    </Card>
+  );
+}
+
+// ===== API 키 관리 (시뮬레이션) =====
+function ApiKeysPage() {
+  const [keys, setKeys] = useState([
+    { id: 1, name: "프로덕션 서버", masked: "dg_live_••••a9F2", scope: "전체", calls: "1.2M", on: true },
+    { id: 2, name: "스테이징", masked: "dg_test_••••7c1B", scope: "전체", calls: "84K", on: true },
+    { id: 3, name: "분석 파이프라인", masked: "dg_live_••••e5K0", scope: "읽기 전용", calls: "410K", on: true },
+  ]);
+  const [reveal, setReveal] = useState<string | null>(null);
+  return (
+    <>
+      <div className="mb-3.5 flex items-center justify-between">
+        <span className="text-[12.5px] text-app-muted">서버·파이프라인 연동용 시크릿 키. 전체 값은 발급 시 1회만 표시됩니다.</span>
+        <button
+          onClick={() => {
+            const full = "dg_live_" + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 8);
+            setReveal(full);
+            setKeys((p) => [{ id: Date.now(), name: "새 키", masked: full.slice(0, 12) + "••••" + full.slice(-4), scope: "전체", calls: "0", on: true }, ...p]);
+          }}
+          className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white"
+        >
+          + 새 키 발급
+        </button>
+      </div>
+      {reveal && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-app-accent-border bg-app-accent-soft px-3 py-2.5">
+          <span className="flex-1 font-mono text-[12px]">{reveal}</span>
+          <button onClick={() => { void navigator.clipboard.writeText(reveal); showToast("키를 복사했어요"); }} className="rounded border border-app-border bg-white px-2 py-1 text-[11px] font-semibold">복사</button>
+          <button onClick={() => setReveal(null)} className="rounded border border-app-border bg-white px-2 py-1 text-[11px] font-semibold">확인</button>
+        </div>
+      )}
+      <Card className="overflow-hidden">
+        <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
+          <span className="flex-[1.8]">이름 / 키</span>
+          <span className="flex-1">권한</span>
+          <span className="flex-1">호출</span>
+          <span className="w-[140px] flex-none">조치</span>
+        </div>
+        {keys.map((k) => (
+          <div key={k.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
+            <div className="flex-[1.8]">
+              <div className="text-[12.5px] font-semibold">{k.name}</div>
+              <div className="font-mono text-[10.5px] text-app-faint">{k.masked}</div>
+            </div>
+            <span className="flex-1 text-[12px]">{k.scope}</span>
+            <span className="flex-1 text-[12px] text-app-muted">{k.calls}</span>
+            <span className="flex w-[140px] flex-none gap-1.5">
+              <button onClick={() => showToast(`${k.name} 키를 회전했어요 — 기존 키 24시간 후 만료`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">회전</button>
+              <button onClick={() => { setKeys((p) => p.filter((x) => x.id !== k.id)); showToast(`${k.name} 키를 폐기했어요`); }} className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-[5px] text-[11px] font-semibold text-app-danger">폐기</button>
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 크레딧 사용 내역 (events 기반 + 시뮬레이션 KPI) =====
+function CreditsPage() {
+  const [jobs, setJobs] = useState<AdminJob[]>([]);
+  useEffect(() => {
+    void adminApi.jobs().then((r) => setJobs(r.jobs)).catch(() => {});
+  }, []);
+  const byKind = ["outline", "slides", "edit", "regen", "export"].map((k) => ({
+    k,
+    n: jobs.filter((j) => j.kind === k).length,
+  }));
+  const maxN = Math.max(1, ...byKind.map((b) => b.n));
+  const KIND_KR: Record<string, string> = { outline: "아웃라인", slides: "슬라이드 생성", edit: "AI 수정", regen: "AI 이미지", export: "내보내기" };
+  return (
+    <>
+      <div className="mb-5 grid grid-cols-4 gap-3.5">
+        {[
+          { name: "오늘 소모", value: String(jobs.filter((j) => new Date(j.ts).toDateString() === new Date().toDateString()).length * 4), sub: "이벤트 × 평균 단가" },
+          { name: "이번 달 누적", value: `${jobs.length * 4}`, sub: "생성 이벤트 기준" },
+          { name: "생성당 평균", value: "4.2", sub: "크레딧 / 덱 생성" },
+          { name: "총 이벤트", value: String(jobs.length), sub: "최근 60건" },
+        ].map((k) => (
+          <Card key={k.name} className="px-[18px] py-4">
+            <div className="text-[12px] text-app-muted">{k.name}</div>
+            <div className="mt-1.5 text-[24px] font-extrabold">{k.value}</div>
+            <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
+          </Card>
+        ))}
+      </div>
+      <Card className="px-5 py-[18px]">
+        <div className="mb-3.5 text-[13.5px] font-bold">종류별 소모</div>
+        {byKind.map((b) => (
+          <div key={b.k} className="flex items-center gap-3 py-[7px]">
+            <span className="w-[110px] flex-none text-[12px] text-[#4A4A45]">{KIND_KR[b.k]}</span>
+            <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+              <div className="h-full rounded bg-app-accent" style={{ width: `${(b.n / maxN) * 100}%`, opacity: 0.8 }} />
+            </div>
+            <span className="w-10 flex-none text-right text-[11.5px] font-bold">{b.n * 4}</span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
 // ===== 콘솔 셸 =====
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getAdminToken());
@@ -923,6 +1181,11 @@ export function AdminPage() {
           {page === "audit" && <AuditPage />}
           {page === "banners" && <BannersPage />}
           {page === "templates" && <TemplatesPage />}
+          {page === "decks" && <DecksPage />}
+          {page === "collab" && <CollabPage />}
+          {page === "models" && <ModelsPage />}
+          {page === "apikeys" && <ApiKeysPage />}
+          {page === "credits" && <CreditsPage />}
           {page === "plans" && <PlansPage />}
           {page === "settings" && <SettingsPage />}
         </div>

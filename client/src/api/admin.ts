@@ -120,9 +120,18 @@ export interface AdminSettings {
   genModel: string;
 }
 
+export interface AdminDeck {
+  id: string;
+  title: string;
+  slides: number;
+  rev: number;
+  updatedAt: number;
+}
+
 export const adminApi = {
   metrics: () => req<AdminMetrics>("/api/admin/metrics"),
   users: () => req<{ users: AdminUser[] }>("/api/admin/users"),
+  decks: () => req<{ decks: AdminDeck[] }>("/api/admin/decks"),
   block: (name: string, blocked: boolean) =>
     req("/api/admin/users/block", { method: "POST", body: JSON.stringify({ name, blocked }) }),
   jobs: () => req<{ jobs: AdminJob[] }>("/api/admin/jobs"),

@@ -184,6 +184,11 @@ adminRouter.post("/admin/users/block", (req: Request, res: Response) => {
   res.json({ ok: true, blocked: list });
 });
 
+// ===== 덱·공유 관리 (실데이터) =====
+adminRouter.get("/admin/decks", (_req: Request, res: Response) => {
+  res.json({ decks: listDeckSummaries() });
+});
+
 // ===== 작업 큐 (events 기반 최근 잡) =====
 adminRouter.get("/admin/jobs", (_req: Request, res: Response) => {
   const events = getEvents().slice(-60).reverse();
