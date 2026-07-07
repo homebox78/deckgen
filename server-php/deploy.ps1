@@ -7,8 +7,13 @@ $webroot = "/var/www/html/deckGen"
 
 Write-Host "[1/6] 클라이언트 빌드" -ForegroundColor Cyan
 Push-Location $root
-npm run build -w client
+# npm은 청크 크기 경고 등을 stderr로 냄 → PS5.1 Stop 모드가 오탐 중단하므로 종료코드로만 판정
+$ErrorActionPreference = "Continue"
+cmd /c "npm run build -w client"
+$buildExit = $LASTEXITCODE
+$ErrorActionPreference = "Stop"
 Pop-Location
+if ($buildExit -ne 0) { throw "client build failed (exit $buildExit)" }
 
 Write-Host "[2/6] SSH 키 준비 (임시 사본 + 권한 잠금)" -ForegroundColor Cyan
 $key = "$env:TEMP\deckgen_deploy_key.pem"
