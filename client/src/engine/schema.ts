@@ -4,8 +4,8 @@
 export const SLIDE_W = 1920;
 export const SLIDE_H = 1080;
 
-// ===== 비율 (16:9 발표 · 4:5 카드뉴스 캐러셀) =====
-export type DeckAspect = "16:9" | "4:5";
+// ===== 비율 (16:9 발표 · 4:3 클래식 · 4:5 카드뉴스 캐러셀) =====
+export type DeckAspect = "16:9" | "4:3" | "4:5";
 
 export interface SlideDims {
   w: number;
@@ -14,6 +14,7 @@ export interface SlideDims {
 
 export const ASPECT_DIMS: Record<DeckAspect, SlideDims> = {
   "16:9": { w: 1920, h: 1080 },
+  "4:3": { w: 1440, h: 1080 }, // 클래식 발표 비율
   "4:5": { w: 1080, h: 1350 }, // 인스타그램 캐러셀 기준 캔버스
 };
 

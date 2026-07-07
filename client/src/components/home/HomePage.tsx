@@ -458,6 +458,7 @@ export function HomePage() {
               {(
                 [
                   ["16:9", "▭ 16:9"],
+                  ["4:3", "▭ 4:3"],
                   ["4:5", "▯ 4:5"],
                 ] as const
               ).map(([a, label], i) => (
@@ -465,7 +466,7 @@ export function HomePage() {
                   key={a}
                   onClick={() => setAspect(a)}
                   className={`px-3 py-1 text-[12px] font-semibold ${
-                    i === 1 ? "border-l border-app-border" : ""
+                    i > 0 ? "border-l border-app-border" : ""
                   } ${aspect === a ? "bg-app-text text-white" : "bg-white text-app-faint hover:bg-app-bg"}`}
                 >
                   {label}

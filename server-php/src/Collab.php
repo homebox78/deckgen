@@ -22,7 +22,7 @@ final class Collab
         return is_array($deck)
             && is_string($deck['id'] ?? null) && $deck['id'] !== '' && strlen($deck['id']) <= 64
             && is_array($deck['slides'] ?? null) && count($deck['slides']) >= 1 && count($deck['slides']) <= 60
-            && in_array($deck['aspect'] ?? '', ['16:9', '4:5'], true);
+            && in_array($deck['aspect'] ?? '', ['16:9', '4:3', '4:5'], true);
     }
 
     /** @return array{rec: array, role: string}|null */

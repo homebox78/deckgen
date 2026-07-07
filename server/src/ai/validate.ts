@@ -150,7 +150,7 @@ export const deckSchema = z.object({
   id: z.string().min(1).max(64),
   title: z.string().max(300),
   themeId: z.string().max(64),
-  aspect: z.enum(["16:9", "4:5"]),
+  aspect: z.enum(["16:9", "4:3", "4:5"]),
   slides: z.array(slideSchema).min(1).max(60),
   createdAt: z.number(),
   updatedAt: z.number(),
