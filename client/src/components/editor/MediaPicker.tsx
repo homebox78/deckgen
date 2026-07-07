@@ -18,12 +18,18 @@ const TABS: { id: Tab; label: string }[] = [
 
 const EMOJIS = "😀 🚀 💡 📊 📈 ✅ ⭐ 🔥 💰 🎯 🏆 📌 🔔 💬 📎 🎨 🌱 ⚡ 🧩 🛠️ 📅 🔍 💎 🌟".split(" ");
 const ICON_PATHS: Record<string, string> = {
-  체크: "M20 6L9 17l-5-5",
+  스파클: "M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z",
+  시계: "M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2",
   화살표: "M5 12h14M13 6l6 6-6 6",
+  체크: "M20 6L9 17l-5-5",
   하트: "M12 21s-8-5.5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.5-8 11-8 11z",
   별: "M12 2l3 6.5 7 .6-5.3 4.6L18 21l-6-3.6L6 21l1.3-7.3L2 9.1l7-.6z",
-  전구: "M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0012 3z",
-  종: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0",
+  설정: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4a1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 004.6 14H4a2 2 0 110-4h.1A1.7 1.7 0 006 7a1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0011 4.6V4a2 2 0 114 0v.1a1.7 1.7 0 001.7 1 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V11a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
+  그리드: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+  클라우드: "M18 10a4 4 0 00-7.7-1.3A3.5 3.5 0 106.5 18H18a4 4 0 000-8z",
+  육각형: "M12 2l8.7 5v10L12 22l-8.7-5V7z",
+  타깃: "M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z",
+  연필: "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z",
 };
 
 // Pexels/GIPHY 시뮬레이션용 그라디언트 (실 연동 전)
@@ -74,6 +80,7 @@ export function MediaPicker({
 }) {
   const [tab, setTab] = useState<Tab>("image");
   const [libTab, setLibTab] = useState<"icon" | "emoji" | "gif">("icon");
+  const [iconQuery, setIconQuery] = useState("");
   const [ytUrl, setYtUrl] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
@@ -303,20 +310,33 @@ export function MediaPicker({
                 </div>
               )}
               {libTab === "icon" && (
-                <div className="grid grid-cols-6 gap-2">
-                  {Object.entries(ICON_PATHS).map(([name, path]) => (
-                    <button
-                      key={name}
-                      onClick={() => insertImage(iconDataURL(path), 200, 200, "contain")}
-                      title={name}
-                      className="flex aspect-square items-center justify-center rounded-lg border border-app-border hover:border-app-accent"
-                    >
-                      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1A1A1A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d={path} />
-                      </svg>
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div className="mb-2.5 flex items-center gap-2 rounded-lg border border-app-border px-2.5 py-2">
+                    <span className="mi text-[15px] text-app-faint">search</span>
+                    <input
+                      value={iconQuery}
+                      onChange={(e) => setIconQuery(e.target.value)}
+                      placeholder="아이콘 검색"
+                      className="flex-1 bg-transparent text-[12px] focus:outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-6 gap-2">
+                    {Object.entries(ICON_PATHS)
+                      .filter(([name]) => !iconQuery.trim() || name.includes(iconQuery.trim()))
+                      .map(([name, path]) => (
+                        <button
+                          key={name}
+                          onClick={() => insertImage(iconDataURL(path), 200, 200, "contain")}
+                          title={name}
+                          className="flex aspect-square items-center justify-center rounded-lg border border-app-border hover:border-app-accent"
+                        >
+                          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1A1A1A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d={path} />
+                          </svg>
+                        </button>
+                      ))}
+                  </div>
+                </>
               )}
               {libTab === "gif" && (
                 <>

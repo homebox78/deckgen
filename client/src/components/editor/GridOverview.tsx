@@ -1,5 +1,5 @@
 // 개요 그리드 (Demo Act 5) — 전체 슬라이드 그리드 + 드래그 순서 변경 + 클릭 편집 이동
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { SlideThumbnail } from "./SlideThumbnail";
 import type { Deck, SlideDims } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
@@ -38,8 +38,15 @@ export function GridOverview({
       <div className="flex-1 overflow-y-auto p-6">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
           {deck.slides.map((s, i) => (
+            <Fragment key={s.id}>
+            {s.section && s.section !== deck.slides[i - 1]?.section && (
+              <div className="col-span-full flex items-center gap-1.5 pt-1 first:pt-0">
+                <span className="mi text-[14px] text-app-faint">label</span>
+                <span className="text-[11.5px] font-bold tracking-wide text-app-muted uppercase">{s.section}</span>
+                <span className="h-px flex-1 bg-app-border-soft" />
+              </div>
+            )}
             <div
-              key={s.id}
               draggable
               onDragStart={() => setDragIdx(i)}
               onDragOver={(e) => e.preventDefault()}
@@ -72,6 +79,7 @@ export function GridOverview({
                 </button>
               </div>
             </div>
+            </Fragment>
           ))}
         </div>
       </div>

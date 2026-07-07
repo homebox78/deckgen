@@ -1002,9 +1002,22 @@ export function EditorPage() {
                     )}
                   </button>
                   <div className="mt-1 flex items-center gap-1 px-0.5 text-[10px] text-app-faint">
-                    <span className="flex-1 truncate">
+                    <span className="truncate">
                       {i + 1} · {s.layout}
                     </span>
+                    {!readOnly && isCur && (
+                      <button
+                        onClick={() => {
+                          setCurrentSlideIndex(i);
+                          setTab("props");
+                        }}
+                        title="이 슬라이드 편집"
+                        className="flex items-center text-app-faint hover:text-app-accent"
+                      >
+                        <span className="mi text-[13px]">edit</span>
+                      </button>
+                    )}
+                    <span className="flex-1" />
                     {peers
                       .filter((p) => p.slideIndex === i)
                       .map((p) => (
