@@ -445,6 +445,8 @@ export function HomePage() {
   };
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState<ImportedPptx | null>(null);
+  const [pptxModal, setPptxModal] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const theme = getTheme(themeId);
@@ -492,6 +494,7 @@ export function HomePage() {
     setImporting(true);
     try {
       setImported(await parsePptx(f));
+      setPptxModal(false);
     } catch (e) {
       showToast(e instanceof Error ? e.message : "PPTX를 읽지 못했어요");
     } finally {
@@ -917,7 +920,7 @@ export function HomePage() {
                         : "스크랩할 URL을 붙여넣어 생성 컨텍스트로"
                 }
                 onClick={() => {
-                  if (m.key === "pptx") fileRef.current?.click();
+                  if (m.key === "pptx") setPptxModal(true);
                   else if (m.key === "research") setWebResearch((v) => !v);
                   else if (m.key === "scrap") setScrapOpen(true);
                 }}
@@ -1440,6 +1443,53 @@ export function HomePage() {
             </>
           );
         })()}
+      {/* PPTX 가져오기 모달 (시안 07·08) */}
+      {pptxModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.5)] p-4" onClick={() => setPptxModal(false)}>
+          <div className="w-[440px] max-w-[94vw] rounded-2xl bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,.3)]" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[16px] font-bold">PPTX 가져오기</span>
+              <button onClick={() => setPptxModal(false)} className="flex h-7 w-7 items-center justify-center rounded-lg bg-app-bg text-app-muted hover:bg-app-border-soft">
+                <span className="mi text-[15px]">close</span>
+              </button>
+            </div>
+            <p className="mb-4 text-[12px] leading-relaxed text-app-muted">
+              기존 PowerPoint 파일을 아웃라인으로 변환합니다. 텍스트·구조가 추출되고 테마는 DeckGen 테마로 재적용됩니다.
+            </p>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                void onPickFile(e.dataTransfer.files?.[0]);
+              }}
+              className={`flex flex-col items-center gap-2.5 rounded-xl border-[1.5px] border-dashed px-6 py-9 text-center transition-colors ${
+                dragOver ? "border-app-accent bg-app-accent-soft" : "border-app-border-soft bg-app-bg"
+              }`}
+            >
+              {importing ? (
+                <span className="animate-dg-pulse text-[13px] text-app-muted">읽는 중…</span>
+              ) : (
+                <>
+                  <span className="mi text-[32px] text-app-faint">upload_file</span>
+                  <span className="text-[13.5px] font-semibold">.pptx 파일을 여기로 드래그</span>
+                  <span className="text-[11.5px] text-app-faint">또는</span>
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white hover:opacity-90"
+                  >
+                    파일 선택
+                  </button>
+                </>
+              )}
+            </div>
+            <p className="mt-3 text-center text-[11px] text-app-faint">
+              최대 50MB · 텍스트 위주 슬라이드에서 가장 정확합니다
+            </p>
+          </div>
+        </div>
+      )}
       {settingsOpen && (
         <SettingsModal
           onClose={() => setSettingsOpen(false)}
