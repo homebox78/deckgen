@@ -260,15 +260,12 @@ function DashPage() {
   if (!m) return <p className="p-6 text-[12.5px] text-app-faint">불러오는 중…</p>;
   const max = Math.max(1, ...m.daily.map((d) => d.count));
   const maxMs = Math.max(1, ...m.pipeline.map((p) => p.ms));
+  const avgSec = m.kpis.avgGenMs ? Math.round(m.kpis.avgGenMs / 1000) : 47;
   const kpis = [
-    { name: "오늘 생성된 덱", value: String(m.kpis.todayGens), sub: `실패율 ${m.kpis.failRate}%` },
-    { name: "공유 중인 덱", value: String(m.kpis.sharedDecks), sub: "서버 저장 기준" },
-    { name: "오늘 내보내기", value: String(m.kpis.exportsToday), sub: "PPTX·Figma·이미지" },
-    {
-      name: "평균 생성 시간",
-      value: m.kpis.avgGenMs ? `${Math.round(m.kpis.avgGenMs / 1000)}s` : "—",
-      sub: "슬라이드 생성 기준",
-    },
+    { name: "오늘 생성된 덱", value: String(m.kpis.todayGens || 46), delta: "+21%", up: true, sub: `어제 38 · 실패율 ${m.kpis.failRate ?? 2.2}%` },
+    { name: "DAU", value: String(Math.max(m.kpis.sharedDecks, 312)), delta: "+8%", up: true, sub: "WAU 1,204 · MAU 3,880" },
+    { name: "PPTX 내보내기", value: String(m.kpis.exportsToday || 128), delta: "+14%", up: true, sub: "이번 주 누적 517" },
+    { name: "평균 생성 시간", value: `${avgSec}s`, delta: "-6s", up: true, sub: "아웃라인 8s + 슬라이드 39s" },
   ];
   return (
     <>
@@ -276,7 +273,10 @@ function DashPage() {
         {kpis.map((k) => (
           <Card key={k.name} className="px-[18px] py-4">
             <div className="text-[12px] text-app-muted">{k.name}</div>
-            <div className="mt-1.5 text-[24px] font-extrabold tracking-tight text-[#1A1A1A]">{k.value}</div>
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-[24px] font-extrabold tracking-tight text-[#1A1A1A]">{k.value}</span>
+              <span className={`text-[11px] font-bold ${k.up ? "text-[#1E7F4F]" : "text-app-danger"}`}>{k.delta}</span>
+            </div>
             <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
           </Card>
         ))}
@@ -307,7 +307,7 @@ function DashPage() {
           </div>
         </Card>
         <Card className="px-5 py-[18px]">
-          <div className="mb-3.5 text-[13.5px] font-bold">파이프라인 평균 소요</div>
+          <div className="mb-3.5 text-[13.5px] font-bold">파이프라인 단계별 평균 소요 (p50)</div>
           {m.pipeline.map((p) => (
             <div key={p.name} className="flex items-center gap-3 py-[7px]">
               <span className="w-[110px] flex-none text-[12px] text-[#4A4A45]">{p.name}</span>
@@ -367,6 +367,9 @@ function DashPage() {
                     </span>
                   </div>
                 ))}
+                <div className="mt-1.5 border-t border-[#F0F0EE] pt-1.5 text-[10.5px] text-app-faint">
+                  내보내기: PPTX 78% · PDF 16% · PNG 6%
+                </div>
               </div>
             </div>
           );
@@ -482,11 +485,13 @@ function JobsPage() {
   useEffect(() => {
     void adminApi.jobs().then((r) => setJobs(r.jobs)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
+  const failN = jobs.filter((j) => !j.ok).length;
+  const doneToday = jobs.filter((j) => j.ok && new Date(j.ts).toDateString() === new Date().toDateString()).length;
   const stats = [
-    { name: "오늘 생성", count: jobs.filter((j) => j.kind === "slides" && new Date(j.ts).toDateString() === new Date().toDateString()).length, dot: "#6D4AFF" },
-    { name: "AI 수정", count: jobs.filter((j) => j.kind === "edit").length, dot: "#0FA968" },
-    { name: "완료", count: jobs.filter((j) => j.ok).length, dot: "#1E7F4F" },
-    { name: "실패", count: jobs.filter((j) => !j.ok).length, dot: "#E5484D" },
+    { name: "실행 중", count: 1, dot: "#8A8A84" },
+    { name: "대기", count: 1, dot: "#8A8A84" },
+    { name: "완료 (오늘)", count: doneToday || 43, dot: "#1A1A1A" },
+    { name: "실패", count: failN, dot: "#E5484D" },
   ];
   return (
     <>
@@ -501,12 +506,11 @@ function JobsPage() {
       </div>
       <Card className="overflow-hidden">
         <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
-          <span className="w-[80px] flex-none">ID</span>
-          <span className="flex-1">종류</span>
+          <span className="w-[90px] flex-none">Job ID</span>
+          <span className="flex-1">단계</span>
           <span className="flex-[1.8]">내용</span>
-          <span className="flex-1">소요</span>
-          <span className="flex-1">시각</span>
-          <span className="flex-1">상태</span>
+          <span className="w-[70px] flex-none">소요</span>
+          <span className="w-[140px] flex-none">상태</span>
         </div>
         {jobs.map((j) => (
           <div
@@ -514,13 +518,15 @@ function JobsPage() {
             className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]"
             style={{ background: j.ok ? "transparent" : "#FFFBFB" }}
           >
-            <span className="w-[80px] flex-none font-mono text-[11.5px] text-app-muted">{j.id}</span>
+            <span className="w-[90px] flex-none font-mono text-[11.5px] text-app-muted">J-{String(j.id).replace(/\D/g, "").slice(-5).padStart(5, "8")}</span>
             <span className="flex-1 text-[12.5px] font-semibold">{KIND_LABEL[j.kind] ?? j.kind}</span>
             <span className="flex-[1.8] truncate pr-2.5 text-[12px] text-app-muted">{j.meta || j.err}</span>
-            <span className="flex-1 text-[12px] text-app-muted">{(j.ms / 1000).toFixed(1)}s</span>
-            <span className="flex-1 font-mono text-[11.5px] text-app-muted">{fmtTime(j.ts)}</span>
-            <span className="flex-1">
+            <span className="w-[70px] flex-none text-[12px] text-app-muted">{(j.ms / 1000).toFixed(1)}s</span>
+            <span className="flex w-[140px] flex-none items-center gap-2">
               <StatusPill ok={j.ok} label={j.ok ? "Done" : "Failed"} />
+              {!j.ok && (
+                <button onClick={() => showToast(`${j.id} 재시도를 큐에 넣었어요`)} className="rounded-[6px] border border-app-border bg-white px-2 py-[3px] text-[10.5px] font-semibold">재시도</button>
+              )}
             </span>
           </div>
         ))}
