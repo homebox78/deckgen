@@ -33,6 +33,7 @@ import { RegenerateLayer } from "./RegenerateLayer";
 import { ShareDialog } from "./ShareDialog";
 import { SlideCanvas } from "./SlideCanvas";
 import { SlideThumbnail } from "./SlideThumbnail";
+import { VersionHistory } from "./VersionHistory";
 import { useCollabSync } from "./useCollabSync";
 
 type RightTab = "chat" | "props" | "notes";
@@ -292,6 +293,7 @@ export function EditorPage() {
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
   const [slideQuery, setSlideQuery] = useState("");
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -535,6 +537,15 @@ export function EditorPage() {
             <span className="text-[9px] text-app-faint">▾</span>
           </Dropdown>
         )}
+        {!readOnly && (
+          <button
+            onClick={() => setVersionsOpen(true)}
+            title="버전 히스토리 — 스냅샷 저장/복원"
+            className="rounded-[9px] border border-app-border bg-white px-3.5 py-2 text-[13px] font-semibold hover:border-app-accent"
+          >
+            버전
+          </button>
+        )}
         <button
           onClick={() => setPresenting(true)}
           title="발표 모드 — 클릭/→ 진행 · N 노트 · Esc 종료"
@@ -580,6 +591,7 @@ export function EditorPage() {
             onClose={() => setMediaPicker(false)}
           />
         )}
+        {versionsOpen && <VersionHistory deck={deck} onClose={() => setVersionsOpen(false)} />}
         {regen &&
           (() => {
             const target = deck.slides.find((s) => s.id === regen.slideId);
