@@ -43,6 +43,83 @@ const SUGGESTIONS = [
   },
 ];
 
+/** 라이브러리별 미니 와이어프레임 프리뷰 — 각 스토리보드의 성격을 압축해 보여준다 */
+function PreviewArt({ id }: { id: string }) {
+  // 제안서: 불릿 논리 전개 + 근거 차트
+  if (id === "proposal") {
+    return (
+      <>
+        <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1 flex flex-1 gap-1.5">
+          <div className="flex flex-1 flex-col justify-center gap-1">
+            <div className="h-[3px] w-full rounded-sm bg-[#DEDEDA]" />
+            <div className="h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
+            <div className="h-[3px] w-[90%] rounded-sm bg-[#DEDEDA]" />
+            <div className="h-[3px] w-3/5 rounded-sm bg-[#DEDEDA]" />
+          </div>
+          <div className="flex flex-1 items-end justify-center gap-[3px] rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0] px-2 pt-2 pb-1.5">
+            <div className="w-1.5 rounded-t-[2px] bg-[#C9C9C4]" style={{ height: "40%" }} />
+            <div className="w-1.5 rounded-t-[2px] bg-[#B4B4AE]" style={{ height: "70%" }} />
+            <div className="w-1.5 rounded-t-[2px] bg-[#C9C9C4]" style={{ height: "55%" }} />
+            <div className="w-1.5 rounded-t-[2px] bg-[#8A8A84]" style={{ height: "95%" }} />
+          </div>
+        </div>
+      </>
+    );
+  }
+  // 피치덱: 지표 카드 3장 + 진행 바 (트랙션/BM)
+  if (id === "pitch") {
+    return (
+      <>
+        <div className="h-[5px] w-1/2 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1.5 flex gap-1.5">
+          {[
+            ["65%", "Growth"],
+            ["2.4x", "ROI"],
+            ["12M", "ARR"],
+          ].map(([v, l]) => (
+            <div
+              key={l}
+              className="flex-1 rounded-[4px] border border-[#E4E4E0] bg-white px-1 py-1 text-center"
+            >
+              <div className="text-[9px] leading-none font-bold text-[#6B6B66]">{v}</div>
+              <div className="mt-0.5 text-[5.5px] leading-none text-[#B4B4AE]">{l}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-auto flex items-center gap-1">
+          <div className="h-[5px] flex-[1.4] rounded-full bg-[#8A8A84]" />
+          <div className="h-[5px] flex-1 rounded-full bg-[#DEDEDA]" />
+        </div>
+      </>
+    );
+  }
+  // 제품 소개: 데모 이미지 중심 (키노트형)
+  if (id === "product") {
+    return (
+      <>
+        <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
+        <div className="mt-1 flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
+          <div className="flex h-[58%] w-[40%] items-center justify-center rounded-md bg-[#DAD9D4]">
+            <div className="h-1/2 w-1/2 rounded-[4px] bg-[#C4C3BD]" />
+          </div>
+        </div>
+      </>
+    );
+  }
+  // 빈 스토리보드: 최소 골격 + 비어 있는 캔버스
+  return (
+    <>
+      <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
+      <div className="mt-1 h-[3px] w-3/5 rounded-sm bg-[#DEDEDA]" />
+      <div className="h-[3px] w-2/5 rounded-sm bg-[#DEDEDA]" />
+      <div className="mt-1 flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#DEDEDA]">
+        <span className="text-[11px] leading-none text-[#C9C9C4]">+</span>
+      </div>
+    </>
+  );
+}
+
 function relTime(ts: number): string {
   const m = Math.floor((Date.now() - ts) / 60_000);
   if (m < 1) return "방금";
@@ -257,18 +334,8 @@ export function HomePage() {
                 <div className="pointer-events-none absolute inset-x-4 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[42px] group-hover:scale-x-[.82] group-hover:scale-y-[.96] delay-150" />
                 <div className="pointer-events-none absolute inset-x-2.5 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[28px] group-hover:scale-x-[.88] group-hover:scale-y-[.98] delay-75" />
                 <div className="pointer-events-none absolute inset-x-1 inset-y-0 rounded-lg border border-app-border bg-white shadow-[0_3px_8px_rgba(0,0,0,.08)] transition-transform duration-300 ease-out group-hover:translate-y-[14px] group-hover:scale-x-[.94]" />
-                <div className="relative z-10 flex aspect-[16/10] flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
-                  <div className="h-[5px] w-2/5 rounded-sm bg-[#C9C9C4]" />
-                  <div className="mt-1 flex flex-1 gap-1.5">
-                    <div className="flex flex-1 flex-col justify-center gap-1">
-                      <div className="h-[3px] w-full rounded-sm bg-[#DEDEDA]" />
-                      <div className="h-[3px] w-4/5 rounded-sm bg-[#DEDEDA]" />
-                      <div className="h-[3px] w-[90%] rounded-sm bg-[#DEDEDA]" />
-                    </div>
-                    <div className="flex flex-1 items-center justify-center rounded-[4px] border border-dashed border-[#C9C9C4] bg-[#F3F3F0]">
-                      <span className="text-[8px] text-app-faint">AREA</span>
-                    </div>
-                  </div>
+                <div className="relative z-10 flex aspect-[16/10] flex-col rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
+                  <PreviewArt id={lib.id} />
                 </div>
               </div>
               {/* 라벨은 시트 아래로 — 펼쳐질 때 가려지고, 남는 부분은 페이드아웃 */}
