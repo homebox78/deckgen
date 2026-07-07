@@ -1,4 +1,4 @@
-import { Canvas, FabricObject, Point } from "fabric";
+import { Canvas, FabricObject, Line, Point } from "fabric";
 import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
@@ -172,6 +172,54 @@ export function SlideCanvas({
       fc.zoomToPoint(new Point(opt.e.offsetX, opt.e.offsetY), zoom);
       reportZoom();
     });
+
+    // --- 스냅 가이드 (Figma식) — 중앙·여백·다른 요소 정렬 시 점선 ---
+    const SNAP = 8; // 스냅 임계값 (슬라이드 좌표)
+    let guides: FabricObject[] = [];
+    const clearGuides = () => {
+      guides.forEach((g) => fc.remove(g));
+      guides = [];
+    };
+    const guideLine = (pts: [number, number, number, number]) =>
+      new Line(pts, {
+        stroke: "#E5484D",
+        strokeWidth: 1.5,
+        strokeDashArray: [6, 5],
+        selectable: false,
+        evented: false,
+        excludeFromExport: true,
+      } as never);
+
+    fc.on("object:moving", (opt) => {
+      const obj = opt.target;
+      if (!obj) return;
+      clearGuides();
+      const w = obj.getScaledWidth();
+      const h = obj.getScaledHeight();
+      const cx = (obj.left ?? 0) + w / 2;
+      const cy = (obj.top ?? 0) + h / 2;
+      // 타깃 후보: 슬라이드 중앙·여백 + 다른 요소 중앙/에지
+      const others = fc.getObjects().filter((o) => o !== obj && !!getElementData(o));
+      const vCand = [dims.w / 2, 96, dims.w - 96, ...others.map((o) => (o.left ?? 0) + o.getScaledWidth() / 2)];
+      const hCand = [dims.h / 2, 96, dims.h - 96, ...others.map((o) => (o.top ?? 0) + o.getScaledHeight() / 2)];
+      for (const vx of vCand) {
+        if (Math.abs(cx - vx) < SNAP) {
+          obj.set({ left: vx - w / 2 });
+          guides.push(guideLine([vx, 0, vx, dims.h]));
+          break;
+        }
+      }
+      for (const hy of hCand) {
+        if (Math.abs(cy - hy) < SNAP) {
+          obj.set({ top: hy - h / 2 });
+          guides.push(guideLine([0, hy, dims.w, hy]));
+          break;
+        }
+      }
+      guides.forEach((g) => fc.add(g));
+    });
+    fc.on("mouse:up", clearGuides);
+    fc.on("object:modified", clearGuides);
 
     // --- Space+드래그 팬 ---
     let spaceDown = false;
