@@ -296,6 +296,7 @@ export function HomePage() {
   const [scrapOpen, setScrapOpen] = useState(false);
   const [scrapUrls, setScrapUrls] = useState<string[]>([]);
   const [scrapDraft, setScrapDraft] = useState("");
+  const [zoomLib, setZoomLib] = useState<string | null>(null);
   // 첫 실행 시 온보딩 노출
   const [onboarding, setOnboarding] = useState(() => !getSettings().onboardingDone);
   const [query, setQuery] = useState("");
@@ -712,6 +713,18 @@ export function HomePage() {
                 <div className="absolute inset-0 z-10 flex flex-col rounded-lg border border-app-border-soft bg-[#FBFBFA] p-3 shadow-[0_1px_3px_rgba(0,0,0,.05)] transition-transform duration-300 ease-out group-hover:-translate-y-1">
                   <PreviewArt id={lib.id} />
                 </div>
+                {/* ⤢ 확대 (Demo Act 2) */}
+                <span
+                  role="button"
+                  title="크게 보기"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setZoomLib(lib.id);
+                  }}
+                  className="absolute top-1.5 right-5 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-[12px] text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
+                >
+                  ⤢
+                </span>
               </div>
               {/* 라벨은 시트 아래로 — 펼쳐질 때 가려지고, 남는 부분은 페이드아웃 */}
               <p className="mt-2.5 text-[12.5px] font-semibold transition-opacity duration-200 group-hover:opacity-0">
@@ -906,6 +919,39 @@ export function HomePage() {
         />
       )}
       {onboarding && <OnboardingWizard onDone={() => setOnboarding(false)} />}
+      {/* 스토리보드 ⤢ 확대 모달 (Demo Act 2) */}
+      {zoomLib && (() => {
+        const lib = libs.find((l) => l.id === zoomLib);
+        if (!lib) return null;
+        return (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.5)] p-4" onClick={() => setZoomLib(null)}>
+            <div className="w-[560px] max-w-[94vw] rounded-2xl bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,.3)]" onClick={(e) => e.stopPropagation()}>
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[16px] font-bold">{lib.name}</span>
+                <button onClick={() => setZoomLib(null)} className="text-[15px] text-app-faint hover:text-app-text">✕</button>
+              </div>
+              <div className={`mx-auto mb-4 flex flex-col rounded-xl border border-app-border-soft bg-[#FBFBFA] p-5 ${lib.aspect === "4:5" ? "aspect-[4/5] w-2/3" : "aspect-[16/10] w-full"}`}>
+                <PreviewArt id={lib.id} />
+              </div>
+              <p className="mb-4 text-[12.5px] text-app-muted">{lib.frames.length}프레임 · {lib.desc}</p>
+              <button
+                onClick={() => {
+                  const deck = createStoryboardDeck(lib.id, themeId);
+                  if (!deck) return;
+                  saveDeck(deck);
+                  useDeckStore.getState().setDeck(deck);
+                  clearHistory();
+                  void fetch(apiUrl(`/api/templates/${lib.id}/use`), { method: "POST" }).catch(() => {});
+                  navigate(`/deck/${deck.id}/edit`);
+                }}
+                className="w-full rounded-lg bg-app-accent py-2.5 text-[13px] font-semibold text-white hover:opacity-90"
+              >
+                ✦ 이 구성으로 시작
+              </button>
+            </div>
+          </div>
+        );
+      })()}
       {/* Web Scrap 모달 (Demo Act 2) */}
       {scrapOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.45)] p-4" onClick={() => setScrapOpen(false)}>
