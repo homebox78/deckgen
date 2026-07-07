@@ -60,13 +60,13 @@ export function GridOverview({
                 </span>
                 <button
                   onClick={() => duplicateSlide(s.id)}
-                  className="rounded px-1.5 py-0.5 text-[10.5px] font-semibold text-app-muted opacity-0 hover:bg-app-bg group-hover:opacity-100"
+                  className="rounded px-1.5 py-0.5 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
                 >
                   복제
                 </button>
                 <button
                   onClick={() => removeSlide(s.id)}
-                  className="rounded px-1.5 py-0.5 text-[10.5px] font-semibold text-app-danger opacity-0 hover:bg-app-danger-soft group-hover:opacity-100"
+                  className="rounded px-1.5 py-0.5 text-[10.5px] font-semibold text-app-danger hover:bg-app-danger-soft"
                 >
                   삭제
                 </button>

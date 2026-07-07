@@ -93,7 +93,7 @@ export function NotificationBell({ deckId, onJump }: Props) {
                     <span className="min-w-0 flex-1">
                       <span className="block text-[12px] leading-snug text-app-text">{n.text}</span>
                       <span className="mt-0.5 block text-[10.5px] text-app-faint">
-                        슬라이드 {n.slideIndex + 1} · {relTime(n.at)}
+                        {relTime(n.at)} · 슬라이드 {n.slideIndex + 1}
                       </span>
                     </span>
                     {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-app-accent" />}

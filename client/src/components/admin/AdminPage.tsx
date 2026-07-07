@@ -1589,7 +1589,10 @@ function FlagsPage() {
   const onCnt = rows.filter((r) => r.on).length;
   return (
     <>
-      <div className="mb-3.5 text-[12.5px] text-app-muted">활성 {onCnt} / {rows.length}개</div>
+      <div className="mb-3.5 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">롤아웃 % · 플랜/스텝 타겟 · 즉시 토글</span>
+        <span className="rounded-full border border-app-border bg-white px-2.5 py-1 text-[11.5px] font-semibold">활성 {onCnt} / {rows.length}</span>
+      </div>
       <Card className="overflow-hidden">
         {rows.map((r) => (
           <div key={r.id} className="flex items-center gap-3 border-b border-[#F0F0EE] px-[18px] py-3 last:border-b-0">
@@ -1601,13 +1604,16 @@ function FlagsPage() {
               <input type="range" min={0} max={100} step={10} value={r.rollout} onChange={(e) => upd(r.id, { rollout: Number(e.target.value) })} className="flex-1 accent-app-accent" />
               <span className="w-10 text-right text-[11px] font-bold tabular-nums">{r.rollout}%</span>
             </div>
-            <select value={r.target} onChange={(e) => upd(r.id, { target: e.target.value })} className="w-24 flex-none rounded-md border border-app-border px-1.5 py-1 text-[11px]">
-              <option>전체</option><option>Plus 이상</option><option>내부 스탭</option>
+            <select value={r.target} onChange={(e) => upd(r.id, { target: e.target.value })} className="w-28 flex-none rounded-md border border-app-border px-1.5 py-1 text-[11px]">
+              <option>전체 사용자</option><option>Plus 이상</option><option>내부 스탭</option>
             </select>
             <Toggle on={r.on} onClick={() => upd(r.id, { on: !r.on })} />
           </div>
         ))}
       </Card>
+      <p className="mt-3 text-[11px] leading-relaxed text-app-faint">
+        토글·롤아웃·타겟 변경은 즉시 반영(시뮬레이션)되며 감사 로그에 기록됩니다 · OFF 플래그는 롤아웃과 무관하게 전면 비활성
+      </p>
     </>
   );
 }
