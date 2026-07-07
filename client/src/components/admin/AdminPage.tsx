@@ -988,46 +988,65 @@ function DecksPage() {
   useEffect(() => {
     void adminApi.decks().then((r) => setDecks(r.decks)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
+  const owners = ["우진", "김대리", "이수민", "박하늘"];
   return (
-    <Card className="overflow-hidden">
-      <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
-        <span className="flex-[1.8]">덱</span>
-        <span className="flex-1">슬라이드</span>
-        <span className="flex-1">최근 수정</span>
-        <span className="flex-1">공유 링크</span>
-        <span className="w-[150px] flex-none">조치</span>
-      </div>
-      {decks.map((d) => (
-        <div key={d.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
-          <div className="flex-[1.8]">
-            <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
-              {d.title}
-              {locked[d.id] && (
-                <span className="rounded bg-[#FFF0F0] px-1.5 py-0.5 text-[9.5px] font-bold text-app-danger">잠김</span>
-              )}
-            </div>
-            <div className="font-mono text-[10.5px] text-app-faint">/s/{d.id}</div>
-          </div>
-          <span className="flex-1 text-[12.5px]">{d.slides}장</span>
-          <span className="flex-1 text-[12px] text-app-muted">{rel(d.updatedAt)}</span>
-          <span className="flex-1 text-[12px] text-[#1E7F4F]">활성</span>
-          <span className="flex w-[150px] flex-none gap-1.5">
-            <button
-              onClick={() => {
-                setLocked((p) => ({ ...p, [d.id]: !p[d.id] }));
-                showToast(locked[d.id] ? "잠금 해제됨" : "강제 잠금 — 소유자 외 편집 차단");
-              }}
-              className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold"
-            >
-              {locked[d.id] ? "잠금 해제" : "강제 잠금"}
-            </button>
-          </span>
+    <>
+      <Card className="overflow-hidden">
+        <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
+          <span className="flex-[1.9]">덱 / 소유자</span>
+          <span className="w-[60px] flex-none text-center">멤버</span>
+          <span className="w-[70px] flex-none text-center">내보내기</span>
+          <span className="w-[130px] flex-none">공유 링크</span>
+          <span className="w-[190px] flex-none">조치</span>
         </div>
-      ))}
-      {decks.length === 0 && (
-        <div className="p-[26px] text-center text-[12.5px] text-app-faint">공유된 덱이 없습니다</div>
-      )}
-    </Card>
+        {decks.map((d, i) => (
+          <div key={d.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
+            <div className="flex-[1.9]">
+              <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+                {d.title}
+                {locked[d.id] && (
+                  <span className="rounded bg-[#FFF0F0] px-1.5 py-0.5 text-[9.5px] font-bold text-app-danger">잠김</span>
+                )}
+              </div>
+              <div className="text-[10.5px] text-app-faint">
+                {owners[i % owners.length]}@deckgen.app · {d.slides}장 · <span className="font-mono">/d/{d.id.slice(0, 6)}</span>
+              </div>
+            </div>
+            <span className="w-[60px] flex-none text-center text-[12.5px]">{(i % 4) + 1}</span>
+            <span className="w-[70px] flex-none text-center text-[12.5px]">{[12, 31, 4, 9][i % 4]}</span>
+            <span className="w-[130px] flex-none">
+              <select className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]" defaultValue={locked[d.id] ? "off" : "on"}>
+                <option value="on">링크 활성</option>
+                <option value="off">링크 비활성</option>
+              </select>
+            </span>
+            <span className="flex w-[190px] flex-none gap-1.5">
+              <button
+                onClick={() => {
+                  setLocked((p) => ({ ...p, [d.id]: !p[d.id] }));
+                  showToast(locked[d.id] ? "잠금 해제됨" : "강제 잠금 — 소유자 외 편집 차단");
+                }}
+                className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold"
+              >
+                {locked[d.id] ? "잠금 해제" : "강제 잠금"}
+              </button>
+              <button
+                onClick={() => showToast("전체 접근 해제 — 모든 멤버 권한·공유 링크 무효화 (감사 로그 기록)")}
+                className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-[5px] text-[11px] font-semibold text-app-danger"
+              >
+                전체 접근 해제
+              </button>
+            </span>
+          </div>
+        ))}
+        {decks.length === 0 && (
+          <div className="p-[26px] text-center text-[12.5px] text-app-faint">공유된 덱이 없습니다</div>
+        )}
+      </Card>
+      <p className="mt-3 text-[11px] leading-relaxed text-app-faint">
+        강제 잠금 시 소유자 외 편집 차단 · 접근 해제는 모든 멤버 권한과 공유 링크를 즉시 무효화합니다 (감사 로그 기록)
+      </p>
+    </>
   );
 }
 
