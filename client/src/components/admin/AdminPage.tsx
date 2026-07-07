@@ -844,10 +844,16 @@ function TemplatesPage() {
     [next[i], next[j]] = [next[j], next[i]];
     save(next);
   };
+  const META = ["5장 · Clean Light · Presentation", "8장 · Ink Dark · Keynote", "6장 · Warm Craft · Presentation", "7장 · Violet Bold · Report"];
   return (
     <>
-      <div className="mb-3.5 text-[12.5px] text-app-muted">
-        홈의 스토리보드 갤러리에 노출되는 항목을 관리합니다 · 순서는 노출 순 · 비활성은 숨김
+      <div className="mb-3.5 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">
+          홈의 "템플릿으로 시작" 갤러리에 노출되는 항목을 관리합니다 · 순서는 노출 순 · 비활성은 숨김
+        </span>
+        <button onClick={() => save([{ id: "tpl" + Date.now(), name: "새 템플릿", on: true, pro: false, uses: 0 }, ...tpls])} className="rounded-lg bg-app-text px-3.5 py-2 text-[12.5px] font-semibold text-white">
+          + 새 템플릿
+        </button>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-3.5">
         {tpls.map((t, i) => (
@@ -871,7 +877,7 @@ function TemplatesPage() {
                   </span>
                 )}
               </div>
-              <div className="mt-[3px] mb-2.5 text-[11px] text-app-faint">사용 {t.uses}회</div>
+              <div className="mt-[3px] mb-2.5 text-[11px] text-app-faint">{META[i % META.length]} · 사용 {t.uses}회</div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <button onClick={() => move(i, -1)} className="rounded-[7px] border border-app-border bg-white px-2 py-1 text-[11px] text-app-muted"><span className="mi text-[14px]">arrow_back</span></button>
                 <button onClick={() => move(i, 1)} className="rounded-[7px] border border-app-border bg-white px-2 py-1 text-[11px] text-app-muted"><span className="mi text-[14px]">arrow_forward</span></button>
@@ -880,6 +886,12 @@ function TemplatesPage() {
                   className="rounded-[7px] border border-[#DDD2FF] bg-[#F7F4FF] px-2.5 py-1 text-[10.5px] font-semibold text-app-accent"
                 >
                   {t.pro ? "PRO 해제" : "PRO 지정"}
+                </button>
+                <button
+                  onClick={() => save(tpls.filter((x) => x.id !== t.id))}
+                  className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-1 text-app-danger"
+                >
+                  <span className="mi text-[14px]">delete</span>
                 </button>
                 <span className="min-w-[2px] flex-1" />
                 <Toggle on={t.on} onClick={() => save(tpls.map((x) => (x.id === t.id ? { ...x, on: !x.on } : x)))} />
@@ -1444,42 +1456,50 @@ function ExportsPage() {
 // ===== A/B 테스트 (abtest) =====
 function AbtestPage() {
   const [exps, setExps] = useState([
-    { id: 1, name: "온보딩 프롬프트 문구", metric: "첫 덱 생성률", days: 6, running: true, lift: "+12%", vars: [{ n: "A (기존)", share: 50, conv: 34, win: false }, { n: "B (신규)", share: 50, conv: 46, win: true }] },
-    { id: 2, name: "요금제 CTA 색상", metric: "업그레이드 클릭률", days: 3, running: true, lift: "+4%", vars: [{ n: "A 검정", share: 50, conv: 8, win: false }, { n: "B 바이올렛", share: 50, conv: 12, win: true }] },
-    { id: 3, name: "빈 상태 일러스트", metric: "이탈률", days: 12, running: false, lift: "—", vars: [{ n: "A", share: 50, conv: 21, win: false }, { n: "B", share: 50, conv: 20, win: false }] },
+    { id: 1, name: "온보딩 프롬프트 문구", metric: "첫 덱 생성률", days: 6, running: true, lift: "+16.8% (B vs 대조군)", vars: [{ n: "A (대조군)", users: 1240, share: 50, conv: 34, win: false }, { n: "B (신규)", users: 1198, share: 50, conv: 46, win: true }] },
+    { id: 2, name: "요금제 CTA 색상", metric: "업그레이드 클릭률", days: 3, running: true, lift: "+4.0% (B vs 대조군)", vars: [{ n: "A 검정", users: 820, share: 50, conv: 8, win: false }, { n: "B 강조", users: 812, share: 50, conv: 12, win: true }] },
+    { id: 3, name: "빈 상태 일러스트", metric: "이탈률", days: 12, running: false, lift: "변형 간 유의한 차이 없음", vars: [{ n: "A", users: 640, share: 50, conv: 21, win: false }, { n: "B", users: 631, share: 50, conv: 20, win: false }] },
   ]);
   return (
     <>
-      <div className="mb-3.5 flex justify-end">
-        <button onClick={() => { setExps((p) => [{ id: Date.now(), name: "새 실험", metric: "지표 미정", days: 0, running: true, lift: "—", vars: [{ n: "A", share: 50, conv: 0, win: false }, { n: "B", share: 50, conv: 0, win: false }] }, ...p]); showToast("새 실험을 생성했어요"); }} className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white">+ 새 실험</button>
+      <div className="mb-3.5 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">기능 플래그와 연동된 실험. 변형별 전환율을 비교하고 승자를 전체 적용합니다.</span>
+        <button onClick={() => { setExps((p) => [{ id: Date.now(), name: "새 실험", metric: "지표 미정", days: 0, running: true, lift: "—", vars: [{ n: "A", users: 0, share: 50, conv: 0, win: false }, { n: "B", users: 0, share: 50, conv: 0, win: false }] }, ...p]); showToast("새 실험을 생성했어요"); }} className="rounded-lg bg-app-text px-4 py-2 text-[12.5px] font-semibold text-white">+ 새 실험</button>
       </div>
-      <div className="grid grid-cols-2 gap-3.5">
+      <div className="flex flex-col gap-3.5">
         {exps.map((ex) => {
           const maxConv = Math.max(1, ...ex.vars.map((v) => v.conv));
           return (
             <Card key={ex.id} className="px-5 py-4">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="flex-1 text-[13.5px] font-bold">{ex.name}</span>
-                <StatusPill ok={ex.running} label={ex.running ? `진행 ${ex.days}일` : "종료"} />
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-[13.5px] font-bold">{ex.name}</span>
+                <span className="text-[11.5px] text-app-faint">목표: {ex.metric} · {ex.days}일째</span>
+                <span className="flex-1" />
+                <StatusPill ok={ex.running} label={ex.running ? "진행 중" : "종료"} />
+                {ex.running && (
+                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("실험을 종료했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2.5 py-1 text-[11px] font-semibold">종료</button>
+                )}
               </div>
-              <div className="mb-3 text-[11.5px] text-app-faint">목표: {ex.metric} · 우세 {ex.lift}</div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {ex.vars.map((v) => (
-                  <div key={v.n} className="flex items-center gap-2">
-                    <span className="w-24 flex-none text-[11.5px] font-medium">{v.n}</span>
-                    <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
-                      <div className="h-full rounded" style={{ width: `${(v.conv / maxConv) * 100}%`, background: v.win ? "#1E7F4F" : "#8B6BFF", opacity: 0.85 }} />
+                  <div key={v.n} className="flex items-center gap-3">
+                    <div className="w-40 flex-none">
+                      <div className="flex items-center gap-1.5 text-[12px] font-semibold">{v.n}{v.win && <span className="text-[10.5px] font-bold text-[#1E7F4F]">▲우세</span>}</div>
+                      <div className="text-[10.5px] text-app-faint">{v.users.toLocaleString()}명 · 배분 {v.share}%</div>
                     </div>
-                    <span className="w-16 flex-none text-right text-[11px] font-bold">{v.conv}%{v.win ? " ↑" : ""}</span>
+                    <div className="h-4 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+                      <div className="h-full rounded bg-app-text" style={{ width: `${(v.conv / maxConv) * 100}%`, opacity: v.win ? 1 : 0.55 }} />
+                    </div>
+                    <span className="w-14 flex-none text-right text-[13px] font-extrabold">{v.conv}%</span>
                   </div>
                 ))}
               </div>
-              {ex.running && (
-                <div className="mt-3 flex gap-2">
-                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("실험을 중지했어요"); }} className="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[11.5px] font-semibold">중지</button>
-                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("승자 변형을 전체 적용했어요"); }} className="flex-1 rounded-lg bg-app-text py-1.5 text-[11.5px] font-semibold text-white">승자 전체 적용</button>
-                </div>
-              )}
+              <div className="mt-3 flex items-center gap-2 border-t border-[#F0F0EE] pt-2.5">
+                <span className="flex-1 text-[11.5px] font-semibold text-app-muted">{ex.lift}</span>
+                {ex.running && (
+                  <button onClick={() => { setExps((p) => p.map((x) => x.id === ex.id ? { ...x, running: false } : x)); showToast("승자 변형을 전체 적용했어요"); }} className="rounded-lg bg-app-text px-3.5 py-1.5 text-[11.5px] font-semibold text-white">승자 전체 적용</button>
+                )}
+              </div>
             </Card>
           );
         })}
