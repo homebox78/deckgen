@@ -92,6 +92,11 @@ const fmtTime = (ts: number) => {
   return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 
+const nowKstDate = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const rel = (ts: number) => {
   const s = Math.floor((Date.now() - ts) / 1000);
   if (s < 60) return "방금";
@@ -1177,9 +1182,10 @@ function ModelsPage() {
 // ===== API 키 관리 (시뮬레이션) =====
 function ApiKeysPage() {
   const [keys, setKeys] = useState([
-    { id: 1, name: "프로덕션 서버", masked: "dg_live_••••a9F2", scope: "전체", calls: "1.2M", on: true },
-    { id: 2, name: "스테이징", masked: "dg_test_••••7c1B", scope: "전체", calls: "84K", on: true },
-    { id: 3, name: "분석 파이프라인", masked: "dg_live_••••e5K0", scope: "읽기 전용", calls: "410K", on: true },
+    { id: 1, name: "프로덕션 서버", masked: "dg_live_••••a9F2", created: "2026-03-02", scope: "전체", calls: "1.2M", last: "방금", on: true, revoked: false },
+    { id: 2, name: "스테이징", masked: "dg_test_••••7c1B", created: "2026-04-11", scope: "전체", calls: "84K", last: "3시간 전", on: true, revoked: false },
+    { id: 3, name: "분석 파이프라인", masked: "dg_live_••••e5K0", created: "2026-05-20", scope: "읽기 전용", calls: "410K", last: "이제", on: true, revoked: false },
+    { id: 4, name: "레거시 웹훅", masked: "dg_live_••••11cD", created: "2025-11-08", scope: "웹훅", calls: "12K", last: "32일 전", on: false, revoked: true },
   ]);
   const [reveal, setReveal] = useState<string | null>(null);
   return (
@@ -1190,7 +1196,7 @@ function ApiKeysPage() {
           onClick={() => {
             const full = "dg_live_" + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 8);
             setReveal(full);
-            setKeys((p) => [{ id: Date.now(), name: "새 키", masked: full.slice(0, 12) + "••••" + full.slice(-4), scope: "전체", calls: "0", on: true }, ...p]);
+            setKeys((p) => [{ id: Date.now(), name: "새 키", masked: full.slice(0, 12) + "••••" + full.slice(-4), created: nowKstDate(), scope: "전체", calls: "0", last: "방금", on: true, revoked: false }, ...p]);
           }}
           className="rounded-lg bg-app-accent px-4 py-2 text-[12.5px] font-semibold text-white"
         >
@@ -1208,20 +1214,31 @@ function ApiKeysPage() {
         <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
           <span className="flex-[1.8]">이름 / 키</span>
           <span className="flex-1">권한</span>
-          <span className="flex-1">호출</span>
+          <span className="w-[80px] flex-none">호출</span>
+          <span className="w-[90px] flex-none">마지막 사용</span>
           <span className="w-[140px] flex-none">조치</span>
         </div>
         {keys.map((k) => (
-          <div key={k.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
+          <div key={k.id} className={`flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px] ${k.revoked ? "opacity-55" : ""}`}>
             <div className="flex-[1.8]">
-              <div className="text-[12.5px] font-semibold">{k.name}</div>
-              <div className="font-mono text-[10.5px] text-app-faint">{k.masked}</div>
+              <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+                {k.name}
+                {k.revoked && <span className="rounded bg-[#F0F0EE] px-1.5 py-0.5 text-[9.5px] font-bold text-app-faint">폐기됨</span>}
+              </div>
+              <div className="font-mono text-[10.5px] text-app-faint">{k.masked} · {k.created} 생성</div>
             </div>
             <span className="flex-1 text-[12px]">{k.scope}</span>
-            <span className="flex-1 text-[12px] text-app-muted">{k.calls}</span>
+            <span className="w-[80px] flex-none text-[12px] text-app-muted">{k.calls}</span>
+            <span className="w-[90px] flex-none text-[11.5px] text-app-muted">{k.last}</span>
             <span className="flex w-[140px] flex-none gap-1.5">
-              <button onClick={() => showToast(`${k.name} 키를 회전했어요 — 기존 키 24시간 후 만료`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">회전</button>
-              <button onClick={() => { setKeys((p) => p.filter((x) => x.id !== k.id)); showToast(`${k.name} 키를 폐기했어요`); }} className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-[5px] text-[11px] font-semibold text-app-danger">폐기</button>
+              {k.revoked ? (
+                <button onClick={() => { setKeys((p) => p.filter((x) => x.id !== k.id)); showToast(`${k.name} 삭제됨`); }} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">삭제</button>
+              ) : (
+                <>
+                  <button onClick={() => showToast(`${k.name} 키를 회전했어요 — 기존 키 24시간 후 만료`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">회전</button>
+                  <button onClick={() => { setKeys((p) => p.map((x) => x.id === k.id ? { ...x, revoked: true, on: false } : x)); showToast(`${k.name} 키를 폐기했어요`); }} className="rounded-[7px] border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-[5px] text-[11px] font-semibold text-app-danger">폐기</button>
+                </>
+              )}
             </span>
           </div>
         ))}
