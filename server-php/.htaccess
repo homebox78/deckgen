@@ -1,0 +1,12 @@
+# DeckGen API — 모든 요청을 front controller로
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
+
+# 소스/설정 직접 접근 차단
+<FilesMatch "^(config\.php)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_php7.c>
+  php_flag output_buffering off
+</IfModule>

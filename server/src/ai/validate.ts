@@ -82,6 +82,10 @@ const textElementSchema = z.object({
   fontSize: z.number().optional(),
   fontWeight: z.number().optional(),
   lineHeight: z.number().optional(),
+  letterSpacing: z.number().optional(),
+  italic: z.boolean().optional(),
+  underline: z.boolean().optional(),
+  strike: z.boolean().optional(),
 });
 
 const shapeElementSchema = z.object({

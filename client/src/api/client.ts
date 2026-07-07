@@ -1,6 +1,7 @@
 // 백엔드 호출 + SSE 파서
 import type { LayoutId, OutlineSlide, Slide, SlideContent } from "../engine/schema";
 import type { Theme } from "../engine/themes";
+import { apiUrl } from "./base";
 
 const INACTIVITY_MS = 31_000;
 
@@ -22,7 +23,7 @@ async function streamSSE(url: string, body: unknown, h: SSEHandlers): Promise<vo
   };
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl(url), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -97,7 +98,7 @@ export async function postEdit(
     textSecondary: theme.textSecondary,
     chartPalette: theme.chartPalette,
   };
-  const res = await fetch("/api/edit", {
+  const res = await fetch(apiUrl("/api/edit"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ instruction, slide, theme: themeSummary }),

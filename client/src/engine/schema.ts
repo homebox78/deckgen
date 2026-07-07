@@ -79,6 +79,10 @@ export interface TextElement extends ElementBase {
   fontSize?: number; // 미지정 시 role 기본값
   fontWeight?: number;
   lineHeight?: number; // 배수, 기본 1.4
+  letterSpacing?: number; // px (자간)
+  italic?: boolean;
+  underline?: boolean;
+  strike?: boolean;
 }
 
 export type ShapeKind = "rect" | "roundRect" | "ellipse" | "line" | "arrow";

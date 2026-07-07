@@ -1,0 +1,9 @@
+# DeckGen SPA — /var/www/html/deckGen/.htaccess 로 배치
+RewriteEngine On
+RewriteBase /deckGen/
+# API는 통과
+RewriteRule ^api/ - [L]
+# 정적 파일은 그대로, 나머지는 SPA index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]

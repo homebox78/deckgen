@@ -11,6 +11,7 @@ import {
   createStoryboardDeck,
 } from "../../engine/wireframes";
 import { clearHistory, useDeckStore } from "../../store/deckStore";
+import { getShareTokens } from "../../store/collabStore";
 import { useGenerationStore } from "../../store/generationStore";
 import { useOutlineStore } from "../../store/outlineStore";
 import type { DeckSummary } from "../../store/storage";
@@ -287,6 +288,8 @@ export function HomePage() {
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
   const [aspect, setAspect] = useState<DeckAspect>("16:9");
   const [query, setQuery] = useState("");
+  const [deckFilter, setDeckFilter] = useState<"all" | "recent" | "shared">("all");
+  const [deckView, setDeckView] = useState<"grid" | "list">("grid");
   const [decks, setDecks] = useState<DeckSummary[]>(() => listDecks());
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState<ImportedPptx | null>(null);
@@ -355,7 +358,14 @@ export function HomePage() {
   };
 
   const q = query.trim().toLowerCase();
-  const filtered = q ? decks.filter((d) => d.title.toLowerCase().includes(q)) : decks;
+  const RECENT_MS = 72 * 3600 * 1000;
+  const filtered = decks.filter(
+    (d) =>
+      (!q || d.title.toLowerCase().includes(q)) &&
+      (deckFilter === "all" ||
+        (deckFilter === "recent" && Date.now() - d.updatedAt < RECENT_MS) ||
+        (deckFilter === "shared" && !!getShareTokens(d.id))),
+  );
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
@@ -648,9 +658,34 @@ export function HomePage() {
 
       {/* 내 덱 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-16">
-        <div className="mb-3.5 flex items-center gap-3">
-          <h2 className="shrink-0 text-[16px] font-semibold">내 덱</h2>
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-[9px] border border-app-border bg-app-surface px-3 py-2">
+        {/* 대시보드 (스냅덱 배치) */}
+        <div className="mb-1">
+          <h2 className="text-[22px] font-bold tracking-tight">대시보드</h2>
+          <p className="mt-0.5 text-[12.5px] text-app-muted">
+            슬라이드 파일을 열고 정렬하고 관리하세요.
+          </p>
+        </div>
+        <div className="mb-3.5 flex items-center gap-2 pt-2">
+          {(
+            [
+              ["all", "전체"],
+              ["recent", "최근"],
+              ["shared", "공유됨"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setDeckFilter(key)}
+              className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
+                deckFilter === key
+                  ? "bg-app-text text-white"
+                  : "border border-app-border bg-app-surface text-app-muted hover:bg-app-bg"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <div className="ml-auto flex min-w-0 items-center gap-2 rounded-[9px] border border-app-border bg-app-surface px-3 py-2">
             <svg
               viewBox="0 0 24 24"
               className="h-3.5 w-3.5 shrink-0"
@@ -664,8 +699,8 @@ export function HomePage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="덱 제목 검색"
-              className="min-w-0 flex-1 bg-transparent text-[12.5px] focus:outline-none"
+              placeholder="파일 검색"
+              className="w-40 min-w-0 bg-transparent text-[12.5px] focus:outline-none"
             />
             {q && (
               <button
@@ -676,24 +711,103 @@ export function HomePage() {
               </button>
             )}
           </div>
+          <div className="flex overflow-hidden rounded-[9px] border border-app-border">
+            {(
+              [
+                ["grid", "⊞", "그리드 보기"],
+                ["list", "≡", "리스트 보기"],
+              ] as const
+            ).map(([key, glyph, title], i) => (
+              <button
+                key={key}
+                title={title}
+                onClick={() => setDeckView(key)}
+                className={`px-2.5 py-1.5 text-[13px] ${i === 1 ? "border-l border-app-border" : ""} ${
+                  deckView === key ? "bg-app-text text-white" : "bg-white text-app-faint hover:bg-app-bg"
+                }`}
+              >
+                {glyph}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
-          {filtered.map((d) => (
-            <DeckCard key={d.id} deck={d} onDelete={() => removeDeck(d)} />
-          ))}
-          {!q && (
-            <button
-              onClick={() => promptRef.current?.focus()}
-              className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-[#D4D4CE] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-app-border-soft text-[15px]">
-                +
-              </span>
-              <span className="text-[12.5px] font-medium">새 덱 만들기</span>
-            </button>
-          )}
-        </div>
+        {deckView === "grid" ? (
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
+            {filtered.map((d) => (
+              <DeckCard key={d.id} deck={d} onDelete={() => removeDeck(d)} />
+            ))}
+            {!q && deckFilter === "all" && (
+              <button
+                onClick={() => promptRef.current?.focus()}
+                className="flex min-h-35 flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-[#D4D4CE] text-app-muted transition-colors hover:border-app-accent hover:text-app-accent"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-app-border-soft text-[15px]">
+                  +
+                </span>
+                <span className="text-[12.5px] font-medium">새 덱 만들기</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-surface">
+            <div className="flex items-center gap-3 border-b border-app-border-soft px-4 py-2.5 text-[11.5px] font-semibold text-app-faint">
+              <span className="flex-1">이름</span>
+              <span className="w-16 text-center">슬라이드</span>
+              <span className="w-20 text-center">업데이트</span>
+              <span className="w-8" />
+            </div>
+            {filtered.map((d) => {
+              const th = getTheme(d.themeId);
+              return (
+                <div
+                  key={d.id}
+                  className="flex cursor-pointer items-center gap-3 border-b border-app-border-soft px-4 py-2.5 last:border-b-0 hover:bg-app-bg"
+                  onClick={() => navigate(`/deck/${d.id}/edit`)}
+                >
+                  <div
+                    className="h-10 w-[62px] shrink-0 overflow-hidden rounded-md border border-app-border"
+                    style={{ background: th.bg }}
+                  >
+                    {d.thumbnail && (
+                      <img src={d.thumbnail} alt="" className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold">
+                    {d.title}
+                  </span>
+                  <span className="w-16 text-center text-[12.5px] text-app-muted">
+                    {d.slideCount}장
+                  </span>
+                  <span className="w-20 text-center text-[12px] text-app-faint">
+                    {relTime(d.updatedAt)}
+                  </span>
+                  <span className="w-8" onClick={(e) => e.stopPropagation()}>
+                    <Dropdown
+                      items={[
+                        { key: "open", name: "열기" },
+                        { key: "delete", name: "삭제" },
+                      ]}
+                      onSelect={(key) => {
+                        if (key === "open") navigate(`/deck/${d.id}/edit`);
+                        else removeDeck(d);
+                      }}
+                      align="right"
+                      triggerClassName="rounded-md px-2 py-1 text-[13px] text-app-faint hover:bg-app-border-soft"
+                    >
+                      ···
+                    </Dropdown>
+                  </span>
+                </div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="px-4 py-8 text-center text-[12.5px] text-app-faint">
+                해당하는 덱이 없어요.
+              </p>
+            )}
+          </div>
+        )}
 
         {filtered.length === 0 && q && (
           <div className="flex flex-col items-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-[#D4D4CE] bg-app-surface px-6 py-8">

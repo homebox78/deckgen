@@ -178,24 +178,29 @@ export function PropertiesPanel({
         <div className="border-b border-app-border-soft px-4 py-3.5">
           <SectionLabel>Typography</SectionLabel>
           <div className="mb-2 grid grid-cols-2 gap-2">
-            <button
-              onClick={() =>
-                patch({
-                  fontWeight:
-                    (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600
-                      ? 400
-                      : 700,
-                } as Partial<SlideElement>)
-              }
-              className={`rounded-lg border py-1.5 text-[13px] font-bold ${
-                (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600
-                  ? "border-app-accent bg-app-accent-soft text-app-accent"
-                  : "border-app-border bg-white text-app-faint hover:bg-app-bg"
-              }`}
-              title="굵게"
-            >
-              B
-            </button>
+            {/* Weight 셀렉트 */}
+            <div className="flex items-center justify-between rounded-lg border border-app-border px-2.5 py-1.5">
+              <span className="text-[12px] text-app-faint">Weight</span>
+              <select
+                value={element.fontWeight ?? theme.roleStyles[element.role].fontWeight}
+                onChange={(e) =>
+                  patch({ fontWeight: Number(e.target.value) } as Partial<SlideElement>)
+                }
+                className="bg-transparent text-right text-[12.5px] font-semibold focus:!outline-none"
+              >
+                {[
+                  [400, "Regular"],
+                  [500, "Medium"],
+                  [600, "SemiBold"],
+                  [700, "Bold"],
+                  [800, "ExtraBold"],
+                ].map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
             <ValueRow
               label="행간 %"
               value={Math.round((element.lineHeight ?? 1.4) * 100)}
@@ -203,6 +208,35 @@ export function PropertiesPanel({
                 patch({ lineHeight: Math.max(80, Math.min(300, v)) / 100 } as Partial<SlideElement>)
               }
             />
+            <ValueRow
+              label="자간 px"
+              value={element.letterSpacing ?? 0}
+              onChange={(v) =>
+                patch({ letterSpacing: Math.max(-20, Math.min(100, v)) || undefined } as Partial<SlideElement>)
+              }
+            />
+            {/* Decoration — B I U S */}
+            <div className="flex overflow-hidden rounded-lg border border-app-border">
+              {(
+                [
+                  ["B", "굵게", (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600, () => patch({ fontWeight: (element.fontWeight ?? theme.roleStyles[element.role].fontWeight) >= 600 ? 400 : 700 } as Partial<SlideElement>)],
+                  ["I", "기울임", !!element.italic, () => patch({ italic: !element.italic || undefined } as Partial<SlideElement>)],
+                  ["U", "밑줄", !!element.underline, () => patch({ underline: !element.underline || undefined } as Partial<SlideElement>)],
+                  ["S", "취소선", !!element.strike, () => patch({ strike: !element.strike || undefined } as Partial<SlideElement>)],
+                ] as const
+              ).map(([glyph, title, active, onClick], i) => (
+                <button
+                  key={glyph}
+                  title={title}
+                  onClick={onClick}
+                  className={`flex-1 py-1.5 text-[12.5px] ${i > 0 ? "border-l border-app-border" : ""} ${
+                    glyph === "B" ? "font-bold" : glyph === "I" ? "italic" : glyph === "U" ? "underline" : "line-through"
+                  } ${active ? "bg-app-accent-soft text-app-accent" : "bg-white text-app-faint hover:bg-app-bg"}`}
+                >
+                  {glyph}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex gap-2">
             <div className="flex flex-1 items-center overflow-hidden rounded-lg border border-app-border">

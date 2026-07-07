@@ -516,6 +516,46 @@ export function EditorPage() {
       <div className="flex min-h-0 flex-1">
         {/* 좌측: 썸네일 */}
         <aside className="flex w-54 shrink-0 flex-col gap-2.5 overflow-y-auto border-r border-app-border bg-app-surface px-3 py-3.5">
+          {/* 좌패널 헤더 (스냅덱 배치) — 덱 정보 + New slide */}
+          <div className="mb-0.5">
+            <p className="truncate text-[13px] leading-snug font-bold">{deck.title}</p>
+            <p className="text-[11px] text-app-faint">
+              {deck.aspect === "4:5" ? "Carousel · 4:5" : "Presentation · 16:9"}
+            </p>
+          </div>
+          {!readOnly && (
+            <div className="flex gap-1.5">
+              <Dropdown
+                items={[
+                  { key: "blank", name: "+ 빈 슬라이드" },
+                  { key: "dup", name: "⧉ 현재 슬라이드 복제" },
+                ]}
+                onSelect={(key) => {
+                  if (key === "blank") {
+                    addSlide(slideIndex);
+                    setCurrentSlideIndex(slideIndex + 1);
+                  } else {
+                    duplicateSlide(slide.id);
+                    setCurrentSlideIndex(slideIndex + 1);
+                  }
+                }}
+                triggerClassName="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"
+                title="새 슬라이드"
+              >
+                New slide <span className="text-[9px] text-app-faint">▾</span>
+              </Dropdown>
+              <button
+                onClick={() => {
+                  addSlide(slideIndex);
+                  setCurrentSlideIndex(slideIndex + 1);
+                }}
+                title="빈 슬라이드 추가"
+                className="w-9 rounded-lg border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent hover:text-app-accent"
+              >
+                +
+              </button>
+            </div>
+          )}
           {deck.slides.map((s, i) => {
             const st = genStatuses?.[i];
             const badge = st ? THUMB_BADGE[st] : null;
@@ -590,27 +630,6 @@ export function EditorPage() {
               </div>
             );
           })}
-          {!readOnly && (
-            <Dropdown
-              items={[
-                { key: "blank", name: "+ 빈 슬라이드" },
-                { key: "dup", name: "⧉ 현재 슬라이드 복제" },
-              ]}
-              onSelect={(key) => {
-                if (key === "blank") {
-                  addSlide(slideIndex);
-                  setCurrentSlideIndex(slideIndex + 1);
-                } else {
-                  duplicateSlide(slide.id);
-                  setCurrentSlideIndex(slideIndex + 1);
-                }
-              }}
-              triggerClassName="mt-0.5 w-full rounded-lg border border-dashed border-[#D4D4CE] bg-white py-2 text-[12px] font-medium text-app-muted hover:border-app-accent hover:text-app-accent"
-              title="새 슬라이드"
-            >
-              New slide <span className="text-[9px] text-app-faint">▾</span>
-            </Dropdown>
-          )}
         </aside>
 
         {/* 중앙: 캔버스 + 줌 툴바 */}

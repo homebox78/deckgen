@@ -12,7 +12,11 @@ const router = createBrowserRouter(
     { path: "/deck/:id/edit", element: <EditorPage /> },
     { path: "/s/:token", element: <SharedEntryPage /> },
   ],
-  { future: { v7_relativeSplatPath: true } },
+  {
+    future: { v7_relativeSplatPath: true },
+    // 운영 서브디렉터리(/deckGen) 대응
+    basename: import.meta.env.BASE_URL.replace(/\/$/, "") || undefined,
+  },
 );
 
 export function App() {

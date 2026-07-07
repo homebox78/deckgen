@@ -47,17 +47,23 @@ const DEFAULT_LINE_HEIGHT = 1.4;
 
 function buildText(el: TextElement, theme: Theme): FabricObject {
   const style = theme.roleStyles[el.role];
+  const fontSize = el.fontSize ?? style.fontSize;
   const tb = new Textbox(el.text, {
     left: el.x,
     top: el.y,
     width: el.w,
-    fontSize: el.fontSize ?? style.fontSize,
+    fontSize,
     fontWeight: el.fontWeight ?? style.fontWeight,
     fill: el.color ? resolveColor(theme, el.color) : resolveRoleColor(theme, el.role),
     fontFamily: theme.fontFamily,
     textAlign: el.align ?? "left",
     lineHeight: el.lineHeight ?? DEFAULT_LINE_HEIGHT,
     splitByGrapheme: false,
+    fontStyle: el.italic ? "italic" : "normal",
+    underline: !!el.underline,
+    linethrough: !!el.strike,
+    // Fabric charSpacing 단위 = 1/1000 em
+    charSpacing: el.letterSpacing ? (el.letterSpacing / fontSize) * 1000 : 0,
   });
   return attach(tb, el);
 }

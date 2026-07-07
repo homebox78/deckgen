@@ -1,5 +1,6 @@
 // §12 공유·협업 클라이언트 — REST + SSE(EventSource)
 import type { Deck, Slide } from "../engine/schema";
+import { apiUrl } from "./base";
 
 export interface ShareTokens {
   editToken: string;
@@ -21,7 +22,7 @@ export interface CollabPeer {
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -38,7 +39,7 @@ export function publishDeck(deck: Deck): Promise<ShareTokens & { rev: number }> 
 
 /** 공유 링크 토큰으로 덱+권한 조회 */
 export async function fetchShared(token: string): Promise<SharedDeckInfo> {
-  const res = await fetch(`/api/share/${encodeURIComponent(token)}`);
+  const res = await fetch(apiUrl(`/api/share/${encodeURIComponent(token)}`));
   const json = (await res.json()) as SharedDeckInfo & { error?: string };
   if (!res.ok) throw new Error(json.error ?? `조회 실패 (${res.status})`);
   return json;
@@ -105,7 +106,9 @@ export function connectEvents(
     color: params.color,
     slideIndex: String(params.slideIndex),
   });
-  const es = new EventSource(`/api/collab/${encodeURIComponent(deckId)}/events?${qs}`);
+  const es = new EventSource(
+    apiUrl(`/api/collab/${encodeURIComponent(deckId)}/events?${qs}`),
+  );
   const parse = <T>(e: MessageEvent): T => JSON.parse(e.data as string) as T;
   es.addEventListener("update", (e) => h.onUpdate(parse<CollabUpdate>(e)));
   es.addEventListener("presence", (e) =>
