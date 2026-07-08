@@ -425,6 +425,8 @@ export function HomePage() {
   const [themeId, setThemeId] = useState(DEFAULT_THEME_ID);
   const [aspect, setAspect] = useState<DeckAspect>("16:9");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(() => localStorage.getItem("deckgen:loggedOut") === "1");
   const [webResearch, setWebResearch] = useState(false);
   const [scrapOpen, setScrapOpen] = useState(false);
   const [scrapUrls, setScrapUrls] = useState<string[]>([]);
@@ -676,25 +678,78 @@ export function HomePage() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/workspace")}
-            className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
-          >
-            <span className="mi text-[15px]">groups</span>워크스페이스
-          </button>
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
-          >
-            설정
-          </button>
-          <button
-            onClick={() => setSettingsOpen(true)}
-            title="계정"
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white"
-          >
-            우
-          </button>
+          {loggedOut ? (
+            <button
+              onClick={() => navigate("/login")}
+              className="flex items-center gap-1.5 rounded-lg bg-app-accent px-4 py-1.5 text-[12.5px] font-semibold text-white hover:opacity-90"
+            >
+              <span className="mi text-[15px]">login</span>로그인
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/workspace")}
+                className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
+              >
+                <span className="mi text-[15px]">groups</span>워크스페이스
+              </button>
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12.5px] font-semibold hover:border-app-accent"
+              >
+                설정
+              </button>
+              {/* 계정 메뉴 — 설정·관리자 콘솔·로그아웃 */}
+              <span className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUserMenuOpen((v) => !v);
+                  }}
+                  title="계정"
+                  className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white ring-app-accent ring-offset-1 hover:ring-2"
+                >
+                  우
+                </button>
+                {userMenuOpen && (
+                  <>
+                    <span className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                    <div className="absolute top-[38px] right-0 z-50 w-[236px] rounded-xl border border-app-border bg-white p-1.5 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
+                      <div className="flex items-center gap-2.5 px-2.5 py-2">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-app-text text-[13px] font-bold text-white">우</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[12.5px] font-semibold">우진</span>
+                          <span className="block truncate text-[11px] text-app-faint">woojin@deckgen.app</span>
+                        </span>
+                      </div>
+                      <div className="my-1 border-t border-app-border-soft" />
+                      <button onClick={() => { setUserMenuOpen(false); setSettingsOpen(true); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] hover:bg-app-bg">
+                        <span className="mi text-[16px] text-app-muted">settings</span>설정
+                      </button>
+                      <button onClick={() => { setUserMenuOpen(false); navigate("/workspace"); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] hover:bg-app-bg">
+                        <span className="mi text-[16px] text-app-muted">groups</span>워크스페이스 관리
+                      </button>
+                      <button onClick={() => { setUserMenuOpen(false); navigate("/admin"); }} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] hover:bg-app-bg">
+                        <span className="mi text-[16px] text-app-muted">admin_panel_settings</span>관리자 콘솔
+                      </button>
+                      <div className="my-1 border-t border-app-border-soft" />
+                      <button
+                        onClick={() => {
+                          localStorage.setItem("deckgen:loggedOut", "1");
+                          setLoggedOut(true);
+                          setUserMenuOpen(false);
+                          navigate("/login");
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-app-danger hover:bg-app-danger-soft"
+                      >
+                        <span className="mi text-[16px]">logout</span>로그아웃
+                      </button>
+                    </div>
+                  </>
+                )}
+              </span>
+            </>
+          )}
         </div>
       </header>
 

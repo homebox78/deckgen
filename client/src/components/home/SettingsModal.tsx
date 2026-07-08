@@ -1,5 +1,6 @@
 // 설정 모달 (Demo Act 7) + 업그레이드 모달 (Demo Act 7) — 계정 없는 MVP라 로컬 설정
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { themes } from "../../engine/themes";
 
 const THEME_LIST = Object.values(themes);
@@ -148,6 +149,7 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
 
 export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => void; onRerunOnboarding: () => void }) {
   const s = useSettings();
+  const navigate = useNavigate();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   return (
@@ -167,12 +169,19 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-app-text text-[14px] font-bold text-white">우</span>
             <div className="flex-1">
               <div className="text-[13px] font-semibold">우진</div>
-              <div className="text-[11.5px] text-app-faint">woojin@example.com · {s.plan} 플랜</div>
+              <div className="text-[11.5px] text-app-faint">woojin@deckgen.app · {s.plan} 플랜</div>
             </div>
             <button onClick={() => setUpgradeOpen(true)} className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12px] font-semibold hover:border-app-accent">
               업그레이드
             </button>
-            <button onClick={() => showToast("로그아웃되었어요 (데모)")} className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12px] font-semibold text-app-muted hover:border-app-accent">
+            <button
+              onClick={() => {
+                localStorage.setItem("deckgen:loggedOut", "1");
+                onClose();
+                navigate("/login");
+              }}
+              className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-[12px] font-semibold text-app-danger hover:border-app-danger"
+            >
               로그아웃
             </button>
           </div>

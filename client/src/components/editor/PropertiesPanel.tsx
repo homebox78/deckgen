@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
-import type { SlideDims, SlideElement } from "../../engine/schema";
+import type {
+  ChartContent,
+  ChartElement,
+  LayoutId,
+  Slide,
+  SlideContent,
+  SlideDims,
+  SlideElement,
+  TextElement,
+} from "../../engine/schema";
 import { SLIDE_H, SLIDE_W } from "../../engine/schema";
+import { composeSlide } from "../../engine/layout";
 import { markInternalUpdate } from "../../engine/fabricSync";
 import type { Theme } from "../../engine/themes";
 import { resolveColor, resolveRoleColor } from "../../engine/themes";
@@ -120,6 +130,57 @@ const TARGET_LABEL: Record<SlideElement["type"], string> = {
   widget: "WIDGET",
 };
 
+// 레이아웃 전환 시 콘텐츠가 없는 타깃을 채울 예시값
+const SAMPLE_CHART: ChartContent = {
+  chartType: "bar",
+  title: "예시 지표",
+  labels: ["1분기", "2분기", "3분기", "4분기"],
+  series: [{ name: "매출", values: [32, 48, 41, 57] }],
+};
+const SAMPLE_KPIS = [
+  { value: "128%", label: "목표 달성률" },
+  { value: "3.4x", label: "전년 대비 성장" },
+  { value: "92", label: "NPS 점수" },
+];
+const SAMPLE_BULLETS = ["핵심 메시지를 여기에 입력하세요", "데이터·근거로 뒷받침", "다음 액션을 제안"];
+
+/** 슬라이드 요소에서 SlideContent를 역추출(레이아웃 재구성용) */
+function extractSlideContent(sl: Slide): SlideContent {
+  const textOf = (role: TextElement["role"]) =>
+    (sl.elements.find((e) => e.type === "text" && e.role === role) as TextElement | undefined)?.text;
+  const bodyEl = sl.elements.find((e) => e.type === "text" && e.role === "body") as TextElement | undefined;
+  const bullets = bodyEl
+    ? bodyEl.text
+        .split("\n")
+        .map((l) => l.replace(/^[•·]\s*/, "").trim())
+        .filter(Boolean)
+    : undefined;
+  const chartEl = sl.elements.find((e) => e.type === "chart") as ChartElement | undefined;
+  const chart: ChartContent | undefined = chartEl
+    ? { chartType: chartEl.chartType, title: chartEl.title, labels: chartEl.labels, series: chartEl.series }
+    : undefined;
+  const kv = sl.elements.filter((e) => e.type === "text" && e.role === "kpi-value") as TextElement[];
+  const kl = sl.elements.filter((e) => e.type === "text" && e.role === "kpi-label") as TextElement[];
+  const kpis = kv.length ? kv.map((v, i) => ({ value: v.text, label: kl[i]?.text ?? "" })) : undefined;
+  return {
+    title: textOf("title") ?? textOf("heading"),
+    subtitle: textOf("subtitle"),
+    bullets,
+    chart,
+    kpis,
+  };
+}
+
+/** 불릿을 2단 컬럼으로 분배(two-column 레이아웃용). 없으면 예시. */
+function buildColumns(bullets?: string[]): { heading: string; bullets: string[] }[] {
+  const src = bullets?.length ? bullets : SAMPLE_BULLETS;
+  const mid = Math.ceil(src.length / 2);
+  return [
+    { heading: "왼쪽", bullets: src.slice(0, mid) },
+    { heading: "오른쪽", bullets: src.slice(mid).length ? src.slice(mid) : ["내용을 입력하세요"] },
+  ];
+}
+
 export function PropertiesPanel({
   slideId,
   element,
@@ -136,6 +197,28 @@ export function PropertiesPanel({
       const st = useDeckStore.getState();
       const sl = st.deck?.slides.find((s) => s.id === slideId);
       if (sl) st.replaceSlide(slideId, { ...sl, ...patch });
+    };
+    // 레이아웃 전환 — 현재 슬라이드 콘텐츠를 추출해 새 레이아웃으로 재구성(요소 재배치).
+    // 타깃 레이아웃에 필요한 콘텐츠가 없으면 예시로 채워 시각적으로 바뀌게 한다.
+    const switchLayout = (lo: LayoutId, label: string) => {
+      const st = useDeckStore.getState();
+      const dk = st.deck;
+      const sl = dk?.slides.find((s) => s.id === slideId);
+      if (!dk || !sl) return;
+      const c = extractSlideContent(sl);
+      const needBullets = lo === "title-bullets" || lo === "title-bullets-chart";
+      const needChart = lo === "title-bullets-chart" || lo === "chart-focus";
+      const content: SlideContent = {
+        ...c,
+        title: c.title || "제목을 입력하세요",
+        ...(needBullets && !c.bullets?.length ? { bullets: SAMPLE_BULLETS } : {}),
+        ...(needChart && !c.chart ? { chart: SAMPLE_CHART } : {}),
+        ...(lo === "kpi-cards" && !c.kpis?.length ? { kpis: SAMPLE_KPIS } : {}),
+        ...(lo === "two-column" ? { columns: buildColumns(c.bullets) } : {}),
+      };
+      const fresh = composeSlide(lo, content, theme, dk.aspect);
+      st.replaceSlide(slideId, { ...sl, layout: lo, elements: fresh.elements });
+      showToast(`레이아웃을 '${label}'(으)로 바꿨어요`);
     };
     return (
       <div className="flex flex-col gap-4 px-4 py-4">
@@ -190,10 +273,7 @@ export function PropertiesPanel({
               return (
                 <button
                   key={lo}
-                  onClick={() => {
-                    setSlide({ layout: lo });
-                    showToast(`레이아웃을 '${label}'(으)로 바꿨어요`);
-                  }}
+                  onClick={() => switchLayout(lo, label)}
                   title={label}
                   className={`flex flex-col items-center gap-1 rounded-lg border p-1.5 ${
                     on ? "border-[1.5px] border-app-text bg-app-bg" : "border-app-border bg-white hover:border-app-accent"

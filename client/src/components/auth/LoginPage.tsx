@@ -31,10 +31,15 @@ export function LoginPage() {
       setMode("verify"); // 가입 → 이메일 인증 화면
       return;
     }
+    localStorage.removeItem("deckgen:loggedOut");
     showToast("로그인되었어요");
     navigate("/");
   };
-  const oauth = (who: string) => showToast(`${who} 계정으로 계속합니다 (데모)`);
+  const oauth = (who: string) => {
+    localStorage.removeItem("deckgen:loggedOut");
+    showToast(`${who} 계정으로 로그인했어요`);
+    navigate("/");
+  };
 
   const Shell = ({ children }: { children: React.ReactNode }) => (
     <div className="flex min-h-screen items-center justify-center bg-app-bg px-4">
@@ -99,6 +104,7 @@ export function LoginPage() {
           </p>
           <button
             onClick={() => {
+              localStorage.removeItem("deckgen:loggedOut");
               showToast("이메일 인증 완료 — 환영합니다!");
               navigate("/");
             }}

@@ -18,7 +18,8 @@ export function Icon({ name, size = 18, fill = false, weight = 400, className = 
       title={title}
       style={{
         fontSize: size,
-        fontVariationSettings: `'opsz' ${size <= 20 ? 20 : 24}, 'wght' ${weight}, 'GRAD' 0, 'FILL' ${fill ? 1 : 0}`,
+        // opsz는 실제 크기에 맞춰 연속 매핑(20~48 클램프) — 16~18px 기본은 20, 큰 아이콘만 상향
+        fontVariationSettings: `'opsz' ${Math.max(20, Math.min(48, Math.round(size)))}, 'wght' ${weight}, 'GRAD' 0, 'FILL' ${fill ? 1 : 0}`,
         ...style,
       }}
     >

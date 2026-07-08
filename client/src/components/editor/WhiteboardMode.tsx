@@ -68,11 +68,6 @@ const REACTIONS = [
   { emoji: "🎉", label: "축하해요" },
   { emoji: "👏", label: "박수" },
 ];
-const PEERS = [
-  { name: "지민", color: "#6D4AFF", initial: "지" },
-  { name: "현우", color: "#0EA5A5", initial: "현" },
-  { name: "서연", color: "#EA580C", initial: "서" },
-];
 
 function emptyBoard(deck: Deck): Board {
   // 덱 슬라이드를 3열 그리드의 slide 프레임으로 미러링 → "덱에 반영" 왕복.
@@ -125,9 +120,6 @@ export function WhiteboardMode({ deck, onExit }: { deck: Deck; onExit: () => voi
   const [colorIdx, setColorIdx] = useState(0);
 
   const [stamps, setStamps] = useState<{ id: string; x: number; y: number; emoji: string; label: string }[]>([]);
-  const [cursors, setCursors] = useState(() =>
-    PEERS.map((p, i) => ({ name: p.name, color: p.color, x: 240 + i * 180, y: 200 + i * 90 })),
-  );
   const [privateMode, setPrivateMode] = useState(false);
   const [minimapOpen, setMinimapOpen] = useState(true);
   const [penOpen, setPenOpen] = useState(false);
@@ -205,21 +197,6 @@ export function WhiteboardMode({ deck, onExit }: { deck: Deck; onExit: () => voi
     if (timerSec === 0) setTimerRun(false);
   }, [timerSec]);
   const timerText = `${Math.floor(timerSec / 60)}:${String(timerSec % 60).padStart(2, "0")}`;
-
-  // ── 협업 커서 시뮬레이션(비공개 모드면 숨김) ──
-  useEffect(() => {
-    if (privateMode) return;
-    const iv = setInterval(() => {
-      setCursors((cs) =>
-        cs.map((c) => ({
-          ...c,
-          x: Math.max(60, Math.min(1200, c.x + (Math.random() - 0.5) * 180)),
-          y: Math.max(60, Math.min(760, c.y + (Math.random() - 0.5) * 140)),
-        })),
-      );
-    }, 1400);
-    return () => clearInterval(iv);
-  }, [privateMode]);
 
   // ── keyboard ──
   useEffect(() => {
@@ -698,18 +675,9 @@ export function WhiteboardMode({ deck, onExit }: { deck: Deck; onExit: () => voi
             <span className="mi text-[14px]">visibility_off</span>비공개 모드
           </span>
         )}
-        <div className="mr-1 flex items-center">
-          {PEERS.map((p) => (
-            <span
-              key={p.name}
-              title={p.name}
-              className="-ml-1.5 inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white text-[12px] font-bold text-white shadow"
-              style={{ background: p.color }}
-            >
-              {p.initial}
-            </span>
-          ))}
-        </div>
+        <span className="mr-1 inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-white bg-app-text text-[12px] font-bold text-white shadow" title={getGuestName() || "나"}>
+          {(getGuestName() || "나").slice(0, 1)}
+        </span>
         <button
           onClick={exportPdf}
           title="보드를 PDF로 내보내기 (인쇄)"
@@ -997,23 +965,6 @@ export function WhiteboardMode({ deck, onExit }: { deck: Deck; onExit: () => voi
                 </button>
               </div>
             ))}
-
-            {/* live collaborator cursors (비공개 모드면 숨김) */}
-            {!privateMode &&
-              cursors.map((c) => (
-                <div
-                  key={c.name}
-                  className="pointer-events-none absolute z-[9]"
-                  style={{ left: c.x, top: c.y, transition: "left .9s linear, top .9s linear" }}
-                >
-                  <span className="mi text-[20px]" style={{ color: c.color, transform: "rotate(-12deg)", filter: "drop-shadow(0 1px 1px rgba(0,0,0,.3))" }}>
-                    navigation
-                  </span>
-                  <span className="-mt-0.5 inline-block rounded-[5px_5px_5px_0] px-1.5 py-0.5 text-[10.5px] font-bold text-white" style={{ background: c.color }}>
-                    {c.name}
-                  </span>
-                </div>
-              ))}
 
             {/* reaction stamps */}
             {stamps.map((st) => (

@@ -39,6 +39,7 @@ import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
 import { WhiteboardMode } from "./WhiteboardMode";
+import { ImageCropModal } from "./ImageCropModal";
 import { MotionTimeline } from "./MotionTimeline";
 import { getMotion } from "../../store/motionStore";
 import { NotificationBell } from "./NotificationBell";
@@ -606,6 +607,7 @@ export function EditorPage() {
   const currentSlideIndex = useUiStore((s) => s.currentSlideIndex);
   const setCurrentSlideIndex = useUiStore((s) => s.setCurrentSlideIndex);
   const selectedElementId = useUiStore((s) => s.selectedElementId);
+  const pinPicking = useUiStore((s) => s.pinPicking);
   const zoom = useUiStore((s) => s.zoom);
 
   const [tab, setTab] = useState<RightTab>("chat");
@@ -637,6 +639,7 @@ export function EditorPage() {
   const [pinPop, setPinPop] = useState<{ id: string; x: number; y: number } | null>(null);
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
   const [replaceImageId, setReplaceImageId] = useState<string | null>(null);
+  const [cropId, setCropId] = useState<string | null>(null);
   const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
     setReplaceImageId(null);
     setMediaTab(t);
@@ -1169,6 +1172,18 @@ export function EditorPage() {
           <>
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
         {whiteboard && <WhiteboardMode deck={deck} onExit={() => setWhiteboard(false)} />}
+        {cropId &&
+          (() => {
+            const el = slide.elements.find((e) => e.id === cropId);
+            if (!el || el.type !== "image") return null;
+            return (
+              <ImageCropModal
+                src={el.src}
+                onApply={(dataUrl) => updateElement(slide.id, cropId, { src: dataUrl } as Partial<SlideElement>)}
+                onClose={() => setCropId(null)}
+              />
+            );
+          })()}
         {presenting && (
           <PresentMode
             deck={deck}
@@ -1651,15 +1666,22 @@ export function EditorPage() {
           {canEdit && selectedElement?.type === "image" && (
             <div className="absolute bottom-[60px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-[11px] border border-app-border bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,.12)]">
               <button
+                onClick={() => setCropId(selectedElement.id)}
+                title="자르기 — 드래그로 영역을 골라 잘라내기"
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-app-muted hover:bg-app-bg hover:text-app-text"
+              >
+                <span className="mi text-[15px]">crop</span>자르기
+              </button>
+              <button
                 onClick={() =>
                   updateElement(slide.id, selectedElement.id, {
                     fit: selectedElement.fit === "cover" ? "contain" : "cover",
                   } as Partial<SlideElement>)
                 }
-                title="자르기 — 채우기(cover)/맞춤(contain) 전환"
+                title="채우기(cover)/맞춤(contain) 전환"
                 className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-app-muted hover:bg-app-bg hover:text-app-text"
               >
-                <span className="mi text-[15px]">crop</span>
+                <span className="mi text-[15px]">{selectedElement.fit === "cover" ? "fit_screen" : "crop_free"}</span>
                 {selectedElement.fit === "cover" ? "채우기" : "맞춤"}
               </button>
               <span className="mx-0.5 h-4 w-px bg-app-border" />
@@ -1826,11 +1848,15 @@ export function EditorPage() {
                   )}
                 </div>
                 <button
-                  onClick={() => setTab("comments")}
-                  title="댓글"
-                  className="flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-app-muted hover:bg-app-bg hover:text-app-text"
+                  onClick={() => {
+                    const on = !useUiStore.getState().pinPicking;
+                    useUiStore.getState().setPinPicking(on);
+                    if (on) showToast("댓글 위치를 클릭하세요 — 슬라이드 어디든 핀을 찍을 수 있어요");
+                  }}
+                  title="댓글 핀 — 클릭 후 슬라이드 어디든 찍기"
+                  className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 hover:bg-app-bg hover:text-app-text ${pinPicking ? "bg-app-accent text-white" : "text-app-muted"}`}
                 >
-                  <span className="mi text-[17px]">chat_bubble</span>
+                  <span className="mi text-[17px]">add_comment</span>
                 </button>
                 <span className="mx-0.5 h-4 w-px bg-app-border" />
                 <button
@@ -1852,10 +1878,10 @@ export function EditorPage() {
                   {stickyPop && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setStickyPop(false)} />
-                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 -translate-x-1/2 rounded-xl border border-app-border bg-white p-2.5 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-app-faint">스티키 노트</span>
-                          <button onClick={() => setStickyPop(false)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
+                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 w-[224px] -translate-x-1/2 rounded-xl border border-app-border bg-white p-3 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="whitespace-nowrap text-[11px] font-bold text-app-faint">스티키 노트</span>
+                          <button onClick={() => setStickyPop(false)} className="flex-none text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
                         </div>
                         <div className="grid grid-cols-6 gap-1.5">
                           {STICKY_COLORS.map((c) => (
