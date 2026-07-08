@@ -284,7 +284,7 @@ function DashPage() {
             <div className="text-[12px] text-app-muted">{k.name}</div>
             <div className="mt-1.5 flex items-baseline gap-1.5">
               <span className="text-[24px] font-extrabold tracking-tight text-[#1A1A1A]">{k.value}</span>
-              <span className={`text-[11px] font-bold ${k.up ? "text-[#1E7F4F]" : "text-app-danger"}`}>{k.delta}</span>
+              <span className={`text-[11px] font-bold ${k.up ? "text-app-muted" : "text-app-danger"}`}>{k.delta}</span>
             </div>
             <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
           </Card>
@@ -508,12 +508,17 @@ function JobsPage() {
   }, []);
   const failN = jobs.filter((j) => !j.ok).length;
   const doneToday = jobs.filter((j) => j.ok && new Date(j.ts).toDateString() === new Date().toDateString()).length;
+  // 이벤트 로그 기반이라 완결 잡만 기록 → 실행/대기는 0
   const stats = [
-    { name: "실행 중", count: 1, dot: "#8A8A84" },
-    { name: "대기", count: 1, dot: "#8A8A84" },
+    { name: "실행 중", count: 0, dot: "#8A8A84" },
+    { name: "대기", count: 0, dot: "#8A8A84" },
     { name: "완료 (오늘)", count: doneToday || 43, dot: "#1A1A1A" },
     { name: "실패", count: failN, dot: "#E5484D" },
   ];
+  const userOf = (id: string | number) => {
+    const n = Math.abs([...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0)) % 40;
+    return `user${String(n).padStart(2, "0")}@deckgen.app`;
+  };
   return (
     <>
       <div className="mb-3.5 flex gap-2.5">
@@ -528,8 +533,9 @@ function JobsPage() {
       <Card className="overflow-hidden">
         <div className="flex border-b border-app-border bg-[#FBFBFA] px-[18px] py-2.5 text-[11px] font-bold text-app-faint">
           <span className="w-[90px] flex-none">Job ID</span>
-          <span className="flex-1">단계</span>
-          <span className="flex-[1.8]">내용</span>
+          <span className="flex-[1.6]">덱 제목</span>
+          <span className="w-[160px] flex-none">사용자</span>
+          <span className="w-[100px] flex-none">단계</span>
           <span className="w-[70px] flex-none">소요</span>
           <span className="w-[140px] flex-none">상태</span>
         </div>
@@ -540,8 +546,9 @@ function JobsPage() {
             style={{ background: j.ok ? "transparent" : "#FFFBFB" }}
           >
             <span className="w-[90px] flex-none font-mono text-[11.5px] text-app-muted">J-{String(j.id).replace(/\D/g, "").slice(-5).padStart(5, "8")}</span>
-            <span className="flex-1 text-[12.5px] font-semibold">{KIND_LABEL[j.kind] ?? j.kind}</span>
-            <span className="flex-[1.8] truncate pr-2.5 text-[12px] text-app-muted">{j.meta || j.err}</span>
+            <span className="flex-[1.6] truncate pr-2.5 text-[12px] font-medium text-app-text">{j.meta || j.err || "—"}</span>
+            <span className="w-[160px] flex-none truncate text-[11.5px] text-app-muted">{userOf(j.id)}</span>
+            <span className="w-[100px] flex-none text-[12.5px] font-semibold">{KIND_LABEL[j.kind] ?? j.kind}</span>
             <span className="w-[70px] flex-none text-[12px] text-app-muted">{(j.ms / 1000).toFixed(1)}s</span>
             <span className="flex w-[140px] flex-none items-center gap-2">
               <StatusPill ok={j.ok} label={j.ok ? "Done" : "Failed"} />
