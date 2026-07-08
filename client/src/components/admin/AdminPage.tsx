@@ -1966,14 +1966,38 @@ function FunnelPage() {
 
 // ===== 워크스페이스 (팀 워크스페이스 · 시트 · 플랜) =====
 function WorkspacesPage() {
-  const rows = [
+  const all = [
     { name: "우진의 팀", owner: "wds0119@deckgen.app", plan: "Pro", seats: "8 / 10", decks: 142, active: true },
     { name: "마케팅본부", owner: "kim@deckgen.app", plan: "Plus", seats: "5 / 5", decks: 88, active: true },
     { name: "제품팀", owner: "lee@deckgen.app", plan: "Plus", seats: "3 / 5", decks: 51, active: true },
     { name: "디자인 스튜디오", owner: "park@deckgen.app", plan: "Free", seats: "2 / 2", decks: 12, active: false },
   ];
+  const [q, setQ] = useState("");
+  const [plan, setPlan] = useState("전체");
+  const rows = all.filter((w) => {
+    const needle = q.trim().toLowerCase();
+    if (needle && !w.name.toLowerCase().includes(needle) && !w.owner.toLowerCase().includes(needle)) return false;
+    if (plan !== "전체" && w.plan !== plan) return false;
+    return true;
+  });
   return (
     <>
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <div className="flex max-w-[320px] flex-1 items-center gap-2 rounded-[9px] border border-app-border bg-white px-3 py-2">
+          <span className="mi text-[15px] text-app-faint">search</span>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="워크스페이스·소유자 검색"
+            className="flex-1 bg-transparent text-[12.5px] focus:outline-none"
+          />
+        </div>
+        <div className="flex overflow-hidden rounded-[9px] border border-app-border">
+          {["전체", "Pro", "Plus", "Free"].map((p) => (
+            <button key={p} onClick={() => setPlan(p)} className={`px-3 py-2 text-[12px] font-semibold ${plan === p ? "bg-app-text text-white" : "bg-white text-app-muted hover:bg-app-bg"}`}>{p}</button>
+          ))}
+        </div>
+      </div>
       <KpiGrid
         items={[
           { name: "전체 워크스페이스", value: "24", sub: "이번 달 +3" },
@@ -2082,10 +2106,9 @@ export function AdminPage() {
     Object.fromEntries(NAV_GROUPS.map((g) => [g.label, true])),
   );
   const toggleSidebar = () => {
-    setCollapsed((v) => {
-      localStorage.setItem("dg_admin_sidebar", v ? "1" : "0");
-      return !v;
-    });
+    const next = !collapsed;
+    localStorage.setItem("dg_admin_sidebar", next ? "0" : "1");
+    setCollapsed(next);
   };
   const d = new Date();
   const nowKst = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} KST`;
