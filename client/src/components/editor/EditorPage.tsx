@@ -625,6 +625,8 @@ export function EditorPage() {
   const dims = aspectDims(deck.aspect);
   const slideIndex = Math.min(currentSlideIndex, deck.slides.length - 1);
   const slide = deck.slides[slideIndex];
+  const slideLocked = !!slide?.locked; // 슬라이드 잠금 — 편집·삽입·펜 전부 차단
+  const canEdit = !readOnly && !slideLocked;
   const unresolvedComments = allComments.filter((c) => c.slideId === slide?.id && !c.resolved).length;
   const selectedElement =
     slide.elements.find((el) => el.id === selectedElementId) ?? null;
@@ -644,6 +646,10 @@ export function EditorPage() {
   };
 
   const insertElement = (kind: string) => {
+    if (slideLocked) {
+      showToast("잠긴 슬라이드예요 — 잠금을 해제한 뒤 편집하세요");
+      return;
+    }
     const el = buildInsertElement(kind, aspectDims(deck.aspect));
     useUiStore.getState().setSelectedElementId(el.id);
     addElement(slide.id, el);
@@ -1112,7 +1118,7 @@ export function EditorPage() {
                     <span className="truncate">
                       {i + 1} · {s.layout}
                     </span>
-                    {s.elements.length > 0 && s.elements.every((e) => e.locked) && (
+                    {s.locked && (
                       <span className="mi text-[12px]" title="잠김">lock</span>
                     )}
                     {s.notes && s.notes.trim() && (
@@ -1143,28 +1149,33 @@ export function EditorPage() {
                       ))}
                   </div>
                   {isCur && !readOnly && (
-                    <div className="mt-1 grid grid-cols-2 gap-1.5">
+                    <div className="mt-1 grid grid-cols-4 gap-1">
                       <button
                         onClick={() => {
+                          if (s.locked) return showToast("잠긴 슬라이드는 복제 전에 잠금을 해제하세요");
                           duplicateSlide(s.id);
                           setCurrentSlideIndex(i + 1);
                         }}
-                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                        title="복제"
+                        className="flex items-center justify-center rounded-md border border-app-border bg-white py-1.5 text-app-muted hover:border-app-accent hover:text-app-accent"
                       >
-                        복제
+                        <span className="mi text-[16px]">content_copy</span>
                       </button>
                       <button
                         onClick={() => {
                           const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
-                          const locked = cur?.elements.every((e) => e.locked);
-                          cur?.elements.forEach((e) =>
-                            useDeckStore.getState().updateElement(s.id, e.id, { locked: !locked }),
-                          );
-                          showToast(locked ? "슬라이드 잠금 해제" : "슬라이드를 잠갔어요");
+                          if (!cur) return;
+                          useDeckStore.getState().replaceSlide(s.id, { ...cur, locked: !cur.locked || undefined });
+                          showToast(cur.locked ? "슬라이드 잠금을 해제했어요" : "슬라이드를 잠갔어요 — 편집·펜·삽입이 차단됩니다");
                         }}
-                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                        title={s.locked ? "잠금 해제" : "슬라이드 잠금"}
+                        className={`flex items-center justify-center rounded-md border py-1.5 ${
+                          s.locked
+                            ? "border-app-accent bg-app-accent-soft text-app-accent"
+                            : "border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent"
+                        }`}
                       >
-                        {s.elements.length > 0 && s.elements.every((e) => e.locked) ? "해제" : "잠금"}
+                        <span className="mi text-[16px]">{s.locked ? "lock" : "lock_open"}</span>
                       </button>
                       <button
                         onClick={() => {
@@ -1173,15 +1184,17 @@ export function EditorPage() {
                           const cur = useDeckStore.getState().deck?.slides.find((x) => x.id === s.id);
                           if (cur) useDeckStore.getState().replaceSlide(s.id, { ...cur, section: name.trim() || undefined });
                         }}
-                        className="rounded-md border border-app-border bg-white py-1 text-[10.5px] font-semibold text-app-muted hover:bg-app-bg"
+                        title="섹션 지정"
+                        className="flex items-center justify-center rounded-md border border-app-border bg-white py-1.5 text-app-muted hover:border-app-accent hover:text-app-accent"
                       >
-                        + 섹션
+                        <span className="mi text-[16px]">bookmark_add</span>
                       </button>
                       <button
                         onClick={() => removeSlide(s.id)}
-                        className="rounded-md border border-app-danger-border bg-app-danger-soft py-1 text-[10.5px] font-semibold text-app-danger hover:opacity-80"
+                        title="삭제"
+                        className="flex items-center justify-center rounded-md border border-app-danger-border bg-app-danger-soft py-1.5 text-app-danger hover:opacity-80"
                       >
-                        삭제
+                        <span className="mi text-[16px]">delete</span>
                       </button>
                     </div>
                   )}
@@ -1209,7 +1222,7 @@ export function EditorPage() {
           <SlideCanvas
             slide={slide}
             theme={theme}
-            readOnly={readOnly}
+            readOnly={!canEdit}
             dims={dims}
             onInsertAt={insertElement}
             peers={peers.filter((p) => p.slideIndex === slideIndex)}
@@ -1253,8 +1266,15 @@ export function EditorPage() {
             }}
           />
           </div>
+          {/* 잠긴 슬라이드 안내 배너 */}
+          {slideLocked && !readOnly && (
+            <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-app-border bg-white/95 px-3.5 py-1.5 text-[11.5px] font-semibold text-app-muted shadow-[0_2px_10px_rgba(0,0,0,.08)] backdrop-blur">
+              <span className="mi text-[15px]">lock</span>
+              잠긴 슬라이드입니다 — 썸네일의 잠금 해제로 편집하세요
+            </div>
+          )}
           {/* AI 편집 affordance (스냅덱 — 마퀴→AI 수정) */}
-          {!readOnly && !motionOpen && (
+          {canEdit && !motionOpen && (
             <button
               onClick={() => setTab("chat")}
               className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-app-border bg-white/95 px-3.5 py-1.5 text-[11.5px] font-semibold text-app-muted shadow-[0_2px_10px_rgba(0,0,0,.08)] backdrop-blur hover:border-app-accent hover:text-app-text"
@@ -1291,7 +1311,7 @@ export function EditorPage() {
           </div>
           {/* 하단 중앙 툴바 (시안 도구 스트립) — 선택·손·댓글 / T·도형·미디어·정렬·AI / undo·redo / 줌 */}
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
-            {!readOnly && (
+            {canEdit && (
               <>
                 <button
                   onClick={() => {

@@ -165,6 +165,7 @@ export const slideSchema = z.object({
   notes: z.string().optional(),
   background: z.enum(["theme", "tint", "gradient", "spot"]).optional(),
   section: z.string().optional(),
+  locked: z.boolean().optional(),
 });
 export type ServerSlide = z.infer<typeof slideSchema>;
 

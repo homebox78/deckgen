@@ -51,6 +51,7 @@ export interface Slide {
   notes?: string;
   background?: SlideBackground; // 미지정 시 "theme" (테마 bg)
   section?: string; // 섹션 이름 (개요/썸네일에서 구분)
+  locked?: boolean; // 슬라이드 잠금 — 요소 추가·펜·편집 전부 차단(소유자만 해제)
 }
 
 // ===== 요소 =====
