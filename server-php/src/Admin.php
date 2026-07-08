@@ -243,6 +243,21 @@ final class Admin
         self::json(['users' => array_map(fn ($r) => ['name' => $r['name'], 'decks' => (int) $r['decks'], 'last' => (int) $r['last'], 'blocked' => in_array($r['name'], $blocked, true)], $rows), 'blocked' => $blocked]);
     }
 
+    /** 공유 덱 요약 목록 (덱·공유 관리 페이지). title 컬럼은 utf8mb4 clean */
+    public static function decks(): void
+    {
+        self::ensureTables();
+        $rows = Db::pdo()->query('SELECT id, title, json, updated_at FROM decks ORDER BY updated_at DESC LIMIT 300')->fetchAll();
+        $out = [];
+        foreach ($rows as $r) {
+            $d = json_decode((string) $r['json'], true);
+            $slides = (is_array($d) && is_array($d['slides'] ?? null)) ? count($d['slides']) : 0;
+            $title = ($r['title'] !== null && $r['title'] !== '') ? (string) $r['title'] : (string) (is_array($d) ? ($d['title'] ?? '(제목 없음)') : '(제목 없음)');
+            $out[] = ['id' => (string) $r['id'], 'title' => $title, 'slides' => $slides, 'updatedAt' => (int) $r['updated_at']];
+        }
+        self::json(['decks' => $out]);
+    }
+
     public static function blockUser(): void
     {
         self::ensureTables();

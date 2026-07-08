@@ -65,6 +65,7 @@ try {
         if ($method === 'GET' && $path === '/admin/metrics') { Admin::metrics(); exit; }
         if ($method === 'GET' && $path === '/admin/users') { Admin::users(); exit; }
         if ($method === 'POST' && $path === '/admin/users/block') { Admin::blockUser(); exit; }
+        if ($method === 'GET' && $path === '/admin/decks') { Admin::decks(); exit; }
         if ($method === 'GET' && $path === '/admin/jobs') { Admin::jobs(); exit; }
         if ($method === 'GET' && $path === '/admin/errors') { Admin::errors(); exit; }
         if ($method === 'POST' && preg_match('#^/admin/errors/(\w+)/resolve$#', $path, $m)) { Admin::resolveError($m[1]); exit; }
