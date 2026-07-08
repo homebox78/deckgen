@@ -769,35 +769,46 @@ export function EditorPage() {
             <span className="mi align-middle text-[14px] mr-1">share</span>공유
           </button>
         )}
-        {/* 프레즌스 아바타 (§12) */}
+        {/* 프레즌스 아바타 (§12) — 호버 시 툴팁, 클릭 시 시점 팔로우 */}
         {isCollab && (
           <div className="flex items-center">
-            <span
-              title={`${getGuestName() || "나"} (나)`}
-              className="relative z-[3] inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
-              style={{ background: MY_COLOR }}
-            >
-              {(getGuestName() || "나").slice(0, 1)}
-            </span>
-            {peers.map((p) => (
-              <button
-                key={p.clientId}
-                onClick={() => {
-                  setFollowId((cur) => (cur === p.clientId ? null : p.clientId));
-                  setCurrentSlideIndex(p.slideIndex);
-                }}
-                title={`${p.name} — 슬라이드 ${p.slideIndex + 1} · 클릭 시 시점 팔로우`}
-                className={`-ml-2 inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-[11px] font-semibold text-white ${
-                  followId === p.clientId ? "ring-2 ring-app-accent ring-offset-1" : "border-2 border-white"
-                }`}
-                style={{ background: p.color }}
+            <div className="group/av relative z-[3]">
+              <span
+                className="inline-flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white text-[11px] font-semibold text-white"
+                style={{ background: MY_COLOR }}
               >
-                {p.name.slice(0, 1)}
-              </button>
+                {(getGuestName() || "나").slice(0, 1)}
+              </span>
+              <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-app-text px-2 py-1 text-[10.5px] font-medium text-white shadow-lg group-hover/av:block">
+                {getGuestName() || "나"} (나) · 슬라이드 {slideIndex + 1}
+              </span>
+            </div>
+            {peers.map((p) => (
+              <div key={p.clientId} className="group/av relative -ml-2">
+                <button
+                  onClick={() => {
+                    setFollowId((cur) => (cur === p.clientId ? null : p.clientId));
+                    setCurrentSlideIndex(p.slideIndex);
+                  }}
+                  className={`inline-flex h-[26px] w-[26px] items-center justify-center rounded-full text-[11px] font-semibold text-white ${
+                    followId === p.clientId ? "ring-2 ring-app-accent ring-offset-1" : "border-2 border-white"
+                  }`}
+                  style={{ background: p.color }}
+                >
+                  {p.name.slice(0, 1)}
+                </button>
+                {/* 호버 툴팁 — 이름 · 보고 있는 슬라이드 · 팔로우 안내 */}
+                <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1.5 hidden -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-md bg-app-text px-2 py-1 text-[10.5px] font-medium text-white shadow-lg group-hover/av:flex">
+                  <span>{p.name} · 슬라이드 {p.slideIndex + 1} 보는 중</span>
+                  <span className="text-[9.5px] text-white/60">
+                    {followId === p.clientId ? "클릭 시 팔로우 해제" : "클릭 시 시점 팔로우"}
+                  </span>
+                </span>
+              </div>
             ))}
             {!followId && peers.length > 0 && (
-              <span className="ml-1.5 inline-flex items-center gap-1 text-[11px] text-app-success">
-                <span className="h-1.5 w-1.5 rounded-full bg-app-success" />
+              <span className="ml-1.5 inline-flex items-center gap-1 text-[11px] text-app-text">
+                <span className="h-1.5 w-1.5 rounded-full bg-app-text" />
                 {peers.length + 1}명 접속
               </span>
             )}

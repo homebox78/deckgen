@@ -1389,10 +1389,31 @@ export function HomePage() {
           </div>
         )}
         {decks.length === 0 && !q && (
-          <p className="mt-3 text-center text-[12.5px] leading-relaxed text-app-faint">
-            아직 만든 덱이 없어요. 위 입력창에 주제를 적으면 AI가 아웃라인부터 만들어
-            드립니다.
-          </p>
+          <div className="mt-3 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-app-border bg-app-surface px-6 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-app-bg">
+              <span className="mi text-[24px] text-app-faint">slideshow</span>
+            </span>
+            <div>
+              <p className="text-[13.5px] font-bold">아직 만든 덱이 없어요</p>
+              <p className="mt-1 text-[12.5px] leading-relaxed text-app-faint">
+                위 입력창에 주제를 적으면 AI가 아웃라인부터 만들어 드려요.
+                <br />
+                둘러보려면 예시 덱을 불러오세요.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const deck = createStoryboardDeck("proposal", themeId);
+                if (!deck) return;
+                saveDeck({ ...deck, title: "예시 · 제안서 덱" });
+                showToast("예시 덱을 복원했어요 — 카드를 눌러 열어보세요");
+                setDecks(listDecks());
+              }}
+              className="flex items-center gap-1.5 rounded-lg border border-app-border bg-white px-4 py-2 text-[12.5px] font-semibold hover:border-app-accent"
+            >
+              <span className="mi text-[16px]">restore</span>예시 덱 복원 (프로토타입)
+            </button>
+          </div>
         )}
       </div>
       {/* 덱 우클릭 컨텍스트 메뉴 */}
