@@ -158,6 +158,58 @@ export function StoryboardGallery({
     showToast(`${slides.length}개 프레임으로 스토리보드를 만들었어요 — 자리를 채우고 공유하세요`);
   };
 
+  const renderCard = (wf: SingleWireframe) => {
+    const inTray = tray.includes(wf.id);
+    const isFav = favs.includes(wf.id);
+    return (
+      <div
+        key={wf.id}
+        className="group rounded-xl border border-app-border bg-app-surface p-2.5 shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.12)]"
+      >
+        <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-app-border-soft">
+          <MiniWf wf={wf} />
+          <button
+            title={isFav ? "즐겨찾기 해제" : "즐겨찾기"}
+            onClick={() => toggleFav(wf.id)}
+            className={`absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md border bg-white/95 text-[14px] shadow-sm transition-colors ${
+              isFav
+                ? "border-app-accent text-app-accent"
+                : "border-app-border text-app-faint opacity-0 group-hover:opacity-100 hover:text-app-accent"
+            }`}
+          >
+            <span className="mi text-[15px]">{isFav ? "star" : "star_border"}</span>
+          </button>
+          <button
+            title="크게 보기"
+            onClick={() => setZoomId(wf.id)}
+            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
+          >
+            <span className="mi text-[15px]">open_in_full</span>
+          </button>
+          <button
+            onClick={() => (inTray ? removeFromTray(wf.id) : addToTray(wf.id))}
+            className={`absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md border px-2 py-1 text-[10.5px] font-semibold shadow-sm transition-colors ${
+              inTray
+                ? "border-app-accent bg-app-accent text-white"
+                : "border-app-border bg-white/95 text-app-muted opacity-0 group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
+            }`}
+          >
+            <span className="mi text-[13px]">{inTray ? "check" : "add"}</span>
+            {inTray ? "담김" : "추가"}
+          </button>
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-1">
+          <p className="truncate text-[11.5px] font-semibold">{wf.name}</p>
+          {wf.viz && (
+            <span className="flex-none rounded bg-app-bg px-1.5 py-0.5 text-[9px] font-semibold text-app-muted">
+              {wf.viz}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mx-auto w-[880px] max-w-[92vw] pb-12">
       <div className="mb-3 flex items-baseline justify-between">
@@ -202,68 +254,32 @@ export function StoryboardGallery({
         })}
       </div>
 
-      {/* 카드 그리드 */}
+      {/* 카드 — "전체"는 카테고리 섹션으로 묶고, 특정 탭은 평면 그리드 */}
       {visible.length === 0 ? (
         <p className="rounded-xl border border-dashed border-app-border py-10 text-center text-[12.5px] text-app-faint">
           아직 즐겨찾기한 와이어프레임이 없어요. 카드의 ★를 눌러 담아두세요.
         </p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {visible.map((wf) => {
-            const inTray = tray.includes(wf.id);
-            const isFav = favs.includes(wf.id);
+      ) : cat === "전체" ? (
+        <div className="flex flex-col gap-5">
+          {WF_CATEGORIES.map((c) => {
+            const items = SINGLE_WIREFRAMES.filter((w) => w.category === c);
+            if (items.length === 0) return null;
             return (
-              <div
-                key={wf.id}
-                className="group rounded-xl border border-app-border bg-app-surface p-2.5 shadow-[0_1px_4px_rgba(0,0,0,.04)] transition-all hover:border-app-accent hover:shadow-[0_4px_14px_rgba(26,26,26,.12)]"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-app-border-soft">
-                  <MiniWf wf={wf} />
-                  {/* ★ 즐겨찾기 */}
-                  <button
-                    title={isFav ? "즐겨찾기 해제" : "즐겨찾기"}
-                    onClick={() => toggleFav(wf.id)}
-                    className={`absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md border bg-white/95 text-[14px] shadow-sm transition-colors ${
-                      isFav
-                        ? "border-app-accent text-app-accent"
-                        : "border-app-border text-app-faint opacity-0 group-hover:opacity-100 hover:text-app-accent"
-                    }`}
-                  >
-                    <span className="mi text-[15px]">{isFav ? "star" : "star_border"}</span>
-                  </button>
-                  {/* ⤢ 확대 */}
-                  <button
-                    title="크게 보기"
-                    onClick={() => setZoomId(wf.id)}
-                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white/95 text-app-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
-                  >
-                    <span className="mi text-[15px]">open_in_full</span>
-                  </button>
-                  {/* + 담기 */}
-                  <button
-                    onClick={() => (inTray ? removeFromTray(wf.id) : addToTray(wf.id))}
-                    className={`absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md border px-2 py-1 text-[10.5px] font-semibold shadow-sm transition-colors ${
-                      inTray
-                        ? "border-app-accent bg-app-accent text-white"
-                        : "border-app-border bg-white/95 text-app-muted opacity-0 group-hover:opacity-100 hover:border-app-accent hover:text-app-accent"
-                    }`}
-                  >
-                    <span className="mi text-[13px]">{inTray ? "check" : "add"}</span>
-                    {inTray ? "담김" : "추가"}
-                  </button>
+              <div key={c}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-[12.5px] font-bold">{c}</span>
+                  <span className="text-[11px] text-app-faint">{items.length}</span>
+                  <span className="h-px flex-1 bg-app-border-soft" />
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-1">
-                  <p className="truncate text-[11.5px] font-semibold">{wf.name}</p>
-                  {wf.viz && (
-                    <span className="flex-none rounded bg-app-bg px-1.5 py-0.5 text-[9px] font-semibold text-app-muted">
-                      {wf.viz}
-                    </span>
-                  )}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {items.map(renderCard)}
                 </div>
               </div>
             );
           })}
         </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{visible.map(renderCard)}</div>
       )}
 
       {/* 담기 트레이 (하단 고정) */}
