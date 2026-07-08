@@ -9,6 +9,7 @@ import {
 } from "../../store/commentStore";
 import { getGuestName, useCollabStore } from "../../store/collabStore";
 import { pushNotif } from "../../store/notifStore";
+import { setAnon, useAnon } from "../../store/privacyStore";
 import { useUiStore } from "../../store/uiStore";
 import { showToast } from "../ui/toast";
 
@@ -42,7 +43,8 @@ export function CommentsPanel({
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [mentionOpen, setMentionOpen] = useState<"draft" | "reply" | null>(null);
-  const me = getGuestName() || "나";
+  const anon = useAnon(deckId);
+  const me = anon ? "익명" : getGuestName() || "나";
   const collab = useCollabStore();
   const pinPicking = useUiStore((s) => s.pinPicking);
   const setPinPicking = useUiStore((s) => s.setPinPicking);
@@ -116,6 +118,30 @@ export function CommentsPanel({
         <div className="border-b border-app-border-soft bg-app-bg px-4 py-2 text-[11.5px] text-app-muted">
           슬라이드 위 원하는 위치를 클릭하면 핀이 찍힙니다.
         </div>
+      )}
+      {/* 익명(Private) 모드 — 켜면 작성자가 '익명'으로 기록돼 솔직한 피드백을 유도 */}
+      {!readOnly && (
+        <button
+          onClick={() => {
+            setAnon(deckId, !anon);
+            showToast(anon ? "익명 모드를 껐어요" : "익명 모드 — 이제 작성자가 '익명'으로 기록됩니다");
+          }}
+          className={`flex items-center justify-between border-b border-app-border-soft px-4 py-2 text-left text-[11.5px] font-semibold ${
+            anon ? "bg-app-accent-soft text-app-accent" : "bg-white text-app-muted hover:bg-app-bg"
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <span className="mi text-[15px]">{anon ? "visibility_off" : "visibility"}</span>
+            익명 모드 {anon ? "켜짐" : "꺼짐"}
+          </span>
+          <span
+            className={`relative h-4 w-7 rounded-full transition ${anon ? "bg-app-accent" : "bg-app-border"}`}
+          >
+            <span
+              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${anon ? "left-3.5" : "left-0.5"}`}
+            />
+          </span>
+        </button>
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">

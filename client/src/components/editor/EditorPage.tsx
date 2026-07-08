@@ -21,6 +21,7 @@ import {
   useCollabStore,
 } from "../../store/collabStore";
 import { clearHistory, useDeckStore, useTemporal } from "../../store/deckStore";
+import { getAnon } from "../../store/privacyStore";
 import { useGenerationStore } from "../../store/generationStore";
 import type { SlideGenStatus } from "../../store/generationStore";
 import { loadDeck, saveDeck, saveDeckThumbnail } from "../../store/storage";
@@ -54,6 +55,79 @@ interface ContextMenuState {
   x: number;
   y: number;
   slideId: string;
+}
+
+// 스티키 노트 색 팔레트 (Miro식 12색)
+const STICKY_COLORS = [
+  "#FFE066", "#FFD43B", "#FFC078", "#FFA94D", "#FFA8A8", "#FF8787",
+  "#F783AC", "#B2F2BB", "#69DB7C", "#96F2D7", "#A5D8FF", "#D0BFFF",
+];
+
+// 고객 여정맵(CJM) — 제목 + 여정 단계×스테이지 편집 표 + 고객 이해도 정렬 스케일
+function buildCjmElements(dims: SlideDims): SlideElement[] {
+  const M = 80;
+  return [
+    {
+      id: uid(),
+      type: "text",
+      text: "고객 여정맵 (Customer Journey Map)",
+      role: "heading",
+      x: M,
+      y: 48,
+      w: dims.w - M * 2,
+      h: 90,
+    },
+    {
+      id: uid(),
+      type: "table",
+      headerRow: true,
+      rows: [
+        ["여정 단계", "1. 인지", "2. 탐색", "3. 결정", "4. 사용"],
+        ["스토리", "", "", "", ""],
+        ["행동 (Actions)", "", "", "", ""],
+        ["접점 (Touchpoints)", "", "", "", ""],
+        ["감정 (Emotions)", "", "", "", ""],
+        ["불만/장애물 (Pain points)", "", "", "", ""],
+      ],
+      x: M,
+      y: 168,
+      w: dims.w - M * 2,
+      h: dims.h - 168 - M,
+    },
+  ];
+}
+
+// 우선순위 표(Prioritization) — 기능 목록 + 영향도/노력/점수 편집 표
+function buildPrioritizationElements(dims: SlideDims): SlideElement[] {
+  const M = 100;
+  return [
+    {
+      id: uid(),
+      type: "text",
+      text: "기능 우선순위 (Prioritization)",
+      role: "heading",
+      x: M,
+      y: 56,
+      w: dims.w - M * 2,
+      h: 90,
+    },
+    {
+      id: uid(),
+      type: "table",
+      headerRow: true,
+      rows: [
+        ["우선순위", "기능", "영향도", "노력", "점수"],
+        ["1", "새 기능 A", "높음", "중간", "9"],
+        ["2", "새 기능 B", "높음", "낮음", "8"],
+        ["3", "개선 C", "중간", "낮음", "6"],
+        ["4", "개선 D", "낮음", "중간", "3"],
+      ],
+      x: M,
+      y: 176,
+      w: dims.w - M * 2,
+      h: dims.h - 176 - M - 60,
+    },
+  ];
 }
 
 function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
@@ -510,6 +584,7 @@ export function EditorPage() {
     duplicateSlide,
     deleteSlide,
     addElement,
+    addElements,
     updateElement,
   } = useDeckStore.getState();
   const temporal = useTemporal();
@@ -529,7 +604,9 @@ export function EditorPage() {
   const [penMode, setPenMode] = useState(false);
   const [penColor, setPenColor] = useState("#E5484D");
   const [penWidth, setPenWidth] = useState(4);
+  const [penOpacity, setPenOpacity] = useState(1);
   const [penPopover, setPenPopover] = useState(false);
+  const [stickyPop, setStickyPop] = useState(false);
   const [mmOpen, setMmOpen] = useState(true); // 미니맵 접기/펼치기
   const [pinPop, setPinPop] = useState<{ id: string; x: number; y: number } | null>(null);
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
@@ -787,6 +864,48 @@ export function EditorPage() {
     addElement(slide.id, el);
     setTab("props");
     showToast(`${SHAPE_LABEL[kind] ?? "요소"}가 추가됐어요 — 드래그로 배치하세요`);
+  };
+
+  // 스티키 노트 — 색 카드(roundRect) + 가운데 텍스트를 같은 groupId로 묶어 삽입(카드=이동, 텍스트=더블클릭 편집)
+  const insertSticky = (color: string) => {
+    if (slideLocked) {
+      showToast("잠긴 슬라이드예요 — 잠금을 해제한 뒤 편집하세요");
+      return;
+    }
+    const dm = aspectDims(deck.aspect);
+    const size = 300;
+    const x = Math.round(dm.w / 2 - size / 2);
+    const y = Math.round(dm.h / 2 - size / 2);
+    const g = uid();
+    const card: SlideElement = {
+      id: uid(),
+      type: "shape",
+      shape: "roundRect",
+      radius: 14,
+      fill: color,
+      shadow: true,
+      groupId: g,
+      x,
+      y,
+      w: size,
+      h: size,
+    };
+    const text: SlideElement = {
+      id: uid(),
+      type: "text",
+      text: "메모를 입력하세요",
+      role: "body",
+      align: "center",
+      color: "#1A1A1A",
+      groupId: g,
+      x: x + 24,
+      y: y + size / 2 - 44,
+      w: size - 48,
+      h: 88,
+    };
+    addElements(slide.id, [card, text]);
+    useUiStore.getState().setSelectedElementId(text.id);
+    showToast("스티키 노트 추가 — 더블클릭해서 내용을 입력하세요");
   };
 
   const removeSlide = (slideId: string) => {
@@ -1089,12 +1208,24 @@ export function EditorPage() {
                 items={[
                   { key: "blank", name: "빈 슬라이드", icon: <span className="mi text-[16px]">add</span> },
                   { key: "ai", name: "AI로 생성", icon: <span className="mi text-[16px]">auto_awesome</span> },
+                  { key: "cjm", name: "고객 여정맵", icon: <span className="mi text-[16px]">map</span> },
+                  { key: "prioritization", name: "우선순위 표", icon: <span className="mi text-[16px]">format_list_numbered</span> },
                   { key: "regen", name: "덱 다시 생성", icon: <span className="mi text-[16px]">refresh</span> },
                 ]}
                 onSelect={(key) => {
                   if (key === "blank") {
                     addSlide(slideIndex);
                     setCurrentSlideIndex(slideIndex + 1);
+                  } else if (key === "cjm" || key === "prioritization") {
+                    // 템플릿 슬라이드 추가 후 요소 채우기
+                    addSlide(slideIndex);
+                    const newIdx = slideIndex + 1;
+                    setCurrentSlideIndex(newIdx);
+                    const dm = aspectDims(deck.aspect);
+                    const els = key === "cjm" ? buildCjmElements(dm) : buildPrioritizationElements(dm);
+                    const ns = useDeckStore.getState().deck?.slides[newIdx];
+                    if (ns) addElements(ns.id, els);
+                    showToast(key === "cjm" ? "고객 여정맵 템플릿을 추가했어요" : "우선순위 표 템플릿을 추가했어요");
                   } else if (key === "ai") {
                     // 빈 슬라이드 추가 후 재생성 레이어 열기
                     addSlide(slideIndex);
@@ -1394,7 +1525,7 @@ export function EditorPage() {
               .filter((c) => c.slideId === slide?.id && c.x != null && c.y != null)
               .map((c, i) => ({ id: c.id, x: c.x!, y: c.y!, n: i + 1, resolved: c.resolved }))}
             onPinPlace={(x, y) => {
-              addComment(deck.id, slide.id, getGuestName() || "나", "이 위치 확인 부탁드립니다.", { x, y });
+              addComment(deck.id, slide.id, getAnon(deck.id) ? "익명" : getGuestName() || "나", "이 위치 확인 부탁드립니다.", { x, y });
               useUiStore.getState().setPinPicking(false);
               setTab("comments");
               showToast("댓글이 등록됐어요");
@@ -1404,12 +1535,14 @@ export function EditorPage() {
             penMode={penMode}
             penColor={penColor}
             penWidth={penWidth}
+            penOpacity={penOpacity}
             onPathDrawn={(d, x, y, w, h, stroke, strokeWidth) => {
               addElement(slide.id, {
                 id: uid(),
                 type: "path",
                 x, y, w, h,
                 d, stroke, strokeWidth,
+                ...(penOpacity < 1 ? { opacity: penOpacity } : {}),
               });
             }}
           />
@@ -1517,8 +1650,8 @@ export function EditorPage() {
                         <span className="text-[11.5px] font-bold">펜 색상</span>
                         <button onClick={() => setPenPopover(false)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
                       </div>
-                      <div className="mb-3 flex flex-wrap gap-1.5">
-                        {["#E5484D", "#1A1A1A", "#2563EB", "#1E9C5B", "#E0701F", "#8B5CF6", "#EC4899", "#FFFFFF"].map((c) => (
+                      <div className="mb-3 grid grid-cols-8 gap-1.5">
+                        {["#1A1A1A", "#495057", "#E5484D", "#F76707", "#E0701F", "#F59F00", "#2F9E44", "#1E9C5B", "#0CA678", "#2563EB", "#1971C2", "#7048E8", "#8B5CF6", "#E64980", "#EC4899", "#FFFFFF"].map((c) => (
                           <button
                             key={c}
                             onClick={() => setPenColor(c)}
@@ -1533,7 +1666,7 @@ export function EditorPage() {
                         </label>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[11.5px] font-bold">굵기</span>
+                        <span className="w-8 text-[11.5px] font-bold">굵기</span>
                         <input
                           type="range" min={1} max={24} value={penWidth}
                           onChange={(e) => setPenWidth(Number(e.target.value))}
@@ -1541,8 +1674,17 @@ export function EditorPage() {
                         />
                         <span className="w-6 text-right text-[11px] font-semibold text-app-muted">{penWidth}</span>
                       </div>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <span className="w-8 text-[11.5px] font-bold">투명</span>
+                        <input
+                          type="range" min={10} max={100} value={Math.round(penOpacity * 100)}
+                          onChange={(e) => setPenOpacity(Number(e.target.value) / 100)}
+                          className="flex-1 accent-[#1A1A1A]"
+                        />
+                        <span className="w-6 text-right text-[11px] font-semibold text-app-muted">{Math.round(penOpacity * 100)}</span>
+                      </div>
                       <div className="mt-2 flex items-center justify-center rounded-lg bg-app-bg py-2">
-                        <span className="rounded-full" style={{ width: penWidth + 4, height: penWidth + 4, background: penColor, border: penColor === "#FFFFFF" ? "1px solid #ccc" : "none" }} />
+                        <span className="rounded-full" style={{ width: penWidth + 4, height: penWidth + 4, background: penColor, opacity: penOpacity, border: penColor === "#FFFFFF" ? "1px solid #ccc" : "none" }} />
                       </div>
                     </div>
                   )}
@@ -1562,6 +1704,38 @@ export function EditorPage() {
                 >
                   <span className="mi text-[17px]">title</span>
                 </button>
+                {/* 스티키 노트 — 색 팔레트에서 색을 고르면 그 색 노트 삽입 */}
+                <div className="relative">
+                  <button
+                    onClick={() => setStickyPop((v) => !v)}
+                    title="스티키 노트"
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 hover:bg-app-bg hover:text-app-text ${stickyPop ? "bg-app-bg text-app-text" : "text-app-muted"}`}
+                  >
+                    <span className="mi text-[17px]">sticky_note_2</span>
+                  </button>
+                  {stickyPop && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setStickyPop(false)} />
+                      <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-50 -translate-x-1/2 rounded-xl border border-app-border bg-white p-2.5 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-app-faint">스티키 노트</span>
+                          <button onClick={() => setStickyPop(false)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
+                        </div>
+                        <div className="grid grid-cols-6 gap-1.5">
+                          {STICKY_COLORS.map((c) => (
+                            <button
+                              key={c}
+                              onClick={() => { insertSticky(c); setStickyPop(false); }}
+                              title={c}
+                              className="h-7 w-7 rounded-md border border-black/10 transition hover:scale-110 hover:ring-2 hover:ring-app-accent"
+                              style={{ background: c }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
                 {/* YouTube 임베딩 */}
                 <button
                   onClick={() => openMedia("youtube")}
@@ -1751,7 +1925,7 @@ export function EditorPage() {
                         onKeyDown={(e) => {
                           const v = (e.target as HTMLInputElement).value.trim();
                           if (e.key === "Enter" && v) {
-                            addReply(deck.id, c.id, getGuestName() || "나", v);
+                            addReply(deck.id, c.id, getAnon(deck.id) ? "익명" : getGuestName() || "나", v);
                             (e.target as HTMLInputElement).value = "";
                           }
                         }}

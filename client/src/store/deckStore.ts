@@ -15,6 +15,7 @@ interface DeckState {
   duplicateSlide: (slideId: string) => void;
   deleteSlide: (slideId: string) => void;
   addElement: (slideId: string, element: SlideElement) => void;
+  addElements: (slideId: string, elements: SlideElement[]) => void;
   removeElement: (slideId: string, elementId: string) => void;
   updateElement: (
     slideId: string,
@@ -112,6 +113,20 @@ export const useDeckStore = create<DeckState>()(
                   slides.map((sl) =>
                     sl.id === slideId
                       ? { ...sl, elements: [...sl.elements, element] }
+                      : sl,
+                  ),
+                ),
+              }
+            : s,
+        ),
+      addElements: (slideId, elements) =>
+        set((s) =>
+          s.deck
+            ? {
+                deck: mapSlides(s.deck, (slides) =>
+                  slides.map((sl) =>
+                    sl.id === slideId
+                      ? { ...sl, elements: [...sl.elements, ...elements] }
                       : sl,
                   ),
                 ),

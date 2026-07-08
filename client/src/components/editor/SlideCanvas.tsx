@@ -41,6 +41,7 @@ export function SlideCanvas({
   penMode = false,
   penColor = "#E5484D",
   penWidth = 4,
+  penOpacity = 1,
   onPathDrawn,
 }: {
   slide: Slide;
@@ -58,6 +59,7 @@ export function SlideCanvas({
   penMode?: boolean;
   penColor?: string;
   penWidth?: number;
+  penOpacity?: number;
   onPathDrawn?: (d: string, x: number, y: number, w: number, h: number, stroke: string, strokeWidth: number) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -535,11 +537,16 @@ export function SlideCanvas({
     fc.isDrawingMode = penMode && !readOnly;
     if (fc.isDrawingMode) {
       const brush = fc.freeDrawingBrush ?? new PencilBrush(fc);
-      brush.color = penColor;
+      // 불투명도를 rgba로 반영해 라이브 프리뷰가 확정 획(element opacity)과 일치하게
+      const h = penColor.replace("#", "");
+      const r = parseInt(h.slice(0, 2), 16) || 0;
+      const g = parseInt(h.slice(2, 4), 16) || 0;
+      const b = parseInt(h.slice(4, 6), 16) || 0;
+      brush.color = `rgba(${r},${g},${b},${penOpacity})`;
       brush.width = penWidth;
       fc.freeDrawingBrush = brush;
     }
-  }, [penMode, penColor, penWidth, readOnly]);
+  }, [penMode, penColor, penWidth, penOpacity, readOnly]);
 
   // 슬라이드/테마 변경 시 재렌더 (Fabric 발 갱신은 스킵 — 값만 이미 동기화됨)
   useEffect(() => {
