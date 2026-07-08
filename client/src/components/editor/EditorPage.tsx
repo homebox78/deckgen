@@ -58,7 +58,7 @@ interface ContextMenuState {
 function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
   const cx = dims.w / 2;
   const cy = dims.h / 2;
-  const base = { id: uid(), x: cx - 150, y: cy - 150, w: 300, h: 300, fill: "@accent", opacity: 0.22 };
+  const base = { id: uid(), x: cx - 150, y: cy - 150, w: 300, h: 300, fill: "@accent" };
   switch (kind) {
     case "rect":
       return { ...base, type: "shape", shape: "rect", x: cx - 200, w: 400 };
@@ -75,13 +75,13 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
     case "parallelogram":
       return { ...base, type: "shape", shape: "parallelogram", x: cx - 200, y: cy - 100, w: 400, h: 200 };
     case "pill":
-      return { ...base, type: "shape", shape: "pill", x: cx - 190, y: cy - 48, w: 380, h: 96, opacity: 0.16 };
+      return { ...base, type: "shape", shape: "pill", x: cx - 190, y: cy - 48, w: 380, h: 96 };
     case "line":
       return { id: uid(), type: "shape", shape: "line", x: cx - 250, y: cy, w: 500, h: 0, stroke: "@accent", strokeWidth: 4 };
     case "arrow":
       return { id: uid(), type: "shape", shape: "arrow", x: cx - 250, y: cy - 20, w: 500, h: 40, stroke: "@accent", strokeWidth: 4 };
     case "badge":
-      return { ...base, type: "shape", shape: "roundRect", x: cx - 190, y: cy - 48, w: 380, h: 96, radius: 48, opacity: 0.16 };
+      return { ...base, type: "shape", shape: "roundRect", x: cx - 190, y: cy - 48, w: 380, h: 96, radius: 48 };
     case "table":
       return {
         id: uid(),

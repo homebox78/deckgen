@@ -12,6 +12,8 @@ export interface CanvasApi {
   distribute(dir: DistDir): void;
   /** 현재 선택 요소 수 */
   selectionCount(): number;
+  /** 선택 요소의 fabric 속성을 즉시 반영(전체 재렌더 없이) — 속성 패널 라이브 편집용 */
+  patchActive(props: Record<string, unknown>): void;
 }
 
 let current: CanvasApi | null = null;

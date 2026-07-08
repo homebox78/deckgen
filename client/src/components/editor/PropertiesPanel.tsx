@@ -1,8 +1,10 @@
 import { decomposeChart } from "../../engine/chartDecompose";
 import type { SlideDims, SlideElement } from "../../engine/schema";
 import { SLIDE_H, SLIDE_W } from "../../engine/schema";
+import { markInternalUpdate } from "../../engine/fabricSync";
 import type { Theme } from "../../engine/themes";
 import { resolveColor, resolveRoleColor } from "../../engine/themes";
+import { canvasApi } from "./canvasApi";
 import { useDeckStore } from "../../store/deckStore";
 import { useUiStore } from "../../store/uiStore";
 import { showToast } from "../ui/toast";
@@ -217,7 +219,24 @@ export function PropertiesPanel({
     );
   }
 
-  const patch = (p: Partial<SlideElement>) => updateElement(slideId, element.id, p);
+  // line/arrow는 채우기가 아니라 선(stroke)에 색이 들어간다
+  const isLineArrow =
+    element.type === "shape" && (element.shape === "line" || element.shape === "arrow");
+  // opacity·rotation만 라이브 반영(모든 객체·그룹에 안전) → 슬라이더 드래그가 매끄럽게.
+  // 색/획 등 그룹 자식 재빌드가 필요한 값은 정상 재렌더로 처리한다.
+  const LIVE_KEYS = new Set(["opacity", "rotation"]);
+
+  const patch = (p: Partial<SlideElement>) => {
+    updateElement(slideId, element.id, p);
+    const keys = Object.keys(p);
+    if (keys.length === 0 || !keys.every((k) => LIVE_KEYS.has(k))) return; // 재빌드 필요 → 정상 재렌더
+    const pp = p as Record<string, unknown>;
+    const fp: Record<string, unknown> = {};
+    if ("opacity" in pp) fp.opacity = pp.opacity;
+    if ("rotation" in pp) fp.angle = pp.rotation;
+    canvasApi()?.patchActive(fp);
+    markInternalUpdate(); // store 변경 발 재렌더를 스킵 → 슬라이더 드래그가 매끄럽게
+  };
 
   const currentColor = (): string => {
     if (element.type === "text") {
@@ -226,6 +245,9 @@ export function PropertiesPanel({
         : resolveRoleColor(theme, element.role);
     }
     if (element.type === "shape") {
+      if (element.shape === "line" || element.shape === "arrow") {
+        return element.stroke ? resolveColor(theme, element.stroke) : theme.accent;
+      }
       return element.fill ? resolveColor(theme, element.fill) : theme.accent;
     }
     return "#000000";
@@ -510,7 +532,7 @@ export function PropertiesPanel({
 
       {(element.type === "text" || element.type === "shape") && (
         <div className="border-b border-app-border-soft px-4 py-3.5">
-          <SectionLabel>{element.type === "text" ? "글자색" : "채우기"}</SectionLabel>
+          <SectionLabel>{element.type === "text" ? "글자색" : isLineArrow ? "선 색" : "채우기"}</SectionLabel>
           {/* 빠른 색 스와치 (테마기본/액센트/레드/그린/앰버) */}
           <div className="mb-2 flex gap-1.5">
             {(
@@ -528,7 +550,9 @@ export function PropertiesPanel({
                 onClick={() =>
                   element.type === "text"
                     ? patch({ color: val } as Partial<SlideElement>)
-                    : patch({ fill: val ?? "@accent" } as Partial<SlideElement>)
+                    : isLineArrow
+                      ? patch({ stroke: (val as string) ?? "@accent" } as Partial<SlideElement>)
+                      : patch({ fill: val ?? "@accent" } as Partial<SlideElement>)
                 }
                 className="h-6 flex-1 rounded-md border border-black/10"
                 style={{ background: val ? resolveColor(theme, val) : "#E4E4E0" }}
@@ -543,7 +567,9 @@ export function PropertiesPanel({
               onChange={(e) =>
                 element.type === "text"
                   ? patch({ color: e.target.value } as Partial<SlideElement>)
-                  : patch({ fill: e.target.value } as Partial<SlideElement>)
+                  : isLineArrow
+                    ? patch({ stroke: e.target.value } as Partial<SlideElement>)
+                    : patch({ fill: e.target.value } as Partial<SlideElement>)
               }
             />
             <span className="flex-1 font-mono text-[12px] font-semibold">

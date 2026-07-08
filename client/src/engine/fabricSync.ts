@@ -17,6 +17,11 @@ function markInternal(): void {
   internalUpdate = true;
 }
 
+/** 외부(속성 패널 라이브 편집)에서 다음 재렌더를 스킵하도록 표시 */
+export function markInternalUpdate(): void {
+  internalUpdate = true;
+}
+
 export interface SyncHandlers {
   updateElement: (elementId: string, patch: Partial<SlideElement>) => void;
   onSelect: (elementId: string | null) => void;

@@ -183,6 +183,13 @@ export function SlideCanvas({
       align: applyAlign,
       distribute: applyDistribute,
       selectionCount: () => fc.getActiveObjects().length,
+      patchActive: (props) => {
+        const o = fc.getActiveObject();
+        if (!o) return;
+        o.set(props as Record<string, never>);
+        o.setCoords();
+        fc.requestRenderAll();
+      },
     });
 
     // --- Ctrl+휠 줌 ---
