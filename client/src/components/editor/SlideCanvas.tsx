@@ -34,6 +34,7 @@ export function SlideCanvas({
   pins,
   onPinPlace,
   onPinClick,
+  onPinClickAt,
   penMode = false,
   penColor = "#E5484D",
   penWidth = 4,
@@ -49,6 +50,7 @@ export function SlideCanvas({
   pins?: { id: string; x: number; y: number; n: number; resolved: boolean }[];
   onPinPlace?: (x: number, y: number) => void;
   onPinClick?: (id: string) => void;
+  onPinClickAt?: (id: string, clientX: number, clientY: number) => void;
   penMode?: boolean;
   penColor?: string;
   penWidth?: number;
@@ -704,6 +706,7 @@ export function SlideCanvas({
           onClick={(e) => {
             e.stopPropagation();
             onPinClick?.(pin.id);
+            onPinClickAt?.(pin.id, e.clientX, e.clientY);
           }}
           title={`댓글 핀 ${pin.n}`}
           className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-full rotate-45 items-center justify-center rounded-full rounded-bl-none border-2 border-white shadow-md ${

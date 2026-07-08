@@ -12,7 +12,7 @@ import { aspectDims, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
 import { addSavedTemplate } from "../../store/savedTemplateStore";
-import { addComment, useComments } from "../../store/commentStore";
+import { addComment, addReply, deleteComment, toggleResolve, useComments } from "../../store/commentStore";
 import {
   CLIENT_ID,
   MY_COLOR,
@@ -466,6 +466,7 @@ export function EditorPage() {
   const [penWidth, setPenWidth] = useState(4);
   const [penPopover, setPenPopover] = useState(false);
   const [mmOpen, setMmOpen] = useState(true); // 미니맵 접기/펼치기
+  const [pinPop, setPinPop] = useState<{ id: string; x: number; y: number } | null>(null);
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
   const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
     setMediaTab(t);
@@ -1253,7 +1254,7 @@ export function EditorPage() {
               setTab("comments");
               showToast("댓글이 등록됐어요");
             }}
-            onPinClick={() => setTab("comments")}
+            onPinClickAt={(id, x, y) => setPinPop({ id, x, y })}
             penMode={penMode}
             penColor={penColor}
             penWidth={penWidth}
@@ -1557,6 +1558,55 @@ export function EditorPage() {
               <span className="mi text-[18px]">chevron_right</span>
             </button>
           </div>
+          {/* 캔버스 위 댓글 핀 팝오버 (E4) */}
+          {pinPop && (() => {
+            const c = allComments.find((x) => x.id === pinPop.id);
+            if (!c) return null;
+            return (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setPinPop(null)} />
+                <div
+                  className="fixed z-50 w-72 rounded-xl border border-app-border bg-white p-3 shadow-[0_12px_32px_rgba(0,0,0,.18)]"
+                  style={{ left: Math.min(pinPop.x, window.innerWidth - 300), top: Math.min(pinPop.y + 10, window.innerHeight - 220) }}
+                >
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-app-text text-[9px] font-bold text-white">{c.author[0]}</span>
+                    <span className="text-[11.5px] font-semibold">{c.author}</span>
+                    {c.resolved && <span className="rounded bg-app-success-soft px-1.5 py-0.5 text-[9px] font-bold text-app-success">해결</span>}
+                    <span className="flex-1" />
+                    <button onClick={() => setPinPop(null)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
+                  </div>
+                  <p className="text-[12px] leading-relaxed text-app-muted">{c.text}</p>
+                  {c.replies.map((r) => (
+                    <div key={r.id} className="mt-1.5 ml-2 border-l-2 border-app-border-soft pl-2 text-[11.5px]">
+                      <b className="text-[10.5px]">{r.author}</b> <span className="text-app-muted">{r.text}</span>
+                    </div>
+                  ))}
+                  {!readOnly && (
+                    <>
+                      <input
+                        placeholder="답글 달기… (Enter)"
+                        onKeyDown={(e) => {
+                          const v = (e.target as HTMLInputElement).value.trim();
+                          if (e.key === "Enter" && v) {
+                            addReply(deck.id, c.id, getGuestName() || "나", v);
+                            (e.target as HTMLInputElement).value = "";
+                          }
+                        }}
+                        className="mt-2 w-full rounded-md border border-app-border px-2 py-1.5 text-[11.5px] focus:border-app-accent focus:outline-none"
+                      />
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <button onClick={() => toggleResolve(deck.id, c.id)} className="text-[10.5px] font-semibold text-app-success">{c.resolved ? "다시 열기" : "해결"}</button>
+                        <button onClick={() => { deleteComment(deck.id, c.id); setPinPop(null); }} className="text-[10.5px] font-semibold text-app-danger">삭제</button>
+                        <span className="flex-1" />
+                        <button onClick={() => { setTab("comments"); setPinPop(null); }} className="text-[10.5px] font-semibold text-app-muted hover:text-app-accent">전체 댓글 →</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </main>
 
         {/* 우측: 탭 패널 */}
