@@ -2,6 +2,7 @@
 // 삽입 결과는 §3 스키마의 ImageElement(dataURL) 또는 TextElement(이모지)로 캔버스에 추가
 import { useEffect, useRef, useState } from "react";
 import { apiUrl } from "../../api/base";
+import { fetchEmojiManifest, type EmojiSeries } from "../../api/emoji";
 import {
   ppImageToDataURL,
   ppPublicAssets,
@@ -263,20 +264,10 @@ export function MediaPicker({
           )}
 
           {tab === "library" && (
-            <>
-              {/* 이모지 — 아이콘·GIF는 powerPlus 라이브러리로 이관, 여기는 이모지 전용 */}
-              <div className="grid grid-cols-8 gap-1.5">
-                {EMOJIS.map((e, i) => (
-                  <button
-                    key={i}
-                    onClick={() => insertEmoji(e)}
-                    className="flex aspect-square items-center justify-center rounded-lg text-[24px] hover:bg-app-bg"
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </>
+            <EmojiPicker
+              onInsertEmoji={insertEmoji}
+              onInsertImage={(src, w, h) => insertImage(src, w, h, "contain")}
+            />
           )}
 
           {tab === "ai" && (
@@ -429,6 +420,121 @@ function PowerPlusPicker({ onPick }: { onPick: (src: string, w: number, h: numbe
             </button>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+// 이모지 탭 — 유니코드 '기본' + 업로드된 이모티콘 이미지 시리즈(서버 emoji/manifest.json)
+function EmojiPicker({
+  onInsertEmoji,
+  onInsertImage,
+}: {
+  onInsertEmoji: (e: string) => void;
+  onInsertImage: (src: string, w: number, h: number) => void;
+}) {
+  const [series, setSeries] = useState<EmojiSeries[]>([]);
+  const [sel, setSel] = useState<string>("__base"); // 기본(유니코드) 또는 시리즈명
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetchEmojiManifest().then((s) => alive && s && setSeries(s));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const insertImg = async (url: string) => {
+    setBusy(url);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = () => reject(new Error("이미지 변환 실패"));
+        r.readAsDataURL(blob);
+      });
+      const dim = await new Promise<{ w: number; h: number }>((resolve) => {
+        const im = new Image();
+        im.onload = () => resolve({ w: im.naturalWidth || 240, h: im.naturalHeight || 240 });
+        im.onerror = () => resolve({ w: 240, h: 240 });
+        im.src = dataUrl;
+      });
+      onInsertImage(dataUrl, dim.w, dim.h);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "삽입에 실패했어요");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const active = series.find((s) => s.name === sel);
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {series.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setSel("__base")}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              sel === "__base" ? "bg-app-text text-white" : "border border-app-border bg-white text-app-muted hover:border-app-accent"
+            }`}
+          >
+            기본
+          </button>
+          {series.map((s) => (
+            <button
+              key={s.name}
+              onClick={() => setSel(s.name)}
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                sel === s.name ? "bg-app-text text-white" : "border border-app-border bg-white text-app-muted hover:border-app-accent"
+              }`}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {sel === "__base" ? (
+        <div className="grid grid-cols-8 gap-1.5">
+          {EMOJIS.map((e, i) => (
+            <button
+              key={i}
+              onClick={() => onInsertEmoji(e)}
+              className="flex aspect-square items-center justify-center rounded-lg text-[24px] hover:bg-app-bg"
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      ) : active ? (
+        <div className="grid grid-cols-6 gap-2">
+          {active.items.map((it) => (
+            <button
+              key={it.url}
+              onClick={() => insertImg(it.url)}
+              disabled={!!busy}
+              title={it.name}
+              className="relative flex aspect-square items-center justify-center rounded-lg border border-app-border p-1 hover:border-app-accent disabled:opacity-60"
+            >
+              <img src={it.url} alt={it.name} loading="lazy" className="max-h-full max-w-full object-contain" />
+              {busy === it.url && (
+                <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-[10px] font-semibold text-app-accent">
+                  삽입 중…
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {series.length === 0 && (
+        <p className="mt-1 text-[10.5px] leading-relaxed text-app-faint">
+          이모티콘 이미지 시리즈를 등록하면 여기에 시리즈별로 표시됩니다.
+        </p>
       )}
     </div>
   );

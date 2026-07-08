@@ -32,6 +32,28 @@ Copy-Item "$root\server-php\src\*" "$stage\api\src\" -Force
 Copy-Item "$root\server-php\htaccess-root" "$stage\.htaccess" -Force
 # 서버 실설정 = 로컬 시크릿 config.php 그대로 (anthropic_api_key 없으면 모의 모드)
 Copy-Item "$root\server\config\config.php" "$stage\api\config.php" -Force
+
+# 이모지(이모티콘 이미지) 시리즈 → webroot/emoji/ + manifest.json 생성 (assets/emoji/<시리즈>/*)
+$emojiSrc = "$root\assets\emoji"
+if (Test-Path $emojiSrc) {
+  $seriesList = @()
+  Get-ChildItem $emojiSrc -Directory | ForEach-Object {
+    $dir = $_
+    $files = @(Get-ChildItem $dir.FullName -File | Where-Object { $_.Extension -match '(?i)\.(png|gif|jpe?g|webp|svg)$' } | ForEach-Object { $_.Name })
+    if ($files.Count -gt 0) {
+      $dest = "$stage\emoji\$($dir.Name)"
+      New-Item -ItemType Directory -Path $dest -Force | Out-Null
+      Copy-Item "$($dir.FullName)\*" $dest -Recurse -Force
+      $seriesList += [pscustomobject]@{ name = $dir.Name; files = $files }
+    }
+  }
+  if ($seriesList.Count -gt 0) {
+    New-Item -ItemType Directory -Path "$stage\emoji" -Force | Out-Null
+    $json = @{ series = $seriesList } | ConvertTo-Json -Depth 5
+    [IO.File]::WriteAllText("$stage\emoji\manifest.json", $json, (New-Object Text.UTF8Encoding $false))
+    Write-Host "  이모지 시리즈 $($seriesList.Count)개 포함" -ForegroundColor DarkGray
+  }
+}
 $tar = "$env:TEMP\deckgen_deploy.tgz"
 if (Test-Path $tar) { Remove-Item $tar -Force }
 tar -czf $tar -C $stage .
