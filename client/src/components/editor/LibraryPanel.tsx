@@ -5,6 +5,7 @@ import { uid } from "../../engine/schema";
 import {
   ppAssets,
   ppImageToDataURL,
+  ppPublicAssets,
   ppRecordUsage,
   ppRelative,
   ppRequestCode,
@@ -77,18 +78,32 @@ export function LibraryPanel({
   const [loading, setLoading] = useState(false);
   const [inserting, setInserting] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
+  // 공개(무인증) 엔드포인트 사용 가능 여부. null=확인 중, true=인증 없이 사용, false=로그인 필요(폴백)
+  const [pub, setPub] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    ppPublicAssets({ page: 1, limit: 1 })
+      .then(() => alive && setPub(true))
+      .catch(() => alive && setPub(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const load = useCallback(async () => {
-    if (!token) return;
+    if (pub === null) return; // 확인 중
+    if (!pub && !token) return; // 로그인 필요(폴백)
     setLoading(true);
     try {
-      const r = await ppAssets(token, { category: cat, q, page: 1, limit: 60, sort: "latest" });
+      const r = pub
+        ? await ppPublicAssets({ category: cat, q, page: 1, limit: 60, sort: "latest" })
+        : await ppAssets(token!, { category: cat, q, page: 1, limit: 60, sort: "latest" });
       // 이미지 자산만(장표=slide는 DeckGen 삽입 대상 아님)
       setAssets(r.data.filter((a) => a.image_url));
       setTotal(r.total);
     } catch (e) {
-      // 토큰 만료 → 재로그인
-      if (e instanceof Error && /401|인증/.test(e.message)) {
+      if (!pub && e instanceof Error && /401|인증/.test(e.message)) {
         clearPPAuth();
         showToast("powerPlus 세션이 만료됐어요 — 다시 로그인해 주세요");
       } else {
@@ -97,7 +112,7 @@ export function LibraryPanel({
     } finally {
       setLoading(false);
     }
-  }, [token, cat, q]);
+  }, [pub, token, cat, q]);
 
   useEffect(() => {
     void load();
@@ -136,8 +151,13 @@ export function LibraryPanel({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // ── 미인증: 로그인 폼 ──
-  if (!token) {
+  // 공개 사용 가능 여부 확인 중
+  if (pub === null) {
+    return <p className="py-10 text-center text-[12px] text-app-faint">powerPlus 연결 중…</p>;
+  }
+
+  // ── 로그인 폼: 공개 엔드포인트를 못 쓰고(pub=false) 토큰도 없을 때만(폴백) ──
+  if (!pub && !token) {
     return (
       <div className="flex flex-col gap-3 px-4 py-5">
         <div className="flex items-center gap-2">
@@ -210,15 +230,17 @@ export function LibraryPanel({
       <div className="flex items-center gap-2 border-b border-app-border-soft px-4 py-2.5">
         <span className="mi text-[16px] text-app-accent">photo_library</span>
         <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold" title={email ?? ""}>
-          {email}
+          {pub && !token ? "powerPlus 자산 라이브러리" : email}
         </span>
-        <button
-          onClick={() => clearPPAuth()}
-          title="powerPlus 로그아웃"
-          className="flex items-center gap-1 rounded-md border border-app-border px-2 py-1 text-[10.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
-        >
-          <span className="mi text-[13px]">logout</span>로그아웃
-        </button>
+        {token && (
+          <button
+            onClick={() => clearPPAuth()}
+            title="powerPlus 로그아웃"
+            className="flex items-center gap-1 rounded-md border border-app-border px-2 py-1 text-[10.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+          >
+            <span className="mi text-[13px]">logout</span>로그아웃
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-1.5 border-b border-app-border-soft px-4 py-2.5">

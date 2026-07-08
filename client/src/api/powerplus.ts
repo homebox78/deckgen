@@ -61,6 +61,19 @@ export async function ppMe(token: string): Promise<{ email: string; isAdmin?: bo
   return ppJson("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } });
 }
 
+/** 공개(인증 불필요) 자산 검색 — GET /api/public/assets. DeckGen 내부에서 로그인 없이 사용 */
+export async function ppPublicAssets(
+  opts: { category?: string; q?: string; page?: number; sort?: string; limit?: number } = {},
+): Promise<PPListResult> {
+  const p = new URLSearchParams();
+  if (opts.category && opts.category !== "all") p.set("category", opts.category);
+  if (opts.q) p.set("q", opts.q);
+  p.set("page", String(opts.page ?? 1));
+  p.set("limit", String(opts.limit ?? 40));
+  p.set("sort", opts.sort ?? "latest");
+  return ppJson(`/api/public/assets?${p.toString()}`);
+}
+
 /** 자산 검색/목록 — GET /api/assets?category=&q=&page=&sort= (Bearer) */
 export async function ppAssets(
   token: string,

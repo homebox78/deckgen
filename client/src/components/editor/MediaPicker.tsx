@@ -1,7 +1,13 @@
 // 미디어 삽입 (Demo Act 5.5) — 이미지 업로드 · YouTube · Pexels · GIPHY · 아이콘/이모지 · AI 이미지
 // 삽입 결과는 §3 스키마의 ImageElement(dataURL) 또는 TextElement(이모지)로 캔버스에 추가
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiUrl } from "../../api/base";
+import {
+  ppImageToDataURL,
+  ppPublicAssets,
+  ppRelative,
+  type PPAsset,
+} from "../../api/powerplus";
 import type { ImageElement, SlideDims, SlideElement, TextElement } from "../../engine/schema";
 import { uid } from "../../engine/schema";
 import { showToast } from "../ui/toast";
@@ -11,38 +17,13 @@ type Tab = "image" | "youtube" | "stock" | "library" | "ai";
 const TABS: { id: Tab; label: string }[] = [
   { id: "image", label: "이미지 업로드" },
   { id: "youtube", label: "YouTube" },
-  { id: "stock", label: "Pexels" },
-  { id: "library", label: "아이콘·이모지·GIF" },
+  { id: "stock", label: "powerPlus" },
+  { id: "library", label: "이모지" },
   { id: "ai", label: "AI 이미지" },
 ];
 
 const EMOJIS = "😀 🚀 💡 📊 📈 ✅ ⭐ 🔥 💰 🎯 🏆 📌 🔔 💬 📎 🎨 🌱 ⚡ 🧩 🛠️ 📅 🔍 💎 🌟".split(" ");
-const ICON_PATHS: Record<string, string> = {
-  스파클: "M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z",
-  시계: "M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2",
-  화살표: "M5 12h14M13 6l6 6-6 6",
-  체크: "M20 6L9 17l-5-5",
-  하트: "M12 21s-8-5.5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.5-8 11-8 11z",
-  별: "M12 2l3 6.5 7 .6-5.3 4.6L18 21l-6-3.6L6 21l1.3-7.3L2 9.1l7-.6z",
-  설정: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4a1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 004.6 14H4a2 2 0 110-4h.1A1.7 1.7 0 006 7a1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0011 4.6V4a2 2 0 114 0v.1a1.7 1.7 0 001.7 1 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V11a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z",
-  그리드: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
-  클라우드: "M18 10a4 4 0 00-7.7-1.3A3.5 3.5 0 106.5 18H18a4 4 0 000-8z",
-  육각형: "M12 2l8.7 5v10L12 22l-8.7-5V7z",
-  타깃: "M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z",
-  연필: "M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z",
-};
 
-// Pexels/GIPHY 시뮬레이션용 그라디언트 (실 연동 전)
-const STOCK = [
-  { label: "매장 전경", from: "#F0894C", to: "#C43E1C" },
-  { label: "상담 장면", from: "#6D8DFF", to: "#3B5BDB" },
-  { label: "시장 골목", from: "#38B48E", to: "#1A7F5A" },
-  { label: "카페 운영", from: "#C25E3A", to: "#8A3E22" },
-  { label: "장부 정리", from: "#8B6BFF", to: "#5B3BC4" },
-  { label: "배송 준비", from: "#F0566A", to: "#C4283E" },
-  { label: "온라인 판매", from: "#2563EB", to: "#1A47B8" },
-  { label: "팀 회의", from: "#14B8A6", to: "#0D8276" },
-];
 
 /** 그라디언트 이미지를 캔버스로 그려 dataURL 생성 (스톡/AI 시뮬레이션) */
 function gradientDataURL(from: string, to: string, w = 800, h = 500, label?: string): string {
@@ -64,10 +45,6 @@ function gradientDataURL(from: string, to: string, w = 800, h = 500, label?: str
   return c.toDataURL("image/png");
 }
 
-function iconDataURL(path: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`;
-  return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
-}
 
 export function MediaPicker({
   dims,
@@ -81,13 +58,10 @@ export function MediaPicker({
   initialTab?: Tab;
 }) {
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [libTab, setLibTab] = useState<"icon" | "emoji" | "gif">("icon");
-  const [iconQuery, setIconQuery] = useState("");
   const [ytUrl, setYtUrl] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiModel, setAiModel] = useState("gpt-image-2");
-  const [stockQuery, setStockQuery] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const cx = dims.w / 2;
@@ -285,105 +259,23 @@ export function MediaPicker({
           )}
 
           {tab === "stock" && (
-            <>
-              <div className="mb-3 flex items-center gap-2 rounded-lg border border-app-border px-3 py-2">
-                <span className="mi text-[16px] text-app-faint">search</span>
-                <input
-                  value={stockQuery}
-                  onChange={(e) => setStockQuery(e.target.value)}
-                  placeholder="Pexels 이미지 검색 (예: 오피스, 자연, 기술)"
-                  className="min-w-0 flex-1 text-[12.5px] focus:outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-4 gap-2.5">
-                {STOCK.filter((s) => !stockQuery.trim() || s.label.includes(stockQuery.trim())).map((s) => (
-                  <button
-                    key={s.label}
-                    onClick={() => insertImage(gradientDataURL(s.from, s.to, 800, 600, s.label), 640, 480)}
-                    className="flex aspect-[4/3] items-end justify-start rounded-lg p-2 text-[10.5px] font-semibold text-white/90"
-                    style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </>
+            <PowerPlusPicker onPick={(src, w, h) => insertImage(src, w, h, "contain")} />
           )}
 
           {tab === "library" && (
             <>
-              <div className="mb-3 flex gap-1">
-                {(["icon", "emoji", "gif"] as const).map((t) => (
+              {/* 이모지 — 아이콘·GIF는 powerPlus 라이브러리로 이관, 여기는 이모지 전용 */}
+              <div className="grid grid-cols-8 gap-1.5">
+                {EMOJIS.map((e, i) => (
                   <button
-                    key={t}
-                    onClick={() => setLibTab(t)}
-                    className={`rounded-full px-3 py-1 text-[11.5px] font-semibold ${
-                      libTab === t ? "bg-app-accent-soft text-app-accent" : "bg-app-bg text-app-faint"
-                    }`}
+                    key={i}
+                    onClick={() => insertEmoji(e)}
+                    className="flex aspect-square items-center justify-center rounded-lg text-[24px] hover:bg-app-bg"
                   >
-                    {t === "icon" ? "아이콘" : t === "emoji" ? "이모지" : "GIPHY"}
+                    {e}
                   </button>
                 ))}
               </div>
-              {libTab === "emoji" && (
-                <div className="grid grid-cols-8 gap-1.5">
-                  {EMOJIS.map((e, i) => (
-                    <button
-                      key={i}
-                      onClick={() => insertEmoji(e)}
-                      className="flex aspect-square items-center justify-center rounded-lg text-[24px] hover:bg-app-bg"
-                    >
-                      {e}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {libTab === "icon" && (
-                <>
-                  <div className="mb-2.5 flex items-center gap-2 rounded-lg border border-app-border px-2.5 py-2">
-                    <span className="mi text-[15px] text-app-faint">search</span>
-                    <input
-                      value={iconQuery}
-                      onChange={(e) => setIconQuery(e.target.value)}
-                      placeholder="아이콘 검색"
-                      className="flex-1 bg-transparent text-[12px] focus:outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-6 gap-2">
-                    {Object.entries(ICON_PATHS)
-                      .filter(([name]) => !iconQuery.trim() || name.includes(iconQuery.trim()))
-                      .map(([name, path]) => (
-                        <button
-                          key={name}
-                          onClick={() => insertImage(iconDataURL(path), 200, 200, "contain")}
-                          title={name}
-                          className="flex aspect-square items-center justify-center rounded-lg border border-app-border hover:border-app-accent"
-                        >
-                          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1A1A1A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d={path} />
-                          </svg>
-                        </button>
-                      ))}
-                  </div>
-                </>
-              )}
-              {libTab === "gif" && (
-                <>
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {STOCK.slice(0, 4).map((s) => (
-                      <button
-                        key={s.label}
-                        onClick={() => insertImage(gradientDataURL(s.to, s.from, 480, 480, "GIF"), 400, 400)}
-                        className="aspect-square rounded-lg"
-                        style={{ background: `linear-gradient(45deg, ${s.from}, ${s.to})` }}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-3 text-[10px] font-semibold tracking-wide text-app-faint">
-                    POWERED BY GIPHY (시뮬레이션)
-                  </p>
-                </>
-              )}
             </>
           )}
 
@@ -422,6 +314,122 @@ export function MediaPicker({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// powerPlus 자산 브라우저 (무인증 공개 엔드포인트) — MediaPicker 'powerPlus' 탭
+const PP_CATS = [
+  { key: "all", label: "전체" },
+  { key: "icon", label: "아이콘" },
+  { key: "photo", label: "사진" },
+  { key: "illust", label: "일러스트" },
+  { key: "diagram", label: "다이어그램" },
+  { key: "logo", label: "로고" },
+];
+
+function PowerPlusPicker({ onPick }: { onPick: (src: string, w: number, h: number) => void }) {
+  const [cat, setCat] = useState("all");
+  const [query, setQuery] = useState("");
+  const [q, setQ] = useState("");
+  const [assets, setAssets] = useState<PPAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ok, setOk] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    ppPublicAssets({ category: cat, q, page: 1, limit: 60, sort: "latest" })
+      .then((r) => {
+        if (!alive) return;
+        setOk(true);
+        setAssets(r.data.filter((a) => a.image_url));
+      })
+      .catch(() => alive && setOk(false))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [cat, q]);
+
+  const pick = async (a: PPAsset) => {
+    if (!a.image_url) return;
+    setBusy(a.id);
+    try {
+      const { dataUrl, w, h } = await ppImageToDataURL(a.image_url);
+      onPick(dataUrl, w, h);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "삽입에 실패했어요");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (ok === false) {
+    return (
+      <p className="py-10 text-center text-[12px] text-app-faint">
+        powerPlus 자산 연결을 준비 중입니다. 잠시 후 다시 시도해 주세요.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center gap-2 rounded-lg border border-app-border px-3 py-2">
+        <span className="mi text-[16px] text-app-faint">search</span>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && setQ(query.trim())}
+          placeholder="powerPlus 자산 검색 (예: 그래프, 회의, 데이터)"
+          className="min-w-0 flex-1 text-[12.5px] focus:outline-none"
+        />
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {PP_CATS.map((c) => (
+          <button
+            key={c.key}
+            onClick={() => setCat(c.key)}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              cat === c.key ? "bg-app-text text-white" : "border border-app-border bg-white text-app-muted hover:border-app-accent"
+            }`}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <p className="py-8 text-center text-[12px] text-app-faint">불러오는 중…</p>
+      ) : assets.length === 0 ? (
+        <p className="py-8 text-center text-[12px] text-app-faint">
+          {q ? `'${q}' 검색 결과가 없어요.` : "표시할 자산이 없어요."}
+        </p>
+      ) : (
+        <div className="grid grid-cols-4 gap-2">
+          {assets.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => pick(a)}
+              disabled={!!busy}
+              title={a.name || a.id}
+              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-app-border bg-app-bg hover:border-app-accent disabled:opacity-60"
+            >
+              <img
+                src={ppRelative(a.thumb_url || a.image_url)}
+                alt={a.name || a.id}
+                loading="lazy"
+                className="h-full w-full object-contain p-1.5"
+              />
+              {busy === a.id && (
+                <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-[11px] font-semibold text-app-accent">
+                  삽입 중…
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
