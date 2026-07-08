@@ -23,6 +23,7 @@ interface Props {
   element: SlideElement | null;
   theme: Theme;
   dims?: SlideDims;
+  onReplaceImage?: (elId: string, tab: "image" | "ai") => void;
 }
 
 function SectionLabel({ children }: { children: string }) {
@@ -122,6 +123,7 @@ export function PropertiesPanel({
   element,
   theme,
   dims = { w: SLIDE_W, h: SLIDE_H },
+  onReplaceImage,
 }: Props) {
   const updateElement = useDeckStore((s) => s.updateElement);
 
@@ -530,6 +532,52 @@ export function PropertiesPanel({
         </div>
       )}
 
+      {element.type === "image" && (
+        <div className="border-b border-app-border-soft px-4 py-3.5">
+          <SectionLabel>이미지</SectionLabel>
+          {/* 자르기(맞춤 방식) — 채우기(cover)/맞춤(contain) */}
+          <div className="mb-2 flex overflow-hidden rounded-lg border border-app-border">
+            {(
+              [
+                ["cover", "채우기", "crop"],
+                ["contain", "맞춤", "fit_screen"],
+              ] as const
+            ).map(([ft, label, glyph], i) => (
+              <button
+                key={ft}
+                onClick={() => patch({ fit: ft } as Partial<SlideElement>)}
+                className={`flex flex-1 items-center justify-center gap-1 py-1.5 text-[11.5px] font-semibold ${i > 0 ? "border-l border-app-border" : ""} ${
+                  (element.fit ?? "cover") === ft
+                    ? "bg-app-accent-soft text-app-accent"
+                    : "bg-white text-app-faint hover:bg-app-bg"
+                }`}
+              >
+                <span className="mi text-[14px]">{glyph}</span>
+                {label}
+              </button>
+            ))}
+          </div>
+          {/* 이미지 교체 — Pexels/GIPHY/업로드(image 탭) · AI 생성(ai 탭) */}
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => onReplaceImage?.(element.id, "image")}
+              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-app-border bg-white py-1.5 text-[11.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+            >
+              <span className="mi text-[14px]">swap_horiz</span>이미지 교체
+            </button>
+            <button
+              onClick={() => onReplaceImage?.(element.id, "ai")}
+              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-app-border bg-white py-1.5 text-[11.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+            >
+              <span className="mi text-[14px]">auto_awesome</span>AI 생성
+            </button>
+          </div>
+          <p className="mt-1.5 text-[10.5px] leading-relaxed text-app-faint">
+            '채우기'는 프레임을 꽉 채워 자르고, '맞춤'은 잘림 없이 전체를 담습니다.
+          </p>
+        </div>
+      )}
+
       {(element.type === "text" || element.type === "shape") && (
         <div className="border-b border-app-border-soft px-4 py-3.5">
           <SectionLabel>{element.type === "text" ? "글자색" : isLineArrow ? "선 색" : "채우기"}</SectionLabel>
@@ -752,7 +800,33 @@ export function PropertiesPanel({
         </div>
       )}
 
-      <div className="px-4 py-3.5">
+      <div className="flex flex-col gap-3 px-4 py-3.5">
+        {/* 속성 초기화 — 명시 오버라이드를 지우고 테마 기본값으로 (프로토타입) */}
+        <button
+          onClick={() => {
+            const reset: Record<string, unknown> = { opacity: undefined, rotation: undefined, shadow: undefined };
+            if (element.type === "text") {
+              Object.assign(reset, {
+                color: undefined,
+                fontSize: undefined,
+                fontWeight: undefined,
+                lineHeight: undefined,
+                letterSpacing: undefined,
+                italic: undefined,
+                underline: undefined,
+                strike: undefined,
+                align: undefined,
+              });
+            } else if (element.type === "shape") {
+              Object.assign(reset, { fill: undefined, stroke: undefined, strokeWidth: undefined, fillType: undefined });
+            }
+            patch(reset as Partial<SlideElement>);
+            showToast("속성을 테마 기본값으로 초기화했어요");
+          }}
+          className="flex w-full items-center justify-center gap-1 rounded-lg border border-app-border bg-white py-2 text-[12px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+        >
+          <span className="mi text-[15px]">restart_alt</span>속성 초기화
+        </button>
         <div className="rounded-lg border border-app-border-soft bg-[#FBFBFA] p-2.5 text-[11.5px] leading-relaxed text-app-muted">
           색·크기를 지정하지 않은 값은 테마 기본값을 따르고, 테마 변경 시 자동으로
           재해석됩니다.

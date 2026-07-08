@@ -446,6 +446,7 @@ export function EditorPage() {
     duplicateSlide,
     deleteSlide,
     addElement,
+    updateElement,
   } = useDeckStore.getState();
   const temporal = useTemporal();
 
@@ -468,7 +469,15 @@ export function EditorPage() {
   const [mmOpen, setMmOpen] = useState(true); // 미니맵 접기/펼치기
   const [pinPop, setPinPop] = useState<{ id: string; x: number; y: number } | null>(null);
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
+  const [replaceImageId, setReplaceImageId] = useState<string | null>(null);
   const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
+    setReplaceImageId(null);
+    setMediaTab(t);
+    setMediaPicker(true);
+  };
+  // 이미지 요소 교체(Pexels/GIPHY/업로드/AI) — 선택한 이미지의 src만 바꾼다
+  const startReplaceImage = (elId: string, t: "image" | "ai") => {
+    setReplaceImageId(elId);
     setMediaTab(t);
     setMediaPicker(true);
   };
@@ -894,11 +903,24 @@ export function EditorPage() {
             dims={dims}
             initialTab={mediaTab}
             onInsert={(el) => {
+              // 교체 모드: 선택 이미지의 src만 바꾸고 새 요소는 추가하지 않는다
+              if (replaceImageId && el.type === "image") {
+                updateElement(slide.id, replaceImageId, { src: el.src } as Partial<SlideElement>);
+                useUiStore.getState().setSelectedElementId(replaceImageId);
+                setReplaceImageId(null);
+                setTab("props");
+                setMediaPicker(false);
+                showToast("이미지를 교체했어요");
+                return;
+              }
               addElement(slide.id, el);
               useUiStore.getState().setSelectedElementId(el.id);
               setTab("props");
             }}
-            onClose={() => setMediaPicker(false)}
+            onClose={() => {
+              setReplaceImageId(null);
+              setMediaPicker(false);
+            }}
           />
         )}
         {versionsOpen && <VersionHistory deck={deck} onClose={() => setVersionsOpen(false)} />}
@@ -1660,6 +1682,7 @@ export function EditorPage() {
                   element={selectedElement}
                   theme={theme}
                   dims={dims}
+                  onReplaceImage={startReplaceImage}
                 />
               ))}
             {tab === "notes" && (
