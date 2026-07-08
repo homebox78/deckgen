@@ -2044,6 +2044,7 @@ export function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getAdminToken());
   const [page, setPage] = useState<PageId>("dash");
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem("dg_admin_sidebar") === "0");
+  const [railQuery, setRailQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(NAV_GROUPS.map((g) => [g.label, true])),
   );
@@ -2086,6 +2087,41 @@ export function AdminPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {collapsed && (
+            // 레일 검색 — 아이콘 hover 시 전체 페이지 검색 플라이아웃
+            <div className="group/search relative mb-1">
+              <button
+                title="페이지 검색"
+                className="relative flex w-full items-center justify-center rounded-[9px] py-2.5 text-[rgba(255,255,255,.6)] hover:bg-[rgba(255,255,255,.08)]"
+              >
+                <span className="mi text-[19px]">search</span>
+              </button>
+              <div className="pointer-events-none absolute left-full top-0 z-50 ml-2 hidden w-56 rounded-xl border border-[rgba(255,255,255,.12)] bg-[#1F1D28] p-1.5 shadow-2xl group-hover/search:pointer-events-auto group-hover/search:block">
+                <input
+                  value={railQuery}
+                  onChange={(e) => setRailQuery(e.target.value)}
+                  placeholder="페이지 검색…"
+                  className="mb-1 w-full rounded-lg bg-[rgba(255,255,255,.08)] px-2.5 py-1.5 text-[12px] text-white placeholder:text-[rgba(255,255,255,.4)] focus:outline-none"
+                />
+                <div className="max-h-64 overflow-y-auto">
+                  {PAGES.filter((p) => !railQuery.trim() || p.name.includes(railQuery.trim())).map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setPage(p.id)}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left"
+                      style={{ background: page === p.id ? "rgba(255,255,255,.18)" : "transparent" }}
+                    >
+                      <span className="mi text-[16px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.6)" }}>{p.icon}</span>
+                      <span className="text-[12px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.7)" }}>{p.name}</span>
+                    </button>
+                  ))}
+                  {PAGES.filter((p) => p.name.includes(railQuery.trim())).length === 0 && (
+                    <div className="px-2.5 py-3 text-center text-[11.5px] text-[rgba(255,255,255,.4)]">검색 결과 없음</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           {collapsed
             ? // 레일 모드 — 그룹 아이콘 + hover 플라이아웃 (시안 26·27)
               NAV_GROUPS.map((g) => {

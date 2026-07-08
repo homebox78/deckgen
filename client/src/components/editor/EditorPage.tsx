@@ -465,6 +465,7 @@ export function EditorPage() {
   const [penColor, setPenColor] = useState("#E5484D");
   const [penWidth, setPenWidth] = useState(4);
   const [penPopover, setPenPopover] = useState(false);
+  const [mmOpen, setMmOpen] = useState(true); // 미니맵 접기/펼치기
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
   const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
     setMediaTab(t);
@@ -1290,21 +1291,35 @@ export function EditorPage() {
               onClose={() => setMotionOpen(false)}
             />
           )}
-          {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 */}
+          {/* 미니맵 (좌하단) — 슬라이드 바 클릭 점프 · 접기/펼치기 · 잠금 마커 */}
           <div className="absolute bottom-3.5 left-3.5 z-10 flex items-center gap-1.5 rounded-[11px] border border-app-border bg-white px-2.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
-            <span className="mi text-[15px] text-app-muted">map</span>
-            {deck.slides.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => setCurrentSlideIndex(i)}
-                title={`슬라이드 ${i + 1}`}
-                className={`h-4 rounded-[3px] border transition-all ${
-                  i === slideIndex
-                    ? "w-6 border-[1.5px] border-app-text bg-app-accent-soft"
-                    : "w-[18px] border-app-border bg-app-bg hover:border-app-muted"
-                }`}
-              />
-            ))}
+            <button
+              onClick={() => setMmOpen((v) => !v)}
+              title={mmOpen ? "미니맵 접기" : "미니맵 펼치기"}
+              className="flex items-center text-app-muted hover:text-app-text"
+            >
+              <span className="mi text-[15px]">map</span>
+            </button>
+            {mmOpen &&
+              deck.slides.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => setCurrentSlideIndex(i)}
+                  title={`슬라이드 ${i + 1}${s.locked ? " · 잠김" : ""}`}
+                  className={`relative h-4 rounded-[3px] border transition-all ${
+                    i === slideIndex
+                      ? "w-6 border-[1.5px] border-app-text bg-app-accent-soft"
+                      : "w-[18px] border-app-border bg-app-bg hover:border-app-muted"
+                  }`}
+                >
+                  {s.locked && (
+                    <span className="mi absolute -top-1 -right-1 text-[9px] leading-none text-app-muted">lock</span>
+                  )}
+                  {s.notes && s.notes.trim() && !s.locked && (
+                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-app-accent" />
+                  )}
+                </button>
+              ))}
             <span className="ml-0.5 text-[10.5px] font-semibold text-app-muted">
               {slideIndex + 1} / {deck.slides.length}
             </span>
