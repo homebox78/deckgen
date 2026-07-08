@@ -19,7 +19,7 @@ export function Toaster() {
   const msg = useToastStore((s) => s.msg);
   if (!msg) return null;
   return (
-    <div className="fixed bottom-6 left-1/2 z-100 -translate-x-1/2 rounded-[10px] bg-app-text px-4.5 py-2.5 text-[13px] font-medium text-white shadow-[0_8px_24px_rgba(0,0,0,.25)]">
+    <div className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-[10px] bg-app-text px-4.5 py-2.5 text-[13px] font-medium text-white shadow-[0_8px_24px_rgba(0,0,0,.25)]">
       {msg}
     </div>
   );

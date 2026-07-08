@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { trackEvent } from "../../api/client";
 import { fetchShared, sendPresence } from "../../api/collab";
@@ -1141,6 +1142,9 @@ export function EditorPage() {
             }}
           />
         )}
+        {/* 전체 화면 모달은 body로 포털 — header(relative z-20) 안에 있으면 캔버스 오버레이(핀 등)에 가림 */}
+        {createPortal(
+          <>
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
         {presenting && (
           <PresentMode
@@ -1189,6 +1193,9 @@ export function EditorPage() {
               setGridOpen(false);
             }}
           />
+        )}
+          </>,
+          document.body,
         )}
         {regen &&
           (() => {

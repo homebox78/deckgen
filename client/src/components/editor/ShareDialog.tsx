@@ -96,7 +96,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center bg-[rgba(20,20,26,.45)]"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(20,20,26,.45)]"
       onClick={onClose}
     >
       <div
