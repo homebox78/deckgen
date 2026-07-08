@@ -147,10 +147,10 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
           </button>
         </div>
 
-        {/* 멤버 로스터 */}
-        <div className="mb-4 flex flex-col gap-1">
+        {/* 멤버 로스터 — 하나의 테두리 박스로 감싸고 행 구분선 */}
+        <div className="mb-4 divide-y divide-app-border-soft overflow-hidden rounded-[11px] border border-app-border-soft">
           {members.map((mem, i) => (
-            <div key={mem.email} className="flex items-center gap-2.5 rounded-lg px-1 py-1.5">
+            <div key={mem.email} className="flex items-center gap-2.5 px-3 py-2">
               <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white">
                 {mem.name.slice(0, 1)}
                 {mem.online && <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-app-success" />}

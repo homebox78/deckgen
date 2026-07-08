@@ -16,7 +16,8 @@ const LANGS = [
 
 // 언어별 미니 CSS 플래그 (국기 색 그라디언트)
 const FLAG: Record<string, string> = {
-  ko: "linear-gradient(#fff 50%, #fff 50%)", // 흰 바탕(간이) — 아래 마커로 대체
+  // 태극기 근사: 흰 바탕 + 중앙 적청 원(radial). 정밀 태극문양 대신 인식 가능한 근사.
+  ko: "radial-gradient(circle at 50% 50%, #CD2E3A 0 18%, #0047A0 18% 34%, #fff 34%)",
   en: "linear-gradient(90deg,#B22234 33%,#fff 33% 66%,#3C3B6E 66%)",
   ja: "radial-gradient(circle,#BC002D 30%,#fff 30%)",
   zh: "linear-gradient(#DE2910,#DE2910)",
@@ -96,8 +97,8 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
         )}
       </div>
 
-      <div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-4 py-10">
-        <div className="w-[560px] max-w-full">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-4 py-10">
+        <div className="w-[560px] max-w-full rounded-[18px] border border-app-border-soft bg-white p-8 shadow-[0_12px_40px_rgba(0,0,0,.08)]">
           {step === 0 && (
             <>
               <p className="mb-1.5 text-[11px] font-bold tracking-[.14em] text-app-faint uppercase">언어</p>
@@ -189,6 +190,9 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
             <>
               {/* 다크 히어로 */}
               <div className="rounded-2xl bg-app-text p-7 text-white">
+                <span className="mb-4 flex h-6 w-6 items-center justify-center rounded-md bg-white/15">
+                  <span className="mi text-[16px] text-white">rocket_launch</span>
+                </span>
                 <p className="text-[22px] font-bold leading-tight">
                   준비가 끝났습니다.
                   <br />
@@ -235,20 +239,12 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                 템플릿을 고르면 주제·구성·테마가 미리 채워집니다.
               </p>
 
-              <div className="mt-6 flex items-center justify-between">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex items-center gap-1 rounded-xl border border-app-border bg-white px-5 py-3 text-[13.5px] font-semibold hover:border-app-accent"
-                >
-                  <span className="mi text-[16px]">arrow_back</span>뒤로
-                </button>
-                <button
-                  onClick={finish}
-                  className="rounded-xl bg-app-accent px-6 py-3 text-[13.5px] font-semibold text-white hover:opacity-90"
-                >
-                  빈 프롬프트로 시작
-                </button>
-              </div>
+              <button
+                onClick={finish}
+                className="mt-6 w-full rounded-xl bg-app-accent px-6 py-3 text-[13.5px] font-semibold text-white hover:opacity-90"
+              >
+                빈 프롬프트로 시작
+              </button>
             </>
           )}
         </div>

@@ -581,7 +581,7 @@ export function SlideCanvas({
     ? slide.elements.find((el) => el.id === ctxMenu.elementId)
     : null;
   const closeCtx = () => setCtxMenu(null);
-  const ctxItems: { label: string; shortcut?: string; danger?: boolean; act: () => void }[] = [];
+  const ctxItems: { label: string; shortcut?: string; danger?: boolean; divider?: boolean; act: () => void }[] = [];
   if (ctxTarget) {
     const st = useDeckStore.getState();
     ctxItems.push(
@@ -608,10 +608,10 @@ export function SlideCanvas({
           useUiStore.getState().setSelectedElementId(copy.id);
         },
       },
-      { label: "맨 앞으로", act: () => st.reorderElement(slide.id, ctxTarget.id, "front") },
+      { label: "맨 앞으로", shortcut: "Ctrl+]", divider: true, act: () => st.reorderElement(slide.id, ctxTarget.id, "front") },
       { label: "앞으로", shortcut: "]", act: () => st.reorderElement(slide.id, ctxTarget.id, "forward") },
       { label: "뒤로", shortcut: "[", act: () => st.reorderElement(slide.id, ctxTarget.id, "backward") },
-      { label: "맨 뒤로", act: () => st.reorderElement(slide.id, ctxTarget.id, "back") },
+      { label: "맨 뒤로", shortcut: "Ctrl+[", act: () => st.reorderElement(slide.id, ctxTarget.id, "back") },
       {
         label: "삭제",
         shortcut: "Del",
@@ -642,6 +642,16 @@ export function SlideCanvas({
       },
       { label: "텍스트 상자 추가", act: () => onInsertAt?.("text") },
       { label: "사각형 추가", act: () => onInsertAt?.("rect") },
+      {
+        label: "여기에 댓글 남기기",
+        divider: true,
+        act: () => {
+          useUiStore.getState().setPinPicking(true);
+          showToast("슬라이드 위 원하는 위치를 클릭하면 핀이 찍힙니다");
+        },
+      },
+      { label: "슬라이드 자동 정리", act: () => st.tidySlide(slide.id, dims) },
+      { label: "슬라이드 복제", act: () => st.duplicateSlide(slide.id) },
     );
   }
 
@@ -838,8 +848,8 @@ export function SlideCanvas({
                   closeCtx();
                 }}
                 className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12.5px] font-medium hover:bg-app-bg ${
-                  it.danger ? "text-app-danger" : "text-app-text"
-                }`}
+                  it.divider ? "mt-1 border-t border-app-border-soft pt-2" : ""
+                } ${it.danger ? "text-app-danger" : "text-app-text"}`}
               >
                 {it.label}
                 {it.shortcut && <span className="text-[10.5px] text-app-faint">{it.shortcut}</span>}

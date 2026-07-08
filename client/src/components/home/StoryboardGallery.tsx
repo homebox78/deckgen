@@ -399,7 +399,7 @@ export function StoryboardGallery({
                 className="inline-flex items-center gap-1 rounded-lg bg-app-accent px-3 py-2 text-[12px] font-semibold text-white hover:opacity-90"
               >
                 <span className="mi text-[16px]">add</span>
-                담기
+                스토리보드에 추가
               </button>
             </div>
           </div>

@@ -128,6 +128,16 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
       className="fixed inset-0 z-[100] flex flex-col bg-black"
       onClick={() => go(1)}
     >
+      {/* 종료 버튼 — 우상단(시안) */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onExit();
+        }}
+        className="fixed top-4 right-5 z-[101] flex items-center gap-1 rounded-lg border border-white/25 px-3 py-1.5 text-[12px] font-semibold text-white/80 hover:bg-white/10"
+      >
+        <span className="mi text-[15px]">close</span>발표 종료 (Esc)
+      </button>
       <div className="flex min-h-0 flex-1 items-center justify-center p-6">
         {urls[slide.id] ? (
           <img

@@ -37,21 +37,28 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
         className="max-h-[90vh] w-[880px] max-w-[95vw] overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,.3)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-1 flex items-start justify-between">
           <h2 className="text-[18px] font-bold">플랜 업그레이드</h2>
           <button onClick={onClose} className="text-[16px] text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
         </div>
+        <p className="mb-5 text-[12.5px] text-app-muted">
+          PPTX·Figma(.fig) 내보내기, 모든 AI 모델은 Plus부터 사용할 수 있어요.
+        </p>
         <div className="grid grid-cols-4 gap-3">
           {PLANS.map((p) => {
             const dark = p.popular;
             return (
             <div
               key={p.id}
-              className={`rounded-xl border p-4 ${dark ? "border-app-text bg-app-text text-white" : "border-app-border"}`}
+              className={`relative rounded-xl border p-4 ${dark ? "border-app-text bg-app-text text-white" : "border-app-border"}`}
             >
+              {p.popular && (
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-app-accent px-2.5 py-0.5 text-[9.5px] font-bold whitespace-nowrap text-white shadow">
+                  가장 인기 있는 플랜
+                </span>
+              )}
               <div className="flex items-center gap-1.5">
                 <span className="text-[14px] font-bold">{p.id}</span>
-                {p.popular && <span className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold ${dark ? "bg-white/20 text-white" : "bg-app-accent-soft text-app-accent"}`}>인기</span>}
               </div>
               <div className="mt-1.5 text-[18px] font-extrabold">{p.price}</div>
               <div className={`mb-2.5 text-[11px] ${dark ? "text-white/60" : "text-app-faint"}`}>{p.desc}</div>

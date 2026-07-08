@@ -749,22 +749,23 @@ export function HomePage() {
           )}
           {/* 비율 토글 — 카드 상단 (스냅덱 배치) */}
           <div className="mb-2.5 flex items-center gap-2">
-            <div className="flex overflow-hidden rounded-full border border-app-border">
+            <div className="flex gap-0.5 rounded-[9px] bg-app-bg p-[3px]">
               {(
                 [
-                  ["16:9", "16:9"],
-                  ["4:3", "4:3"],
-                  ["4:5", "4:5"],
+                  ["16:9", "crop_16_9"],
+                  ["4:3", "crop_landscape"],
+                  ["4:5", "crop_portrait"],
                 ] as const
-              ).map(([a, label], i) => (
+              ).map(([a, glyph]) => (
                 <button
                   key={a}
                   onClick={() => setAspect(a)}
-                  className={`px-3 py-1 text-[12px] font-semibold ${
-                    i > 0 ? "border-l border-app-border" : ""
-                  } ${aspect === a ? "bg-app-text text-white" : "bg-white text-app-faint hover:bg-app-bg"}`}
+                  className={`flex items-center gap-1 rounded-[6px] px-2.5 py-1 text-[12px] font-semibold ${
+                    aspect === a ? "bg-white text-app-text shadow-sm" : "text-app-faint hover:text-app-text"
+                  }`}
                 >
-                  {label}
+                  <span className="mi text-[14px]">{glyph}</span>
+                  {a}
                 </button>
               ))}
             </div>
@@ -824,13 +825,13 @@ export function HomePage() {
               }))}
               activeKey={genModel}
               onSelect={setGenModel}
-              triggerClassName="inline-flex items-center gap-1.5 rounded-full border border-app-border bg-app-text px-3 py-1.5 text-white hover:opacity-90 data-open:opacity-90"
+              triggerClassName="inline-flex items-center gap-1.5 rounded-[9px] border border-app-border bg-white px-2.5 py-1.5 text-app-text hover:border-app-accent data-open:border-app-accent"
             >
-              <span className="mi text-[14px]">{GEN_MODELS.find((m) => m.key === genModel)?.icon ?? "bolt"}</span>
+              <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-app-text text-[10px] font-bold text-white">D</span>
               <span className="text-[12px] font-semibold">
                 {GEN_MODELS.find((m) => m.key === genModel)?.name ?? "DeckGen 1.1"}
               </span>
-              <span className="mi text-[14px] text-white/70">expand_more</span>
+              <span className="mi text-[14px] text-app-faint">expand_more</span>
             </Dropdown>
             <Dropdown
               items={Object.values(themes).map((t) => ({
