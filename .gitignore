@@ -6,3 +6,4 @@ dist/
 .playwright-mcp/
 server/data/
 server/config/
+assets/emoji/manifest.json
