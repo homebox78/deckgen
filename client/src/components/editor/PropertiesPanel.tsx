@@ -112,6 +112,7 @@ const TARGET_LABEL: Record<SlideElement["type"], string> = {
   chart: "CHART",
   image: "IMAGE",
   table: "TABLE",
+  path: "PEN",
 };
 
 export function PropertiesPanel({

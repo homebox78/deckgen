@@ -1,5 +1,5 @@
 // §7.2 역동기화 — Fabric 편집 결과를 Schema로 반영 (Fabric → store 단방향)
-import { Canvas, Ellipse, FabricObject, Group, Line, Textbox } from "fabric";
+import { Canvas, Ellipse, FabricObject, Group, Line, Path, Textbox } from "fabric";
 import { getElementData } from "./fabricRenderer";
 import type { SlideElement, TextElement } from "./schema";
 
@@ -57,8 +57,8 @@ function syncModified(obj: FabricObject, h: SyncHandlers): void {
   const w = r(obj.getScaledWidth());
   const hgt = r(obj.getScaledHeight());
 
-  if (obj instanceof Group || obj instanceof Line) {
-    // 차트/화살표 그룹과 선은 스케일을 유지한 채 schema만 갱신 →
+  if (obj instanceof Group || obj instanceof Line || obj instanceof Path) {
+    // 차트/화살표 그룹·선·펜 획은 스케일을 유지한 채 schema만 갱신 →
     // 다음 전체 재렌더 때 새 크기로 정규화되어 다시 그려진다.
     h.updateElement(data.elementId, { ...base, w, h: hgt });
     return;

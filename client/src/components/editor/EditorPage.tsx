@@ -460,6 +460,11 @@ export function EditorPage() {
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
+  // 펜(자유 드로잉) 도구
+  const [penMode, setPenMode] = useState(false);
+  const [penColor, setPenColor] = useState("#E5484D");
+  const [penWidth, setPenWidth] = useState(4);
+  const [penPopover, setPenPopover] = useState(false);
   const [mediaTab, setMediaTab] = useState<"image" | "youtube" | "library" | "ai">("image");
   const openMedia = (t: "image" | "youtube" | "library" | "ai") => {
     setMediaTab(t);
@@ -1235,6 +1240,17 @@ export function EditorPage() {
               showToast("댓글이 등록됐어요");
             }}
             onPinClick={() => setTab("comments")}
+            penMode={penMode}
+            penColor={penColor}
+            penWidth={penWidth}
+            onPathDrawn={(d, x, y, w, h, stroke, strokeWidth) => {
+              addElement(slide.id, {
+                id: uid(),
+                type: "path",
+                x, y, w, h,
+                d, stroke, strokeWidth,
+              });
+            }}
           />
           </div>
           {/* AI 편집 affordance (스냅덱 — 마퀴→AI 수정) */}
@@ -1278,9 +1294,15 @@ export function EditorPage() {
             {!readOnly && (
               <>
                 <button
-                  onClick={() => useUiStore.getState().setSelectedElementId(null)}
+                  onClick={() => {
+                    useUiStore.getState().setSelectedElementId(null);
+                    setPenMode(false);
+                    setPenPopover(false);
+                  }}
                   title="선택 도구"
-                  className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-app-bg px-1.5 text-app-text"
+                  className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 ${
+                    penMode ? "text-app-muted hover:bg-app-bg hover:text-app-text" : "bg-app-bg text-app-text"
+                  }`}
                 >
                   <span className="mi text-[17px]">near_me</span>
                 </button>
@@ -1291,6 +1313,58 @@ export function EditorPage() {
                 >
                   <span className="mi text-[17px]">pan_tool</span>
                 </button>
+                {/* 펜(자유 드로잉) — 색·굵기 팝오버 */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      const next = !penMode;
+                      setPenMode(next);
+                      setPenPopover(next);
+                      if (next) useUiStore.getState().setSelectedElementId(null);
+                    }}
+                    title="펜 — 화면에 자유롭게 그리기"
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 ${
+                      penMode ? "bg-app-text text-white" : "text-app-muted hover:bg-app-bg hover:text-app-text"
+                    }`}
+                  >
+                    <span className="mi text-[17px]">draw</span>
+                  </button>
+                  {penMode && penPopover && (
+                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-30 w-56 -translate-x-1/2 rounded-xl border border-app-border bg-white p-3 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-[11.5px] font-bold">펜 색상</span>
+                        <button onClick={() => setPenPopover(false)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
+                      </div>
+                      <div className="mb-3 flex flex-wrap gap-1.5">
+                        {["#E5484D", "#1A1A1A", "#2563EB", "#1E9C5B", "#E0701F", "#8B5CF6", "#EC4899", "#FFFFFF"].map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setPenColor(c)}
+                            title={c}
+                            className={`h-6 w-6 rounded-full border ${penColor === c ? "ring-2 ring-app-accent ring-offset-1" : "border-black/10"}`}
+                            style={{ background: c }}
+                          />
+                        ))}
+                        <label className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-app-border" title="직접 선택">
+                          <span className="mi text-[13px] text-app-faint">colorize</span>
+                          <input type="color" value={penColor} onChange={(e) => setPenColor(e.target.value)} className="sr-only" />
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11.5px] font-bold">굵기</span>
+                        <input
+                          type="range" min={1} max={24} value={penWidth}
+                          onChange={(e) => setPenWidth(Number(e.target.value))}
+                          className="flex-1 accent-[#1A1A1A]"
+                        />
+                        <span className="w-6 text-right text-[11px] font-semibold text-app-muted">{penWidth}</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-center rounded-lg bg-app-bg py-2">
+                        <span className="rounded-full" style={{ width: penWidth + 4, height: penWidth + 4, background: penColor, border: penColor === "#FFFFFF" ? "1px solid #ccc" : "none" }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => setTab("comments")}
                   title="댓글"

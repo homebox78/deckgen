@@ -68,3 +68,10 @@
 - [x] HB7. 내보내기 radius 8·폰트 12·패딩 7·13
 - [x] HB8. 헤더바 py 8→9px
 - [x] HB9. notif 배지 15px·흰 테두리 1.5px
+
+## 신규 — 펜(자유 드로잉) 도구
+- [x] PEN1. 하단 툴바 펜 버튼(draw) — 토글, 활성 시 다크
+- [x] PEN2. 색상 8종 + 커스텀 컬러피커 팝오버
+- [x] PEN3. 굵기 슬라이더(1~24) + 미리보기
+- [x] PEN4. 획 → PathElement 스키마 저장(SVG d·stroke·width), 렌더/이동/삭제/undo
+- [x] PEN5. PNG·Figma SVG 내보내기 포함(PPTX는 자유곡선 미지원 스킵)

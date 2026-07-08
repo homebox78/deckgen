@@ -141,12 +141,21 @@ const tableElementSchema = z.object({
   headerRow: z.boolean().optional(),
 });
 
+const pathElementSchema = z.object({
+  ...elementBase,
+  type: z.literal("path"),
+  d: z.string(),
+  stroke: z.string(),
+  strokeWidth: z.number(),
+});
+
 export const slideElementSchema = z.discriminatedUnion("type", [
   textElementSchema,
   shapeElementSchema,
   chartElementSchema,
   imageElementSchema,
   tableElementSchema,
+  pathElementSchema,
 ]);
 
 export const slideSchema = z.object({

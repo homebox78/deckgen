@@ -1,4 +1,4 @@
-import { ActiveSelection, Canvas, FabricObject, Line, Point } from "fabric";
+import { ActiveSelection, Canvas, FabricObject, Line, PencilBrush, Point } from "fabric";
 import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
@@ -34,6 +34,10 @@ export function SlideCanvas({
   pins,
   onPinPlace,
   onPinClick,
+  penMode = false,
+  penColor = "#E5484D",
+  penWidth = 4,
+  onPathDrawn,
 }: {
   slide: Slide;
   theme: Theme;
@@ -45,6 +49,10 @@ export function SlideCanvas({
   pins?: { id: string; x: number; y: number; n: number; resolved: boolean }[];
   onPinPlace?: (x: number, y: number) => void;
   onPinClick?: (id: string) => void;
+  penMode?: boolean;
+  penColor?: string;
+  penWidth?: number;
+  onPathDrawn?: (d: string, x: number, y: number, w: number, h: number, stroke: string, strokeWidth: number) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
@@ -61,6 +69,8 @@ export function SlideCanvas({
   onCursorRef.current = onCursor;
   const onPinPlaceRef = useRef(onPinPlace);
   onPinPlaceRef.current = onPinPlace;
+  const onPathDrawnRef = useRef(onPathDrawn);
+  onPathDrawnRef.current = onPathDrawn;
   const [vptTick, setVptTick] = useState(0); // 뷰포트 변경 시 커서 오버레이 재계산
 
   useEffect(() => {
@@ -281,6 +291,20 @@ export function SlideCanvas({
       onPinPlaceRef.current(Math.round(p.x), Math.round(p.y));
     });
 
+    // --- 펜(자유 드로잉): 획을 다 그리면 SVG path로 직렬화해 스키마 요소로 저장 ---
+    fc.on("path:created", (opt) => {
+      const drawn = (opt as unknown as { path?: FabricObject & { path?: unknown[] } }).path;
+      if (!drawn || !onPathDrawnRef.current) return;
+      const seg = (drawn.path ?? []) as (string | number)[][];
+      const d = seg.map((c) => c.join(" ")).join(" ");
+      const br = drawn.getBoundingRect();
+      const stroke = (drawn as unknown as { stroke?: string }).stroke ?? "#E5484D";
+      const sw = (drawn as unknown as { strokeWidth?: number }).strokeWidth ?? 4;
+      // 임시로 그려진 fabric 객체는 제거 — 스키마 재렌더로 다시 그려진다
+      fc.remove(drawn as unknown as FabricObject);
+      onPathDrawnRef.current(d, Math.round(drawn.left ?? br.left), Math.round(drawn.top ?? br.top), Math.round(br.width), Math.round(br.height), stroke, sw);
+    });
+
     // --- 역동기화 (보기 전용에선 편집 이벤트가 없으므로 생략) ---
     const detachSync = readOnly
       ? () => {}
@@ -488,6 +512,19 @@ export function SlideCanvas({
       void fc.dispose();
     };
   }, [readOnly, dims]);
+
+  // 펜(자유 드로잉) 모드 — isDrawingMode + PencilBrush 색/굵기
+  useEffect(() => {
+    const fc = fcRef.current;
+    if (!fc) return;
+    fc.isDrawingMode = penMode && !readOnly;
+    if (fc.isDrawingMode) {
+      const brush = fc.freeDrawingBrush ?? new PencilBrush(fc);
+      brush.color = penColor;
+      brush.width = penWidth;
+      fc.freeDrawingBrush = brush;
+    }
+  }, [penMode, penColor, penWidth, readOnly]);
 
   // 슬라이드/테마 변경 시 재렌더 (Fabric 발 갱신은 스킵 — 값만 이미 동기화됨)
   useEffect(() => {

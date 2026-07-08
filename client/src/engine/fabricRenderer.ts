@@ -334,7 +334,27 @@ export async function buildElement(
       return buildImage(el);
     case "table":
       return buildTable(el, theme);
+    case "path":
+      return buildPath(el, theme);
   }
+}
+
+/** 펜(자유 드로잉) 획 — 저장된 SVG path(절대 좌표)를 Fabric Path로 복원 */
+function buildPath(el: import("./schema").PathElement, theme: Theme): FabricObject {
+  const obj = new Path(el.d, {
+    stroke: resolveColor(theme, el.stroke),
+    strokeWidth: el.strokeWidth,
+    fill: "",
+    strokeLineCap: "round",
+    strokeLineJoin: "round",
+  });
+  // 저장된 위치·크기로 복원 (그린 직후엔 el.x/y=자동계산값이라 무변화)
+  obj.set({ left: el.x, top: el.y });
+  if (obj.width && obj.height) {
+    obj.set({ scaleX: el.w / obj.width, scaleY: el.h / obj.height });
+  }
+  obj.setCoords();
+  return obj;
 }
 
 export type AnyCanvas = Canvas | StaticCanvas;

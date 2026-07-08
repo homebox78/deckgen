@@ -59,7 +59,8 @@ export type SlideElement =
   | ShapeElement
   | ChartElement
   | ImageElement
-  | TableElement;
+  | TableElement
+  | PathElement;
 
 export interface ElementBase {
   id: string;
@@ -145,6 +146,14 @@ export interface TableElement extends ElementBase {
   type: "table";
   rows: string[][]; // [행][열] 셀 텍스트
   headerRow?: boolean; // 첫 행을 헤더로 강조
+}
+
+// 펜(자유 드로잉) — Fabric PencilBrush로 그린 획. d = SVG path 문자열.
+export interface PathElement extends ElementBase {
+  type: "path";
+  d: string; // SVG path 데이터 (절대 좌표, 1920×1080 기준)
+  stroke: string; // 선 색 (hex 또는 테마 토큰)
+  strokeWidth: number;
 }
 
 // ===== 레이아웃 엔진 입력 (§5, §8.2) =====
