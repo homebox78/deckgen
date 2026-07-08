@@ -14,6 +14,18 @@ const LANGS = [
   ["pt", "Português"],
 ] as const;
 
+// 언어별 미니 CSS 플래그 (국기 색 그라디언트)
+const FLAG: Record<string, string> = {
+  ko: "linear-gradient(#fff 50%, #fff 50%)", // 흰 바탕(간이) — 아래 마커로 대체
+  en: "linear-gradient(90deg,#B22234 33%,#fff 33% 66%,#3C3B6E 66%)",
+  ja: "radial-gradient(circle,#BC002D 30%,#fff 30%)",
+  zh: "linear-gradient(#DE2910,#DE2910)",
+  es: "linear-gradient(#AA151B 25%,#F1BF00 25% 75%,#AA151B 75%)",
+  fr: "linear-gradient(90deg,#0055A4 33%,#fff 33% 66%,#EF4135 66%)",
+  de: "linear-gradient(#000 33%,#DD0000 33% 66%,#FFCE00 66%)",
+  pt: "linear-gradient(90deg,#046A38 40%,#DA020E 40%)",
+};
+
 const FOCUS = [
   ["pitch", "Startup Pitch", "투자 유치 및 IR 덱"],
   ["report", "Business Report", "전략, 분석 및 인사이트"],
@@ -98,12 +110,16 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                   <button
                     key={id}
                     onClick={() => setLang(id)}
-                    className={`rounded-xl border py-4 text-[13px] font-semibold ${
+                    className={`flex items-center justify-center gap-2 rounded-xl border py-4 text-[13px] font-semibold ${
                       lang === id
                         ? "border-[1.5px] border-app-text bg-app-text text-white"
                         : "border-app-border bg-white hover:border-app-muted"
                     }`}
                   >
+                    <span
+                      className="h-3.5 w-5 shrink-0 overflow-hidden rounded-[2px] border border-black/10"
+                      style={{ background: FLAG[id] ?? "#E4E4E0" }}
+                    />
                     {name}
                   </button>
                 ))}
@@ -134,12 +150,12 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                       key={id}
                       onClick={() => setFocus((p) => (on ? p.filter((x) => x !== id) : [...p, id]))}
                       className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 text-left ${
-                        on ? "border-[1.5px] border-app-text bg-app-accent-soft" : "border-app-border bg-white hover:border-app-muted"
+                        on ? "border-[1.5px] border-app-text bg-app-text text-white" : "border-app-border bg-white hover:border-app-muted"
                       }`}
                     >
                       <div className="min-w-0 flex-1">
                         <div className="text-[13.5px] font-semibold">{name}</div>
-                        <div className="mt-0.5 text-[11.5px] text-app-faint">{desc}</div>
+                        <div className={`mt-0.5 text-[11.5px] ${on ? "text-white/60" : "text-app-faint"}`}>{desc}</div>
                       </div>
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
@@ -202,8 +218,10 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                     }}
                     className="flex items-center gap-3 rounded-xl border border-app-border bg-white px-4 py-3 text-left hover:border-app-accent"
                   >
-                    <span className="flex h-10 w-14 shrink-0 items-center justify-center rounded-md border border-app-border-soft bg-app-bg">
-                      <span className="mi text-[18px] text-app-faint">description</span>
+                    <span className="flex h-10 w-14 shrink-0 flex-col justify-center gap-1 rounded-md border border-app-border-soft bg-white px-2">
+                      <span className="h-[3px] w-2/3 rounded-sm bg-app-accent" />
+                      <span className="h-[2px] w-full rounded-sm bg-[#E4E4E0]" />
+                      <span className="h-[2px] w-4/5 rounded-sm bg-[#E4E4E0]" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="text-[13px] font-semibold">{r.name}</div>
@@ -213,6 +231,9 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                   </button>
                 ))}
               </div>
+              <p className="mt-2 text-[11.5px] text-app-faint">
+                템플릿을 고르면 주제·구성·테마가 미리 채워집니다.
+              </p>
 
               <div className="mt-6 flex items-center justify-between">
                 <button
@@ -225,7 +246,7 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                   onClick={finish}
                   className="rounded-xl bg-app-accent px-6 py-3 text-[13.5px] font-semibold text-white hover:opacity-90"
                 >
-                  직접 주제 입력하기
+                  빈 프롬프트로 시작
                 </button>
               </div>
             </>

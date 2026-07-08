@@ -15,6 +15,7 @@ import { adminApi, adminLogin, adminVerify, getAdminToken, setAdminToken } from 
 import { fetchModels } from "../../api/client";
 import type { ModelInfo } from "../../api/client";
 import { CAROUSEL_LIBRARIES, WIREFRAME_LIBRARIES } from "../../engine/wireframes";
+import { SINGLE_WIREFRAMES } from "../../engine/singleWireframes";
 import { showToast } from "../ui/toast";
 
 type PageId =
@@ -1785,13 +1786,31 @@ function RolesPage() {
   );
 }
 
-// ===== 스토리보드 템플릿 (sbtpl) =====
+// 블록 좌표(%) 미니 프리뷰 — type 1=강조 다크바, 2=원, else 회색 존
+function WfMini({ blocks }: { blocks: number[][] }) {
+  return (
+    <svg viewBox="0 0 100 62.5" className="h-full w-full" preserveAspectRatio="none">
+      <rect x="0" y="0" width="100" height="62.5" fill="#FBFBFA" />
+      {blocks.map((b, i) => {
+        const [px, py, pw, ph, t] = b;
+        const x = (px / 100) * 100, y = (py / 100) * 62.5, w = (pw / 100) * 100, h = (ph / 100) * 62.5;
+        if (t === 2) return <ellipse key={i} cx={x + w / 2} cy={y + h / 2} rx={w / 2} ry={h / 2} fill="#EDEDE9" stroke="#D2D2CD" strokeWidth={0.5} />;
+        if (t === 1) return <rect key={i} x={x} y={y} width={w} height={h} rx={ph <= 7 ? 0.6 : 1} fill={ph <= 7 ? "#1A1A1A" : "#E3E1EF"} />;
+        return <rect key={i} x={x} y={y} width={w} height={h} rx={1} fill="#F0F0EC" stroke="#DBDBD6" strokeWidth={0.5} />;
+      })}
+    </svg>
+  );
+}
+
+// ===== 스토리보드 템플릿 (sbtpl) — 홈 "스토리보드로 시작" 35종 단일 와이어프레임 관리 =====
 function SbtplPage() {
-  const items = [...WIREFRAME_LIBRARIES, ...CAROUSEL_LIBRARIES].map((l, i) => ({
-    id: l.id,
-    name: l.name,
-    uses: 862 - i * 121,
-    on: i !== 3,
+  const items = SINGLE_WIREFRAMES.map((w, i) => ({
+    id: w.id,
+    name: w.name,
+    category: w.category,
+    blocks: w.blocks as number[][],
+    uses: Math.max(40, 1240 - i * 34),
+    on: i % 9 !== 8, // 일부 숨김 데모
   }));
   const [rows, setRows] = useState(items);
   const move = (i: number, dir: number) => {
@@ -1814,23 +1833,19 @@ function SbtplPage() {
           활성 {onCount} / {rows.length}
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-3.5">
+      <div className="grid grid-cols-3 gap-3">
         {rows.map((r, i) => (
-          <Card key={r.id} className="p-4">
-            <div className="mb-2.5 flex h-24 flex-col justify-center gap-1.5 rounded-lg border border-app-border-soft bg-[#FBFBFA] px-4">
-              <span className="h-1.5 w-2/5 rounded bg-[#D4D4CE]" />
-              <span className="h-1 w-4/5 rounded bg-[#E4E4E0]" />
-              <span className="h-1 w-3/5 rounded bg-[#E4E4E0]" />
-              <span className="mt-1 h-6 w-full rounded bg-[#EFEFEC]" />
+          <Card key={r.id} className={`p-2.5 ${r.on ? "" : "opacity-60"}`}>
+            <div className="mb-2 aspect-[16/10] overflow-hidden rounded-lg border border-app-border-soft">
+              <WfMini blocks={r.blocks} />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[12.5px] font-semibold">{r.name}</div>
-                <div className="text-[10.5px] text-app-faint">사용 {r.uses.toLocaleString()}회</div>
+                <div className="truncate text-[11.5px] font-semibold">{r.name}</div>
+                <div className="truncate text-[10px] text-app-faint">{r.category} · 사용 {r.uses.toLocaleString()}회</div>
               </div>
-              <button onClick={() => move(i, -1)} className="rounded-md border border-app-border bg-white px-1.5 py-1 text-app-muted"><span className="mi text-[14px]">arrow_back</span></button>
-              <button onClick={() => move(i, 1)} className="rounded-md border border-app-border bg-white px-1.5 py-1 text-app-muted"><span className="mi text-[14px]">arrow_forward</span></button>
-              <span className="text-[10.5px] text-app-faint">{r.on ? "노출 중" : "숨김"}</span>
+              <button onClick={() => move(i, -1)} title="앞으로" className="flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white text-app-muted hover:border-app-accent"><span className="mi text-[13px]">arrow_back</span></button>
+              <button onClick={() => move(i, 1)} title="뒤로" className="flex h-6 w-6 items-center justify-center rounded-md border border-app-border bg-white text-app-muted hover:border-app-accent"><span className="mi text-[13px]">arrow_forward</span></button>
               <Toggle on={r.on} onClick={() => setRows((p) => p.map((x) => x.id === r.id ? { ...x, on: !x.on } : x))} />
             </div>
           </Card>
