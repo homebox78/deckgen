@@ -139,8 +139,9 @@ export interface ChartElement extends ElementBase {
 
 export interface ImageElement extends ElementBase {
   type: "image";
-  src: string; // MVP: dataURL만 지원
+  src: string; // MVP: dataURL만 지원 (YouTube는 썸네일 dataURL)
   fit: "cover" | "contain";
+  youtubeId?: string; // 지정 시 발표 모드에서 재생 가능한 iframe으로 임베드
 }
 
 export interface TableElement extends ElementBase {

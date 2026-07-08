@@ -132,6 +132,7 @@ const imageElementSchema = z.object({
   type: z.literal("image"),
   src: z.string(),
   fit: z.enum(["cover", "contain"]),
+  youtubeId: z.string().optional(),
 });
 
 const tableElementSchema = z.object({

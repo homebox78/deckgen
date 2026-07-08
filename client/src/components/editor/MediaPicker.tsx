@@ -93,19 +93,38 @@ export function MediaPicker({
   const cx = dims.w / 2;
   const cy = dims.h / 2;
 
-  const insertImage = (src: string, w = 720, h = 450, fit: "cover" | "contain" = "cover") => {
-    const el: ImageElement = {
-      id: uid(),
-      type: "image",
-      src,
-      fit,
-      x: cx - w / 2,
-      y: cy - h / 2,
-      w,
-      h,
+  // 이미지 자연 비율을 유지해 삽입(잘림 방지) — 슬라이드 안에 들어오도록 박스에 맞춘다.
+  const insertImage = (
+    src: string,
+    boxW = 720,
+    boxH = 450,
+    fit: "cover" | "contain" = "contain",
+    youtubeId?: string,
+  ) => {
+    const place = (nw: number, nh: number) => {
+      const maxW = Math.min(Math.max(boxW, 480), dims.w * 0.8);
+      const maxH = Math.min(Math.max(boxH, 300), dims.h * 0.8);
+      const scale = Math.min(maxW / nw, maxH / nh, 1) || 1;
+      const w = Math.round(nw * scale);
+      const h = Math.round(nh * scale);
+      const el: ImageElement = {
+        id: uid(),
+        type: "image",
+        src,
+        fit,
+        x: Math.round(cx - w / 2),
+        y: Math.round(cy - h / 2),
+        w,
+        h,
+        ...(youtubeId ? { youtubeId } : {}),
+      };
+      onInsert(el);
+      onClose();
     };
-    onInsert(el);
-    onClose();
+    const img = new Image();
+    img.onload = () => place(img.naturalWidth || boxW, img.naturalHeight || boxH);
+    img.onerror = () => place(boxW, boxH);
+    img.src = src;
   };
 
   const insertEmoji = (emoji: string) => {
@@ -164,9 +183,9 @@ export function MediaPicker({
       ctx.lineTo(678, 360);
       ctx.closePath();
       ctx.fill();
-      insertImage(c.toDataURL("image/png"), 800, 450, "cover");
+      insertImage(c.toDataURL("image/png"), 800, 450, "cover", m[1]);
     };
-    img.onerror = () => insertImage(gradientDataURL("#1A1A1A", "#55554F", 800, 450, "YouTube"), 800, 450);
+    img.onerror = () => insertImage(gradientDataURL("#1A1A1A", "#55554F", 800, 450, "YouTube"), 800, 450, "cover", m[1]);
     img.src = `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
   };
 

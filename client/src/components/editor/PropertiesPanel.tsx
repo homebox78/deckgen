@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import type { SlideDims, SlideElement } from "../../engine/schema";
 import { SLIDE_H, SLIDE_W } from "../../engine/schema";
@@ -126,6 +127,7 @@ export function PropertiesPanel({
   onReplaceImage,
 }: Props) {
   const updateElement = useDeckStore((s) => s.updateElement);
+  const [lockAspect, setLockAspect] = useState(true); // 이미지/유튜브 비율 잠금(기본 켬)
 
   if (!element) {
     const cur = useDeckStore.getState().deck?.slides.find((s) => s.id === slideId);
@@ -294,17 +296,44 @@ export function PropertiesPanel({
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <ValueRow label="X" value={element.x} onChange={(x) => patch({ x })} />
-          <ValueRow label="Y" value={element.y} onChange={(y) => patch({ y })} />
-          <ValueRow label="W" value={element.w} onChange={(w) => patch({ w })} />
-          <ValueRow label="H" value={element.h} onChange={(h) => patch({ h })} />
-          <ValueRow
-            label="회전"
-            value={element.rotation ?? 0}
-            onChange={(rotation) => patch({ rotation })}
-          />
-        </div>
+        {(() => {
+          // 이미지/유튜브는 비율 잠금 시 한 축 변경이 다른 축을 비례로 조정(잘림 방지)
+          const ratio = element.w > 0 && element.h > 0 ? element.w / element.h : 1;
+          const lockable = element.type === "image";
+          const locked = lockable && lockAspect;
+          const setW = (w: number) =>
+            patch(locked ? { w, h: Math.max(1, Math.round(w / ratio)) } : { w });
+          const setH = (h: number) =>
+            patch(locked ? { h, w: Math.max(1, Math.round(h * ratio)) } : { h });
+          return (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <ValueRow label="X" value={element.x} onChange={(x) => patch({ x })} />
+                <ValueRow label="Y" value={element.y} onChange={(y) => patch({ y })} />
+                <ValueRow label="W" value={element.w} onChange={setW} />
+                <ValueRow label="H" value={element.h} onChange={setH} />
+                <ValueRow
+                  label="회전"
+                  value={element.rotation ?? 0}
+                  onChange={(rotation) => patch({ rotation })}
+                />
+              </div>
+              {lockable && (
+                <button
+                  onClick={() => setLockAspect((v) => !v)}
+                  className={`mt-2 flex w-full items-center justify-center gap-1 rounded-md border py-1.5 text-[11px] font-semibold ${
+                    locked
+                      ? "border-app-accent bg-app-accent-soft text-app-accent"
+                      : "border-app-border bg-white text-app-muted hover:border-app-accent"
+                  }`}
+                >
+                  <span className="mi text-[14px]">{locked ? "lock" : "lock_open"}</span>
+                  {locked ? "비율 유지 켜짐 — W/H 함께 조절" : "비율 유지 꺼짐"}
+                </button>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       <div className="border-b border-app-border-soft px-4 py-3.5">

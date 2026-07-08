@@ -7,7 +7,7 @@ import { exportDeckToFigmaZip } from "../../engine/figmaExporter";
 import { exportDeckToPng } from "../../engine/pngExporter";
 import { exportDeckToPptx } from "../../engine/pptxExporter";
 import { createSampleDeck } from "../../engine/sampleDeck";
-import type { Deck, Slide, SlideDims, SlideElement } from "../../engine/schema";
+import type { Deck, ImageElement, Slide, SlideDims, SlideElement } from "../../engine/schema";
 import { aspectDims, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
@@ -621,6 +621,63 @@ export function EditorPage() {
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
   }, [menu]);
+
+  // 화면 캡처/이미지 클립보드 붙여넣기 (Ctrl+V) — 현재 슬라이드에 이미지로 추가
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const st = useDeckStore.getState();
+      const d = st.deck;
+      if (!d) return;
+      // 입력창 포커스 중이면 기본 붙여넣기 유지
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      // 공유 보기 권한 / 잠긴 슬라이드는 무시
+      const cs = useCollabStore.getState();
+      if (cs.deckId === d.id && cs.role === "view") return;
+      const idx = useUiStore.getState().currentSlideIndex;
+      const sl = d.slides[idx];
+      if (!sl || sl.locked) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const it of items) {
+        if (!it.type.startsWith("image/")) continue;
+        const file = it.getAsFile();
+        if (!file) continue;
+        e.preventDefault();
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const im = new Image();
+          im.onload = () => {
+            const dm = aspectDims(d.aspect);
+            const nw = im.naturalWidth || 720;
+            const nh = im.naturalHeight || 450;
+            const scale = Math.min((dm.w * 0.7) / nw, (dm.h * 0.7) / nh, 1) || 1;
+            const w = Math.round(nw * scale);
+            const h = Math.round(nh * scale);
+            const newEl: ImageElement = {
+              id: uid(),
+              type: "image",
+              src: dataUrl,
+              fit: "contain",
+              x: Math.round(dm.w / 2 - w / 2),
+              y: Math.round(dm.h / 2 - h / 2),
+              w,
+              h,
+            };
+            st.addElement(sl.id, newEl);
+            useUiStore.getState().setSelectedElementId(newEl.id);
+            showToast("붙여넣은 이미지를 추가했어요");
+          };
+          im.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, []);
 
   if (!deck) {
     return (
