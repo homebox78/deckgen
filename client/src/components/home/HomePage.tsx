@@ -1064,11 +1064,11 @@ export function HomePage() {
 
       {/* 내 덱 */}
       <div className="mx-auto w-[880px] max-w-[92vw] pb-16">
-        {/* 대시보드 (스냅덱 배치) */}
+        {/* 내 덱 (프로토타입) */}
         <div className="mb-1">
-          <h2 className="text-[22px] font-bold tracking-tight">대시보드</h2>
+          <h2 className="text-[22px] font-bold tracking-tight">내 덱</h2>
           <p className="mt-0.5 text-[12.5px] text-app-muted">
-            슬라이드 파일을 열고 정렬하고 관리하세요.
+            만든 덱을 열고 폴더로 정리하고 관리하세요.
           </p>
         </div>
         {/* 폴더 칩바 — 전체 / 미분류 / 사용자 폴더 / 휴지통 (덱 드래그→드롭 이동) */}
@@ -1176,7 +1176,7 @@ export function HomePage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="파일 검색"
+              placeholder="덱 제목 검색"
               className="w-40 min-w-0 bg-transparent text-[12.5px] focus:outline-none"
             />
             {q && (
