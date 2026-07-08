@@ -30,6 +30,7 @@ export interface AppSettings {
   freeDailyLimit: number; // IP당 일일 생성 한도
   maintenance: boolean; // 점검 모드 — 생성 3종 503
   genModel: string; // 생성 모델 오버라이드 ("" = config 기본)
+  aiImageEnabled: boolean; // 유료 AI 이미지 생성 허용(기본 OFF, 비용 사고 방지)
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -37,6 +38,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   freeDailyLimit: 20,
   maintenance: false,
   genModel: "",
+  aiImageEnabled: false,
 };
 
 export function getSettings(): AppSettings {

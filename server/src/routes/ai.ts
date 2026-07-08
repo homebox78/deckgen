@@ -275,6 +275,12 @@ aiRouter.post("/ai-image", async (req: Request, res: Response) => {
     res.status(400).json({ error: "prompt가 필요합니다." });
     return;
   }
+  // 유료 이미지 생성 — 점검/일일한도 가드 + 관리자 설정 활성 플래그(기본 OFF, 비용 사고 방지)
+  if (!guardGenerate(req, res)) return;
+  if (!getSettings().aiImageEnabled) {
+    res.status(403).json({ error: "AI 이미지 생성이 비활성화되어 있습니다. (관리자 → 서비스 설정에서 활성화)" });
+    return;
+  }
   const key = (process.env.OPENAI_API_KEY ?? "").trim();
   const model = (process.env.OPENAI_MODEL ?? "").trim();
   if (!key || !model) {

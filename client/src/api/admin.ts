@@ -125,6 +125,7 @@ export interface AdminSettings {
   freeDailyLimit: number;
   maintenance: boolean;
   genModel: string;
+  aiImageEnabled: boolean;
 }
 
 export interface AdminDeck {

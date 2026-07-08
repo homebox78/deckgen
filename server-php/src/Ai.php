@@ -351,6 +351,14 @@ final class Ai
             echo json_encode(['error' => 'prompt가 필요합니다.'], JSON_UNESCAPED_UNICODE);
             return;
         }
+        // 유료 이미지 생성 — 점검/일일한도 가드(outline·slides와 동일) + 관리자 설정 활성 플래그.
+        // 관리자 설정 aiImageEnabled 가 true 가 아니면 과금(OpenAI) 호출을 하지 않는다(비용 사고 방지, 기본 OFF).
+        if (self::guardGenerate()) return;
+        if ((Admin::settingsGetAll()['aiImageEnabled'] ?? false) !== true) {
+            http_response_code(403);
+            echo json_encode(['error' => 'AI 이미지 생성이 비활성화되어 있습니다. (관리자 → 서비스 설정에서 활성화)'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
         $key = trim((string) Db::cfg('openai_api_key', ''));
         $model = trim((string) Db::cfg('openai_model', ''));
         if ($key === '' || $model === '') {

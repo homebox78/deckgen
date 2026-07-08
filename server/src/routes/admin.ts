@@ -294,6 +294,7 @@ adminRouter.patch("/admin/settings", (req: Request, res: Response) => {
     allowed.freeDailyLimit = Math.max(1, Math.min(500, patch.freeDailyLimit));
   if (typeof patch.maintenance === "boolean") allowed.maintenance = patch.maintenance;
   if (typeof patch.genModel === "string") allowed.genModel = patch.genModel;
+  if (typeof patch.aiImageEnabled === "boolean") allowed.aiImageEnabled = patch.aiImageEnabled;
   const next = patchSettings(allowed);
   audit(req, "settings", "settings.update", JSON.stringify(allowed));
   res.json({ settings: next });

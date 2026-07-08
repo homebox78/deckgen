@@ -36,7 +36,7 @@ final class Admin
     public static function settingsGetAll(): array
     {
         self::ensureTables();
-        $defaults = ['signupAllowed' => true, 'freeDailyLimit' => 20, 'maintenance' => false, 'genModel' => ''];
+        $defaults = ['signupAllowed' => true, 'freeDailyLimit' => 20, 'maintenance' => false, 'genModel' => '', 'aiImageEnabled' => false];
         $rows = Db::pdo()->query('SELECT k, v FROM app_settings')->fetchAll();
         foreach ($rows as $r) {
             if (array_key_exists($r['k'], $defaults)) $defaults[$r['k']] = json_decode($r['v'], true);
@@ -389,6 +389,7 @@ final class Admin
         if (isset($b['freeDailyLimit']) && is_numeric($b['freeDailyLimit'])) $allowed['freeDailyLimit'] = max(1, min(500, (int) $b['freeDailyLimit']));
         if (isset($b['maintenance']) && is_bool($b['maintenance'])) $allowed['maintenance'] = $b['maintenance'];
         if (isset($b['genModel']) && is_string($b['genModel'])) $allowed['genModel'] = trim($b['genModel']);
+        if (isset($b['aiImageEnabled']) && is_bool($b['aiImageEnabled'])) $allowed['aiImageEnabled'] = $b['aiImageEnabled'];
         $st = Db::pdo()->prepare('INSERT INTO app_settings (k, v) VALUES (:k, :v) ON DUPLICATE KEY UPDATE v = :v2');
         foreach ($allowed as $k => $v) $st->execute([':k' => $k, ':v' => json_encode($v), ':v2' => json_encode($v)]);
         self::audit('settings', 'settings.update', json_encode($allowed, JSON_UNESCAPED_UNICODE));

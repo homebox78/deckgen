@@ -1060,6 +1060,15 @@ function SettingsPage() {
         </div>
         <Toggle on={s.maintenance} danger onClick={() => patch({ maintenance: !s.maintenance })} />
       </div>
+      <div className="flex items-center gap-2.5 border-b border-[#F0F0EE] px-[18px] py-3.5">
+        <div className="flex-1">
+          <div className="text-[13px]">AI 이미지 생성 (유료)</div>
+          <div className="mt-px text-[11px] text-app-faint">
+            OpenAI 유료 이미지 생성 호출. 끄면 미디어 픽커의 'AI 생성'이 차단되어 과금이 발생하지 않습니다. (기본 OFF)
+          </div>
+        </div>
+        <Toggle on={!!s.aiImageEnabled} onClick={() => patch({ aiImageEnabled: !s.aiImageEnabled })} />
+      </div>
       <div className="px-[18px] py-3.5">
         <div className="mb-2 flex-1">
           <div className="text-[13px]">생성 모델</div>
