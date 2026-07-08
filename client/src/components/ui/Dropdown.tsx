@@ -77,7 +77,7 @@ export function Dropdown({
               }}
               className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] whitespace-nowrap ${
                 it.key === activeKey
-                  ? "bg-app-accent-soft font-bold"
+                  ? "bg-app-accent-soft font-medium"
                   : "font-medium hover:bg-app-accent-soft/60"
               } ${it.disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer"}`}
             >

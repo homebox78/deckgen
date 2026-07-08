@@ -335,7 +335,7 @@ function DeckCard({
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-semibold">{deck.title}</p>
           <p className="mt-0.5 text-[11.5px] text-app-faint">
-            {deck.slideCount}장 · {theme.name} · {relTime(deck.updatedAt)}
+            {deck.slideCount}장 · {relTime(deck.updatedAt)}
           </p>
         </div>
         {generating && (
@@ -354,7 +354,7 @@ function DeckCard({
             }}
             className="flex items-center rounded-[7px] border border-app-border bg-white px-1.5 py-1 text-app-faint opacity-0 transition-opacity group-hover:opacity-100 hover:border-app-accent"
           >
-            <span className="mi text-[15px]">folder</span>
+            <span className="mi text-[15px]">drive_file_move</span>
           </button>
           {folderMenu && (
             <>
@@ -1064,7 +1064,7 @@ export function HomePage() {
       {!isCarousel && <StoryboardGallery themeId={themeId} aspect={aspect} />}
 
       {/* 내 덱 */}
-      <div className="mx-auto w-[880px] max-w-[92vw] pb-16">
+      <div className="mx-auto w-[720px] max-w-[92vw] pb-16">
         {/* 내 덱 (프로토타입) */}
         <div className="mb-1">
           <h2 className="text-[22px] font-bold tracking-tight">내 덱</h2>
@@ -1422,16 +1422,19 @@ export function HomePage() {
         (() => {
           const d = decks.find((x) => x.id === deckCtx.id);
           if (!d) return null;
-          const item = (label: string, fn: () => void, danger = false) => (
+          const item = (icon: string, label: string, fn: () => void, danger = false) => (
             <span
               onClick={() => {
                 setDeckCtx(null);
                 fn();
               }}
-              className={`block cursor-pointer px-3.5 py-1.5 text-[12.5px] hover:bg-app-bg ${
+              className={`flex cursor-pointer items-center gap-2.5 px-3.5 py-1.5 text-[12.5px] hover:bg-app-bg ${
                 danger ? "text-app-danger" : ""
               }`}
             >
+              <span className={`mi text-[15px] ${danger ? "text-app-danger" : "text-app-muted"}`}>
+                {icon}
+              </span>
               {label}
             </span>
           );
@@ -1445,12 +1448,12 @@ export function HomePage() {
                   top: Math.min(deckCtx.y, window.innerHeight - 240),
                 }}
               >
-                {item("열기", () => navigate(`/deck/${d.id}/edit`))}
-                {item(favs.includes(d.id) ? "즐겨찾기 해제" : "즐겨찾기", () => toggleFav(d.id))}
-                {item("이름 변경", () => renameDeck(d.id))}
-                {item("복제", () => duplicateDeck(d.id))}
+                {item("open_in_new", "열기", () => navigate(`/deck/${d.id}/edit`))}
+                {item("star", favs.includes(d.id) ? "즐겨찾기 해제" : "즐겨찾기", () => toggleFav(d.id))}
+                {item("edit", "이름 변경", () => renameDeck(d.id))}
+                {item("content_copy", "복제", () => duplicateDeck(d.id))}
                 <div className="my-1 border-t border-app-border-soft" />
-                {item("삭제", () => removeDeck(d), true)}
+                {item("delete", "삭제", () => removeDeck(d), true)}
               </div>
             </>
           );

@@ -82,11 +82,13 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
     <div className="fixed inset-0 z-[90] flex flex-col bg-app-bg">
       {/* 상단 진행바 + 건너뛰기 */}
       <div className="flex items-center gap-4 border-b border-app-border bg-app-surface px-6 py-3.5">
-        <div className="flex flex-1 gap-1.5">
+        <div className="flex flex-1 items-center justify-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className={`h-1 flex-1 rounded-full transition-all ${i <= step ? "bg-app-text" : "bg-app-border"}`}
+              className={`h-1.5 rounded-full transition-all ${
+                i === step ? "w-6 bg-app-text" : i < step ? "w-1.5 bg-app-text" : "w-1.5 bg-app-border"
+              }`}
             />
           ))}
         </div>
@@ -235,16 +237,15 @@ export function OnboardingWizard({ onDone }: { onDone: () => void }) {
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-[11.5px] text-app-faint">
-                템플릿을 고르면 주제·구성·테마가 미리 채워집니다.
-              </p>
-
               <button
                 onClick={finish}
                 className="mt-6 w-full rounded-xl bg-app-accent px-6 py-3 text-[13.5px] font-semibold text-white hover:opacity-90"
               >
                 빈 프롬프트로 시작
               </button>
+              <p className="mt-2 text-[11.5px] text-app-faint">
+                템플릿을 고르면 주제·구성·테마가 미리 채워집니다.
+              </p>
             </>
           )}
         </div>

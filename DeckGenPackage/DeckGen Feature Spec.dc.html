@@ -42,7 +42,7 @@ a{color:#1A1A1A}
 <div class="doc">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
     <svg viewBox="0 0 24 24" style="width:42px;height:42px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg>
-    <div><h1>DeckGen 통합 명세서</h1><div class="meta">브랜드·디자인 시스템 · 프론트엔드 · 백엔드 · 동작 시뮬레이션 · v1.0</div></div>
+    <div><h1>DeckGen 통합 명세서</h1><div class="meta">브랜드·디자인 시스템 · 프론트엔드 · 백엔드 · 동작 시뮬레이션 · v1.1</div></div>
   </div>
   <p class="lead">AI 스토리보드·프레젠테이션 협업 플랫폼 <b>DeckGen</b>의 전체 사양서입니다. ① 브랜드/디자인 시스템, ② 프론트엔드(사용자 앱·관리자 콘솔) 기능, ③ 백엔드(아키텍처·데이터·API), ④ 동작 시뮬레이션을 통합 정리했습니다. <span class="tag">SIM</span> 블록은 프로토타입에서 실제 재현되는 동작입니다.</p>
 
@@ -53,6 +53,7 @@ a{color:#1A1A1A}
     <a href="#d">D. 프론트엔드 — 스토리보드·아웃라인</a>
     <a href="#e">E. 프론트엔드 — 에디터·AI편집</a>
     <a href="#f">F. 프론트엔드 — 협업·발표·내보내기</a>
+    <a href="#wb">W. 화이트보드 · 펜 · 스토리보드 전환</a>
     <a href="#g">G. 프론트엔드 — 워크스페이스·관리자</a>
     <a href="#h">H. 백엔드 — 아키텍처</a>
     <a href="#i">I. 백엔드 — 데이터 모델</a>
@@ -91,6 +92,8 @@ a{color:#1A1A1A}
     <li>상태 배지: Queued / Generating(펄스) / Done / 오류 — 색+텍스트 병기</li>
     <li>선택·핸들: 회전(Shift 15° 스냅)·리사이즈·삭제·스냅 가이드·마퀴</li>
     <li>오버레이: 우클릭 컨텍스트 메뉴, 댓글 팝오버(답글 스레드), 미니맵, 드롭다운 레이어 메뉴</li>
+    <li><b>펜 패널:</b> 두께·불투명도 슬라이더, 15색 스와치(선택 링), 펜 종류 5종 세그먼트, 지우기/완료</li>
+    <li><b>화이트보드 프리미티브:</b> 포스트잇(5색)·회고 프레임·라이브 커서(이름표)·리액션 스탬프·위젯(투표/휠/타이머)·슬라이드 프레임 카드</li>
   </ul>
   <h3>슬라이드 테마 4종</h3>
   <div class="swrow">
@@ -114,6 +117,7 @@ a{color:#1A1A1A}
 │   ├─ 발표 모드
 │   └─ 내보내기(PNG·PDF·PPTX·FIG)
 ├─ 협업        댓글 핀 · 멘션 · 실시간 커서 · 알림
+├─ 화이트보드  덴→보드 전환 · 슬라이드→프레임 · 펜 · 포스트잇 · 위젯 · AI 클러스터링
 ├─ 워크스페이스 팀/개인 · 멤버 · 플랜 · 폴더 · 휴지통 · 버전
 └─ 관리자 콘솔  6그룹 · 24 페이지</div>
 
@@ -140,7 +144,7 @@ a{color:#1A1A1A}
 
   <h2 id="d"><span class="mi">grid_view</span>D. 프론트엔드 — 스토리보드 · 아웃라인</h2>
   <ul>
-    <li><b>35종 와이어프레임</b>, 5개 카테고리 분류 + 필터 탭 + 즐겨찾기(★ 그룹), 확대 미리보기(모달 ←/→)</li>
+    <li><b>40+종 와이어프레임</b>(SWOT·간트·마일스톤·스택 막대·타임라인·매트릭스·캘린더·컨소시엄·페르소나 등), 5개 카테고리 분류 + 필터 탭 + 즐겨찾기(★ 그룹) + 사용순 정렬(인기순), 확대 미리보기(모달 ←/→)</li>
     <li>담기 → 하단 스트립 드래그 정렬 → [이 구성으로 아웃라인 생성]</li>
     <li>아웃라인: 스트리밍 카드, 제목·불릿 인라인 편집, 시각화 셀렉트 + 지시문 + 미리보기 블록</li>
   </ul>
@@ -154,6 +158,7 @@ a{color:#1A1A1A}
     <tr><td><b>직접 조작</b></td><td>더블클릭 편집·드래그 이동·리사이즈·회전(Shift 15°)·스냅 가이드·마퀴 다중선택·그룹.</td></tr>
     <tr><td><b>삽입 툴바</b></td><td>도형·텍스트·YouTube·Pexels·아이콘/이모지/GIPHY·AI 이미지·이미지 슬롯.</td></tr>
     <tr><td><b>보조</b></td><td>우클릭 메뉴·z-order·복사/서식복사·잠금·자동 정리·차트 데이터 편집·표 행 편집.</td></tr>
+    <tr><td><b>펜 · 잉크</b></td><td>프리핸드 드로잉 — 펜/마커/형광펜/연필/지우개, 두께·불투명도·15색 팔레트. 슬라이드 좌표(820×461)에 저장돼 줌·리사이즈에 붙고 슬라이드별 분리, 내보내기(PNG/PDF/PPTX)에 포함.</td></tr>
     <tr><td><b>뷰</b></td><td>개요 그리드(미니 프리뷰·섹션)·미니맵·슬라이드 검색.</td></tr>
     <tr><td><b>AI</b></td><td>채팅+작업로그·퀵칩·Magic Edit before/after·↺ Undo.</td></tr>
   </table>
@@ -167,6 +172,21 @@ a{color:#1A1A1A}
     <li><b>공유:</b> 이메일 초대(편집/보기 분리)·권한 변경·링크. 초대 메일 템플릿 연동</li>
   </ul>
   <div class="sim"><b>SIM:</b> 각 슬라이드 canvas 렌더→PNG/PDF/SVG 생성 후 자체 zip 인코더로 묶어 실제 다운로드(검증 완료).</div>
+
+  <h2 id="wb"><span class="mi">dashboard</span>W. 화이트보드 · 펜 · 스토리보드 전환</h2>
+  <p>덴 에디터 툴바의 <b>[화이트보드]</b> 버튼으로 현재 덴을 그 자리에서 무한 캔버스 화이트보드로 전환합니다. 별도 파일이 아니라 <b>프로토타입 단일 파일에 병합</b>되어 상태를 공유합니다.</p>
+  <table>
+    <tr><th style="width:28%">영역</th><th>기능</th></tr>
+    <tr><td><b>슬라이드 → 프레임</b></td><td>전환 시 덴의 모든 슬라이드가 3열 그리드 프레임으로 펼쳐짐(번호+제목 헤더 · 미니 프리뷰 · 레이아웃 배지). 아웃라인 데이터를 실시간 전달.</td></tr>
+    <tr><td><b>무한 캔버스</b></td><td>도트 그리드, 드래그 팬, 줌 컨트롤(맞춤 포함).</td></tr>
+    <tr><td><b>포스트잇</b></td><td>툴에서 선택 후 클릭으로 생성, 드래그 이동·더블클릭 편집, 5색.</td></tr>
+    <tr><td><b>회고 프레임</b></td><td>Keep · Problem · Try 3단 템플릿.</td></tr>
+    <tr><td><b>인터랙티브 위젯</b></td><td>라이브 투표(클릭 집계)·스피너 휠(실제 회전 후 결과)·세션 타이머.</td></tr>
+    <tr><td><b>협업</b></td><td>상단 아바타 스택, 움직이는 라이브 커서(이름표), 리액션 스탬프 바.</td></tr>
+    <tr><td><b>펜 도구</b></td><td>덴 에디터와 동일한 펜 시스템(펜/마커/형광펜/연필/지우개 · 두께·불투명도·팔레트).</td></tr>
+    <tr><td><b>AI 퍼실리테이터</b></td><td>유사 포스트잇 자동 그룹화(색·주제별 클러스터링)·요약·덴 전환.</td></tr>
+  </table>
+  <div class="sim"><b>SIM:</b> [화이트보드] → 아웃라인이 프레임으로 시드되어 펼쳐짐. AI 자동 그룹화 클릭 시 포스트잇이 색상별 열로 0.5s 트랜지션으로 이동·라벨 프레임 생성. [덴으로]/[덴에 반영]으로 복귀.</div>
 
   <h2 id="g"><span class="mi">admin_panel_settings</span>G. 워크스페이스 · 관리자 콘솔</h2>
   <p><b>워크스페이스:</b> 팀↔개인 스위처, 멤버 초대·역할·시트·플랜·사용량, 내 템플릿 저장·재사용.</p>
@@ -243,7 +263,7 @@ a{color:#1A1A1A}
   <h2 id="l"><span class="mi">inventory_2</span>L. 산출물 · 파일</h2>
   <table>
     <tr><th style="width:38%">파일</th><th>내용</th></tr>
-    <tr><td><b>DeckGen Prototype.dc.html</b></td><td>사용자 앱 전체 동작 프로토타입</td></tr>
+    <tr><td><b>DeckGen Prototype.dc.html</b></td><td>사용자 앱 전체 동작 프로토타입 — 화이트보드 모드 병합(단일 파일)</td></tr>
     <tr><td><b>DeckGen Admin.dc.html</b></td><td>관리자 콘솔 24페이지</td></tr>
     <tr><td><b>DeckGen Design.dc.html</b></td><td>브랜드·디자인 시스템·컴포넌트</td></tr>
     <tr><td><b>DeckGen Feature Spec.dc.html</b></td><td>본 통합 명세서</td></tr>

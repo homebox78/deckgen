@@ -54,7 +54,7 @@ export function LoginPage() {
       <Shell>
         <h1 className="text-[18px] font-bold">비밀번호 재설정</h1>
         <p className="mt-1 mb-5 text-[12.5px] text-app-muted">
-          가입한 이메일로 재설정 링크를 보내드려요.
+          가입한 이메일로 재설정 링크를 보내드립니다. (15분 유효)
         </p>
         <form
           onSubmit={(e) => {
@@ -203,7 +203,12 @@ export function LoginPage() {
             onClick={() => oauth("카카오")}
             className="flex items-center justify-center gap-2 rounded-xl bg-[#FEE500] py-2.5 text-[13px] font-semibold text-[#191600] hover:brightness-95"
           >
-            <span className="mi text-[16px]">chat_bubble</span>
+            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
+              <path
+                fill="#191919"
+                d="M12 3C6.48 3 2 6.54 2 10.9c0 2.8 1.86 5.26 4.66 6.66-.15.53-.97 3.36-1 3.58 0 0-.02.17.09.24.11.07.24.02.24.02.31-.04 3.57-2.34 4.13-2.74.61.09 1.24.14 1.88.14 5.52 0 10-3.54 10-7.9S17.52 3 12 3z"
+              />
+            </svg>
             카카오로 계속하기
           </button>
         </div>

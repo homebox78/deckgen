@@ -23,6 +23,13 @@ function loadFavs(): string[] {
   }
 }
 
+/** 실사용 데이터가 없어 id 기반 결정적 의사-인기 수치(정렬·표시용). */
+function wfUses(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return 40 + (h % 460); // 40~499
+}
+
 /** 블록을 SVG로 그리는 미니 프리뷰 (카드·확대 공용) — 100×62.5 뷰박스(16:10) */
 function MiniWf({ wf, big = false }: { wf: SingleWireframe; big?: boolean }) {
   const VW = 100;
@@ -99,6 +106,8 @@ export function StoryboardGallery({
   const [tray, setTray] = useState<string[]>([]);
   const [zoomId, setZoomId] = useState<string | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"default" | "popular">("default");
 
   const toggleFav = (id: string) => {
     setFavs((prev) => {
@@ -109,11 +118,22 @@ export function StoryboardGallery({
   };
 
   const tabs = ["전체", "★ 즐겨찾기", ...WF_CATEGORIES];
+  const q = query.trim().toLowerCase();
+  const flat = q !== "" || sort === "popular"; // 검색·인기순이면 카테고리 섹션 대신 평면 그리드
   const visible = useMemo(() => {
-    if (cat === "전체") return SINGLE_WIREFRAMES;
-    if (cat === "★ 즐겨찾기") return SINGLE_WIREFRAMES.filter((w) => favs.includes(w.id));
-    return SINGLE_WIREFRAMES.filter((w) => w.category === cat);
-  }, [cat, favs]);
+    let list: SingleWireframe[] = SINGLE_WIREFRAMES;
+    if (cat === "★ 즐겨찾기") list = list.filter((w) => favs.includes(w.id));
+    else if (cat !== "전체") list = list.filter((w) => w.category === cat);
+    if (q)
+      list = list.filter(
+        (w) =>
+          w.name.toLowerCase().includes(q) ||
+          (w.viz || "").toLowerCase().includes(q) ||
+          w.category.toLowerCase().includes(q),
+      );
+    if (sort === "popular") list = [...list].sort((a, b) => wfUses(b.id) - wfUses(a.id));
+    return list;
+  }, [cat, favs, q, sort]);
 
   const zoomIdx = zoomId ? SINGLE_WIREFRAMES.findIndex((w) => w.id === zoomId) : -1;
   const zoomWf = zoomIdx >= 0 ? SINGLE_WIREFRAMES[zoomIdx] : null;
@@ -206,6 +226,10 @@ export function StoryboardGallery({
             </span>
           )}
         </div>
+        <div className="mt-0.5 flex items-center gap-1 text-[9.5px] text-app-faint">
+          <span className="mi text-[11px]">group</span>
+          {wfUses(wf.id).toLocaleString()}회 사용
+        </div>
       </div>
     );
   };
@@ -217,6 +241,42 @@ export function StoryboardGallery({
         <span className="text-[12px] text-app-faint">
           와이어프레임을 조합해 장표 흐름을 먼저 설계하세요
         </span>
+      </div>
+
+      {/* 검색 + 정렬 */}
+      <div className="mb-3 flex items-center gap-2">
+        <div className="relative flex-1">
+          <span className="mi pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-app-faint">
+            search
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="프레임 검색 — 예: 표, 타임라인, KPI"
+            className="w-full rounded-lg border border-app-border bg-app-surface py-2 pl-8 pr-8 text-[12.5px] outline-none placeholder:text-app-faint focus:border-app-accent"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-app-faint hover:text-app-text"
+            >
+              <span className="mi text-[15px]">close</span>
+            </button>
+          )}
+        </div>
+        <div className="flex flex-none overflow-hidden rounded-lg border border-app-border">
+          {([["default", "기본순"], ["popular", "인기순"]] as const).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setSort(v)}
+              className={`px-3 py-2 text-[11.5px] font-semibold transition-colors ${
+                sort === v ? "bg-app-accent text-white" : "bg-app-surface text-app-muted hover:bg-app-bg"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 카테고리 탭 */}
@@ -254,12 +314,14 @@ export function StoryboardGallery({
         })}
       </div>
 
-      {/* 카드 — "전체"는 카테고리 섹션으로 묶고, 특정 탭은 평면 그리드 */}
+      {/* 카드 — "전체"는 카테고리 섹션으로 묶고, 검색·인기순·특정 탭은 평면 그리드 */}
       {visible.length === 0 ? (
         <p className="rounded-xl border border-dashed border-app-border py-10 text-center text-[12.5px] text-app-faint">
-          아직 즐겨찾기한 와이어프레임이 없어요. 카드의 ★를 눌러 담아두세요.
+          {q
+            ? `'${query.trim()}' 검색 결과가 없어요. 다른 키워드로 찾아보세요.`
+            : "아직 즐겨찾기한 와이어프레임이 없어요. 카드의 ★를 눌러 담아두세요."}
         </p>
-      ) : cat === "전체" ? (
+      ) : cat === "전체" && !flat ? (
         <div className="flex flex-col gap-5">
           {WF_CATEGORIES.map((c) => {
             const items = SINGLE_WIREFRAMES.filter((w) => w.category === c);
@@ -358,7 +420,7 @@ export function StoryboardGallery({
                 <h3 className="text-[15px] font-bold">{zoomWf.name}</h3>
                 <p className="mt-0.5 text-[11.5px] text-app-faint">
                   {zoomWf.category}
-                  {zoomWf.viz ? ` · ${zoomWf.viz}` : ""}
+                  {zoomWf.viz ? ` · ${zoomWf.viz}` : ""} · {wfUses(zoomWf.id).toLocaleString()}회 사용
                 </p>
               </div>
               <button

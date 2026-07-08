@@ -21,10 +21,11 @@ export function GridOverview({
   const moveSlide = useDeckStore((s) => s.moveSlide);
   const duplicateSlide = useDeckStore((s) => s.duplicateSlide);
   const removeSlide = useDeckStore((s) => s.deleteSlide);
+  const addSlide = useDeckStore((s) => s.addSlide);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col bg-app-bg">
+    <div className="fixed inset-x-0 bottom-0 top-[52px] z-[70] flex flex-col bg-app-bg">
       <div className="flex items-center gap-3 border-b border-app-border bg-app-surface px-6 py-3.5">
         <span className="text-[16px] font-bold">슬라이드 개요</span>
         <span className="text-[12px] text-app-faint">
@@ -41,7 +42,7 @@ export function GridOverview({
             <Fragment key={s.id}>
             {s.section && s.section !== deck.slides[i - 1]?.section && (
               <div className="col-span-full flex items-center gap-1.5 pt-1 first:pt-0">
-                <span className="mi text-[14px] text-app-faint">label</span>
+                <span className="h-1.5 w-1.5 rounded-[2px] bg-app-text" />
                 <span className="text-[11.5px] font-bold tracking-wide text-app-muted uppercase">{s.section}</span>
                 <span className="h-px flex-1 bg-app-border-soft" />
               </div>
@@ -81,6 +82,17 @@ export function GridOverview({
             </div>
             </Fragment>
           ))}
+          {/* 끝에 슬라이드 추가 카드 (프로토타입) */}
+          <button
+            onClick={() => {
+              addSlide(deck.slides.length - 1);
+              onJump(deck.slides.length);
+            }}
+            className="flex min-h-[148px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-app-border text-app-faint transition-colors hover:border-app-accent hover:text-app-accent"
+          >
+            <span className="mi text-[26px]">add</span>
+            <span className="text-[12px] font-semibold">슬라이드 추가</span>
+          </button>
         </div>
       </div>
     </div>

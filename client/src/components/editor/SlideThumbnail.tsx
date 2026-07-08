@@ -15,6 +15,7 @@ export function SlideThumbnail({
   theme: Theme;
   dims?: SlideDims;
 }) {
+  const locked = !!slide.locked;
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,10 +33,18 @@ export function SlideThumbnail({
 
   return (
     <div
-      className="w-full overflow-hidden rounded-md border border-app-border bg-white"
+      className="relative w-full overflow-hidden rounded-md border border-app-border bg-white"
       style={{ backgroundColor: theme.bg, aspectRatio: `${dims.w} / ${dims.h}` }}
     >
       {src && <img src={src} alt="" className="h-full w-full" draggable={false} />}
+      {locked && (
+        <>
+          <div className="absolute inset-0 bg-white/45" />
+          <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded bg-app-text/80 text-white">
+            <span className="mi text-[11px]">lock</span>
+          </span>
+        </>
+      )}
     </div>
   );
 }

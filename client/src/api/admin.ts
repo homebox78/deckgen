@@ -69,6 +69,8 @@ export interface AdminUser {
   decks: number;
   last: number;
   blocked: boolean;
+  gens?: number; // 이번 달 생성 — 백엔드가 제공하면 사용(프레즌스 기반 응답엔 없음)
+  email?: string; // 백엔드가 실제 이메일을 주면 사용(현재 프레즌스 응답엔 없음)
 }
 
 export interface AdminJob {
@@ -79,6 +81,8 @@ export interface AdminJob {
   ok: boolean;
   err: string;
   ts: number;
+  user?: string; // 잡을 유발한 사용자 — 이벤트 로그엔 없을 수 있음
+  status?: "running" | "queued" | "done" | "failed"; // 있으면 실행/대기 집계에 사용
 }
 
 export interface AdminError {
@@ -87,6 +91,8 @@ export interface AdminError {
   msg: string;
   count: number;
   lastAt: number;
+  severity?: "HIGH" | "MED" | "LOW"; // 있으면 사용, 없으면 count로 추정
+  hint?: string; // 있으면 사용, 없으면 메시지 기반
 }
 
 export interface AdminAudit {

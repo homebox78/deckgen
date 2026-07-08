@@ -420,7 +420,17 @@ export function PropertiesPanel({
         </button>
       </div>
 
-      {element.type === "chart" && (
+      {element.type === "chart" && (() => {
+        const chart = element; // ChartElement 로 좁혀 sum·분해 헬퍼 공유
+        const sum = (chart.series[0]?.values ?? []).reduce((a, v) => a + (Number.isFinite(v) ? v : 0), 0);
+        const widthPct = Math.round((chart.w / dims.w) * 100);
+        const explodeChart = () => {
+          const parts = decomposeChart(chart, theme);
+          useUiStore.getState().setSelectedElementId(null);
+          useDeckStore.getState().explodeElement(slideId, chart.id, parts);
+          showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
+        };
+        return (
         <div className="border-b border-app-border-soft px-4 py-3.5">
           <SectionLabel>차트</SectionLabel>
           {/* 차트 타입 전환 */}
@@ -446,8 +456,13 @@ export function PropertiesPanel({
               </button>
             ))}
           </div>
-          {/* 데이터 편집 (label + series[0].value) */}
-          <p className="mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">데이터</p>
+          {/* 데이터 편집 (label + series[0].value) + 합계 readout */}
+          <div className="mb-1.5 flex items-center justify-between">
+            <p className="text-[11px] font-bold tracking-[.06em] text-app-faint">데이터</p>
+            <span className="rounded bg-app-bg px-1.5 py-0.5 text-[10.5px] font-semibold text-app-muted">
+              합계 {Math.round(sum)}%
+            </span>
+          </div>
           <div className="flex flex-col gap-1.5">
             {element.labels.map((lb, i) => (
               <div key={i} className="flex items-center gap-1.5">
@@ -499,19 +514,59 @@ export function PropertiesPanel({
               + 항목 추가
             </button>
           )}
+          {/* 차트 폭 (38~58% → 요소 w) */}
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <span className="w-14 flex-none text-[11.5px] text-app-faint">폭</span>
+            <input
+              type="range"
+              min={38}
+              max={58}
+              value={Math.max(38, Math.min(58, widthPct))}
+              onChange={(e) => patch({ w: Math.round((dims.w * Number(e.target.value)) / 100) } as Partial<SlideElement>)}
+              className="flex-1 accent-app-accent"
+            />
+            <span className="w-8 flex-none text-right text-[11.5px] font-semibold">{widthPct}%</span>
+          </div>
+          {/* 막대별 색상 — 스키마가 막대별 색 오버라이드를 지원하지 않으므로 분해 안내.
+              스와치는 각 막대가 현재 쓰는 팔레트 색(활성 링) + '자동'을 보여주고, 클릭하면 분해로 이어진다. */}
+          <p className="mt-2.5 mb-1.5 text-[11px] font-bold tracking-[.06em] text-app-faint">막대별 색상</p>
+          <div className="flex flex-col gap-1">
+            {element.labels.map((lb, i) => {
+              const active = theme.chartPalette[i % theme.chartPalette.length];
+              return (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-14 flex-none truncate text-[11px] text-app-faint">{lb}</span>
+                  <span className="flex flex-1 gap-1">
+                    {[...theme.chartPalette, null].map((c, ci) => (
+                      <button
+                        key={ci}
+                        title={c ? `${c} 로 바꾸려면 분해` : "자동 (팔레트 순서)"}
+                        onClick={explodeChart}
+                        className={`h-4 flex-1 rounded border ${c === active ? "ring-2 ring-app-accent ring-offset-1" : "border-black/10"}`}
+                        style={
+                          c
+                            ? { background: c }
+                            : { background: "conic-gradient(#E5484D,#1E9C5B,#2563EB,#E0701F,#E5484D)" }
+                        }
+                      />
+                    ))}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-1 text-[10.5px] leading-relaxed text-app-faint">
+            막대별 색은 스키마에 개별 저장되지 않습니다 — '개별 요소로 분해' 후 조각을 선택해 바꾸세요.
+          </p>
           <button
-            onClick={() => {
-              const parts = decomposeChart(element, theme);
-              useUiStore.getState().setSelectedElementId(null);
-              useDeckStore.getState().explodeElement(slideId, element.id, parts);
-              showToast("차트를 개별 요소로 분해했어요 — 조각을 선택해 수정하세요 (Ctrl+Z 복원)");
-            }}
+            onClick={explodeChart}
             className="mt-2.5 flex w-full items-center justify-center gap-1 rounded-lg border border-app-border bg-white py-2 text-[12px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
           >
             <span className="mi text-[15px]">dashboard</span>개별 요소로 분해
           </button>
         </div>
-      )}
+        );
+      })()}
 
       {element.type === "table" && (
         <div className="border-b border-app-border-soft px-4 py-3.5">
@@ -838,6 +893,144 @@ export function PropertiesPanel({
           </div>
         </div>
       )}
+
+      {/* 불릿 항목 — body 텍스트(불릿 리스트)는 "•  " 접두 줄로 저장됨. 접두 없이 편집. */}
+      {element.type === "text" && element.role === "body" && (() => {
+        const body = element; // TextElement
+        const stripPrefix = (line: string) => line.replace(/^\s*•\s*/, "");
+        const display = body.text
+          .split("\n")
+          .map(stripPrefix)
+          .join("\n");
+        const writeLines = (raw: string) =>
+          raw
+            .split("\n")
+            .map((l) => "•  " + stripPrefix(l))
+            .join("\n");
+        return (
+          <div className="border-b border-app-border-soft px-4 py-3.5">
+            <SectionLabel>불릿 항목</SectionLabel>
+            <textarea
+              value={display}
+              onChange={(e) => patch({ text: writeLines(e.target.value) } as Partial<SlideElement>)}
+              rows={Math.min(8, Math.max(3, display.split("\n").length))}
+              className="w-full resize-y rounded-lg border border-app-border px-2.5 py-2 text-[12px] leading-relaxed focus:border-app-accent focus:outline-none"
+              placeholder="한 줄에 불릿 하나 — '•' 없이 입력하세요"
+            />
+            <div className="mt-1.5 flex items-center justify-between">
+              <p className="text-[10.5px] leading-relaxed text-app-faint">
+                줄바꿈 = 불릿 하나. 저장 시 '•' 접두가 자동으로 붙습니다.
+              </p>
+              <button
+                onClick={() => {
+                  // 원본 추적이 없으므로 안전한 정규화(공백 trim + 빈 줄 제거)로 초기화
+                  const normalized = body.text
+                    .split("\n")
+                    .map((l) => stripPrefix(l).trim())
+                    .filter((l) => l.length > 0)
+                    .map((l) => "•  " + l)
+                    .join("\n");
+                  patch({ text: normalized } as Partial<SlideElement>);
+                  showToast("불릿 문구를 정규화했어요");
+                }}
+                className="flex-none rounded-md border border-app-border bg-white px-2 py-0.5 text-[10.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+              >
+                원래 문구로 초기화
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* KPI 카드 — value/label 텍스트를 함께 편집(짝은 같은 x 열로 탐색), 수치 액센트 강조 토글 */}
+      {element.type === "text" &&
+        (element.role === "kpi-value" || element.role === "kpi-label") &&
+        (() => {
+          const els = useDeckStore.getState().deck?.slides.find((s) => s.id === slideId)?.elements ?? [];
+          const findRole = (role: "kpi-value" | "kpi-label") =>
+            els.find(
+              (e): e is Extract<SlideElement, { type: "text" }> =>
+                e.type === "text" && e.role === role && Math.abs(e.x - element.x) < 6,
+            );
+          const valueEl = element.role === "kpi-value" ? element : findRole("kpi-value");
+          const labelEl = element.role === "kpi-label" ? element : findRole("kpi-label");
+          const accentOn = !!valueEl?.color && resolveColor(theme, valueEl.color) === theme.accent;
+          return (
+            <div className="border-b border-app-border-soft px-4 py-3.5">
+              <SectionLabel>KPI 카드</SectionLabel>
+              <label className="mb-2 block">
+                <span className="mb-1 block text-[11px] text-app-faint">수치 (value)</span>
+                <input
+                  value={valueEl?.text ?? ""}
+                  disabled={!valueEl}
+                  onChange={(e) => valueEl && updateElement(slideId, valueEl.id, { text: e.target.value })}
+                  className="w-full rounded-lg border border-app-border px-2.5 py-1.5 text-[13px] font-semibold focus:border-app-accent focus:outline-none disabled:opacity-40"
+                />
+              </label>
+              <label className="mb-2 block">
+                <span className="mb-1 block text-[11px] text-app-faint">라벨 (label)</span>
+                <input
+                  value={labelEl?.text ?? ""}
+                  disabled={!labelEl}
+                  onChange={(e) => labelEl && updateElement(slideId, labelEl.id, { text: e.target.value })}
+                  className="w-full rounded-lg border border-app-border px-2.5 py-1.5 text-[12.5px] focus:border-app-accent focus:outline-none disabled:opacity-40"
+                />
+              </label>
+              <button
+                disabled={!valueEl}
+                onClick={() =>
+                  valueEl &&
+                  updateElement(slideId, valueEl.id, { color: accentOn ? undefined : theme.accent })
+                }
+                className={`w-full rounded-lg border py-1.5 text-[11.5px] font-semibold disabled:opacity-40 ${
+                  accentOn
+                    ? "border-app-accent bg-app-accent-soft text-app-accent"
+                    : "border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent"
+                }`}
+              >
+                <span className="mi align-middle text-[14px] mr-1">
+                  {accentOn ? "check_circle" : "palette"}
+                </span>
+                {accentOn ? "수치 액센트 강조 켜짐" : "수치를 테마 액센트로 강조"}
+              </button>
+            </div>
+          );
+        })()}
+
+      {/* 제목 오프셋 — 레이아웃 기본 제목 위치 대비 x/y 오프셋(읽기 전용) */}
+      {element.type === "text" && element.role === "title" && (() => {
+        const vertical = dims.h > dims.w;
+        const margin = vertical ? 84 : 96;
+        const defX = margin;
+        const defY = margin + 16;
+        return (
+          <div className="border-b border-app-border-soft px-4 py-3.5">
+            <SectionLabel>제목 위치 (레이아웃 기본 대비)</SectionLabel>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  ["X 오프셋", element.x - defX],
+                  ["Y 오프셋", element.y - defY],
+                ] as const
+              ).map(([label, v]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between rounded-lg border border-app-border bg-[#FBFBFA] px-2.5 py-1.5"
+                >
+                  <span className="text-[12px] text-app-faint">{label}</span>
+                  <span className="text-[12.5px] font-semibold tabular-nums">
+                    {v > 0 ? "+" : ""}
+                    {Math.round(v)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[10.5px] leading-relaxed text-app-faint">
+              0에 가까울수록 레이아웃 기본 제목 위치입니다. 값은 위 Position에서 조절하세요.
+            </p>
+          </div>
+        );
+      })()}
 
       <div className="flex flex-col gap-3 px-4 py-3.5">
         {/* 속성 초기화 — 명시 오버라이드를 지우고 테마 기본값으로 (프로토타입) */}

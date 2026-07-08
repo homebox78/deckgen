@@ -193,16 +193,25 @@ export function PresentMode({ deck, theme, startIndex, onExit }: Props) {
           );
         })}
 
-      {/* 발표자 노트 (N) */}
+      {/* 발표자 노트 (N) — 하단 중앙 플로팅 반투명 카드 */}
       {notesOpen && (
         <div
-          className="max-h-[26vh] overflow-y-auto border-t border-white/15 bg-[#111] px-8 py-4"
+          className="fixed z-[101] w-[calc(100%-2rem)] max-w-[720px] rounded-xl border border-white/15 bg-black/75 px-5 py-3.5 shadow-[0_12px_40px_rgba(0,0,0,.5)] backdrop-blur-md"
+          style={{ left: "50%", bottom: 56, transform: "translateX(-50%)" }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-1 text-[10.5px] font-bold tracking-[.08em] text-white/40">
-            발표자 노트
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[10.5px] font-bold tracking-[.08em] text-white/45">
+              발표자 노트
+            </span>
+            <button
+              onClick={() => setNotesOpen(false)}
+              className="flex items-center gap-1 rounded-md border border-white/20 px-2 py-0.5 text-[11px] font-semibold text-white/70 hover:bg-white/10"
+            >
+              <span className="mi text-[13px]">visibility_off</span>숨기기 (N)
+            </button>
           </div>
-          <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-white/85">
+          <p className="max-h-[24vh] overflow-y-auto whitespace-pre-wrap text-[14px] leading-relaxed text-white/85">
             {slide.notes?.trim() || "이 슬라이드에는 노트가 없습니다."}
           </p>
         </div>

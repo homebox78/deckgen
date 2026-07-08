@@ -38,6 +38,7 @@ import { LibraryPanel } from "./LibraryPanel";
 import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
+import { WhiteboardMode } from "./WhiteboardMode";
 import { MotionTimeline } from "./MotionTimeline";
 import { getMotion } from "../../store/motionStore";
 import { NotificationBell } from "./NotificationBell";
@@ -612,12 +613,24 @@ export function EditorPage() {
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
   const [regen, setRegen] = useState<{ slideId: string; x: number; y: number } | null>(null);
   const [presenting, setPresenting] = useState(false);
+  const [whiteboard, setWhiteboard] = useState(false);
   const [mediaPicker, setMediaPicker] = useState(false);
   // 펜(자유 드로잉) 도구
   const [penMode, setPenMode] = useState(false);
-  const [penColor, setPenColor] = useState("#E5484D");
+  const [penColor, setPenColor] = useState("#1A1A1A");
   const [penWidth, setPenWidth] = useState(4);
   const [penOpacity, setPenOpacity] = useState(1);
+  // 펜 종류(시안): 펜/마커/형광펜/연필/지우개 — 종류별 굵기·불투명도 프리셋
+  const [penType, setPenType] = useState<"pen" | "marker" | "highlighter" | "pencil" | "eraser">("pen");
+  const PEN_PRESET: Record<string, { w: number; o: number }> = {
+    pen: { w: 1, o: 1 },
+    marker: { w: 2.6, o: 1 },
+    highlighter: { w: 4.5, o: 0.35 },
+    pencil: { w: 0.55, o: 0.85 },
+    eraser: { w: 3, o: 1 },
+  };
+  const effWidth = Math.round(penWidth * PEN_PRESET[penType].w);
+  const effOpacity = penType === "highlighter" ? 0.35 : penOpacity * PEN_PRESET[penType].o;
   const [penPopover, setPenPopover] = useState(false);
   const [stickyPop, setStickyPop] = useState(false);
   const [mmOpen, setMmOpen] = useState(true); // 미니맵 접기/펼치기
@@ -1005,7 +1018,7 @@ export function EditorPage() {
         <button
           onClick={() => setGridOpen(true)}
           title="슬라이드 개요 — 전체 그리드 · 드래그 순서 변경"
-          className="rounded-[9px] border border-app-border bg-white px-3 py-2 text-[13px] font-semibold hover:border-app-accent"
+          className="rounded-lg border border-app-border bg-white px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent"
         >
           <span className="mi align-middle text-[14px] mr-1">grid_view</span>개요
         </button>
@@ -1027,6 +1040,15 @@ export function EditorPage() {
             className="rounded-lg border border-app-border bg-white px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent"
           >
             <span className="mi align-middle text-[14px] mr-1">history</span>버전
+          </button>
+        )}
+        {!readOnly && (
+          <button
+            onClick={() => setWhiteboard(true)}
+            title="화이트보드 — 덱을 무한 캔버스로 전환해 워크샵 진행"
+            className="rounded-lg border border-app-border bg-white px-[11px] py-[7px] text-[12px] font-semibold hover:border-app-accent"
+          >
+            <span className="mi align-middle text-[14px] mr-1">dashboard</span>화이트보드
           </button>
         )}
         <button
@@ -1146,6 +1168,7 @@ export function EditorPage() {
         {createPortal(
           <>
         {shareOpen && <ShareDialog deck={deck} onClose={() => setShareOpen(false)} />}
+        {whiteboard && <WhiteboardMode deck={deck} onExit={() => setWhiteboard(false)} />}
         {presenting && (
           <PresentMode
             deck={deck}
@@ -1553,15 +1576,16 @@ export function EditorPage() {
             onPinMove={(id, x, y) => { if (!readOnly) moveComment(deck.id, id, x, y); }}
             penMode={penMode}
             penColor={penColor}
-            penWidth={penWidth}
-            penOpacity={penOpacity}
+            penWidth={effWidth}
+            penOpacity={effOpacity}
+            penErase={penType === "eraser"}
             onPathDrawn={(d, x, y, w, h, stroke, strokeWidth) => {
               addElement(slide.id, {
                 id: uid(),
                 type: "path",
                 x, y, w, h,
                 d, stroke, strokeWidth,
-                ...(penOpacity < 1 ? { opacity: penOpacity } : {}),
+                ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
               });
             }}
           />
@@ -1623,6 +1647,38 @@ export function EditorPage() {
               {slideIndex + 1} / {deck.slides.length}
             </span>
           </div>
+          {/* 이미지 선택 시 컨텍스트 바 (시안) — 자르기·이미지 교체·이미지 생성 */}
+          {canEdit && selectedElement?.type === "image" && (
+            <div className="absolute bottom-[60px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-[11px] border border-app-border bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,.12)]">
+              <button
+                onClick={() =>
+                  updateElement(slide.id, selectedElement.id, {
+                    fit: selectedElement.fit === "cover" ? "contain" : "cover",
+                  } as Partial<SlideElement>)
+                }
+                title="자르기 — 채우기(cover)/맞춤(contain) 전환"
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-app-muted hover:bg-app-bg hover:text-app-text"
+              >
+                <span className="mi text-[15px]">crop</span>
+                {selectedElement.fit === "cover" ? "채우기" : "맞춤"}
+              </button>
+              <span className="mx-0.5 h-4 w-px bg-app-border" />
+              <button
+                onClick={() => startReplaceImage(selectedElement.id, "image")}
+                title="이미지 교체 (Pexels·GIPHY·업로드)"
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-app-muted hover:bg-app-bg hover:text-app-text"
+              >
+                <span className="mi text-[15px]">swap_horiz</span>교체
+              </button>
+              <button
+                onClick={() => startReplaceImage(selectedElement.id, "ai")}
+                title="AI 이미지 생성으로 교체"
+                className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-app-muted hover:bg-app-bg hover:text-app-text"
+              >
+                <span className="mi text-[15px]">auto_awesome</span>생성
+              </button>
+            </div>
+          )}
           {/* 하단 중앙 툴바 (시안 도구 스트립) — 선택·손·댓글 / T·도형·미디어·정렬·AI / undo·redo / 줌 */}
           <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 rounded-[12px] border border-app-border bg-white p-1 shadow-[0_2px_10px_rgba(0,0,0,.08)]">
             {canEdit && (
@@ -1664,13 +1720,36 @@ export function EditorPage() {
                     <span className="mi text-[17px]">draw</span>
                   </button>
                   {penMode && penPopover && (
-                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-30 w-56 -translate-x-1/2 rounded-xl border border-app-border bg-white p-3 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
+                    <div className="absolute bottom-[calc(100%+8px)] left-1/2 z-30 w-60 -translate-x-1/2 rounded-xl border border-app-border bg-white p-3 shadow-[0_12px_32px_rgba(0,0,0,.16)]">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-[11.5px] font-bold">펜 색상</span>
+                        <span className="text-[11.5px] font-bold">펜</span>
                         <button onClick={() => setPenPopover(false)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
                       </div>
+                      {/* 펜 종류 5종 (시안) */}
+                      <div className="mb-2.5 flex gap-1">
+                        {(
+                          [
+                            ["pen", "edit", "펜"],
+                            ["marker", "brush", "마커"],
+                            ["highlighter", "ink_highlighter", "형광펜"],
+                            ["pencil", "draw", "연필"],
+                            ["eraser", "ink_eraser", "지우개"],
+                          ] as const
+                        ).map(([t, icon, label]) => (
+                          <button
+                            key={t}
+                            onClick={() => setPenType(t)}
+                            title={label}
+                            className={`flex h-8 flex-1 items-center justify-center rounded-lg border ${
+                              penType === t ? "border-app-text bg-app-text text-white" : "border-app-border text-app-muted hover:border-app-accent"
+                            }`}
+                          >
+                            <span className="mi text-[16px]">{icon}</span>
+                          </button>
+                        ))}
+                      </div>
                       <div className="mb-3 grid grid-cols-8 gap-1.5">
-                        {["#1A1A1A", "#495057", "#E5484D", "#F76707", "#E0701F", "#F59F00", "#2F9E44", "#1E9C5B", "#0CA678", "#2563EB", "#1971C2", "#7048E8", "#8B5CF6", "#E64980", "#EC4899", "#FFFFFF"].map((c) => (
+                        {["#1A1A1A", "#F5C518", "#F59E0B", "#EA580C", "#DC2626", "#DB2777", "#EC4899", "#7C3AED", "#8B5CF6", "#38BDF8", "#2563EB", "#0EA5A5", "#16A34A", "#9CA3AF", "#FFFFFF"].map((c) => (
                           <button
                             key={c}
                             onClick={() => setPenColor(c)}
@@ -1702,8 +1781,46 @@ export function EditorPage() {
                         />
                         <span className="w-6 text-right text-[11px] font-semibold text-app-muted">{Math.round(penOpacity * 100)}</span>
                       </div>
-                      <div className="mt-2 flex items-center justify-center rounded-lg bg-app-bg py-2">
-                        <span className="rounded-full" style={{ width: penWidth + 4, height: penWidth + 4, background: penColor, opacity: penOpacity, border: penColor === "#FFFFFF" ? "1px solid #ccc" : "none" }} />
+                      <div className="mt-2 flex items-center justify-center rounded-lg bg-app-bg px-3 py-3">
+                        {penType === "eraser" ? (
+                          <span className="flex items-center gap-1 text-[11px] font-semibold text-app-muted">
+                            <span className="mi text-[15px]">ink_eraser</span>획을 클릭해 지우기
+                          </span>
+                        ) : (
+                          <span
+                            className="rounded-full"
+                            style={{
+                              width: "70%",
+                              height: Math.max(2, effWidth),
+                              background: penColor,
+                              opacity: effOpacity,
+                              border: penColor === "#FFFFFF" ? "1px solid #ccc" : "none",
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="mt-2 flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            if (!slide) return;
+                            const st = useDeckStore.getState();
+                            slide.elements
+                              .filter((el) => el.type === "path")
+                              .forEach((el) => st.removeElement(slide.id, el.id));
+                          }}
+                          className="flex-1 rounded-[9px] border border-app-border bg-white py-2 text-[12px] font-semibold text-app-muted hover:bg-app-bg"
+                        >
+                          이 슬라이드 지우기
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPenMode(false);
+                            setPenPopover(false);
+                          }}
+                          className="flex-none rounded-[9px] border border-app-border bg-white px-3 py-2 text-[12px] font-semibold hover:bg-app-bg"
+                        >
+                          완료
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1928,7 +2045,7 @@ export function EditorPage() {
                   <div className="mb-1 flex items-center gap-2">
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-app-text text-[9px] font-bold text-white">{c.author[0]}</span>
                     <span className="text-[11.5px] font-semibold">{c.author}</span>
-                    {c.resolved && <span className="rounded bg-app-success-soft px-1.5 py-0.5 text-[9px] font-bold text-app-success">해결</span>}
+                    {c.resolved && <span className="rounded bg-app-accent-soft px-1.5 py-0.5 text-[9px] font-bold text-app-text">해결</span>}
                     <span className="flex-1" />
                     <button onClick={() => setPinPop(null)} className="text-app-faint hover:text-app-text"><span className="mi text-[15px]">close</span></button>
                   </div>
@@ -1952,7 +2069,7 @@ export function EditorPage() {
                         className="mt-2 w-full rounded-md border border-app-border px-2 py-1.5 text-[11.5px] focus:border-app-accent focus:outline-none"
                       />
                       <div className="mt-1.5 flex items-center gap-1.5">
-                        <button onClick={() => toggleResolve(deck.id, c.id)} className="text-[10.5px] font-semibold text-app-success">{c.resolved ? "다시 열기" : "해결"}</button>
+                        <button onClick={() => toggleResolve(deck.id, c.id)} className="text-[10.5px] font-semibold text-app-text">{c.resolved ? "다시 열기" : "해결"}</button>
                         <button onClick={() => { deleteComment(deck.id, c.id); setPinPop(null); }} className="text-[10.5px] font-semibold text-app-danger">삭제</button>
                         <span className="flex-1" />
                         <button onClick={() => { setTab("comments"); setPinPop(null); }} className="text-[10.5px] font-semibold text-app-muted hover:text-app-accent">전체 댓글 →</button>
@@ -1966,7 +2083,7 @@ export function EditorPage() {
         </main>
 
         {/* 우측: 탭 패널 */}
-        <aside className="flex w-80 shrink-0 flex-col border-l border-app-border bg-app-surface">
+        <aside className="flex w-[312px] shrink-0 flex-col border-l border-app-border bg-app-surface">
           <div className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-app-border px-2 pt-2">
             {(
               [

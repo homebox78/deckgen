@@ -153,7 +153,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             <div key={mem.email} className="flex items-center gap-2.5 px-3 py-2">
               <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-app-text text-[12px] font-bold text-white">
                 {mem.name.slice(0, 1)}
-                {mem.online && <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-app-success" />}
+                {mem.online && <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-app-accent" />}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-[12.5px] font-semibold">
@@ -233,7 +233,7 @@ export function ShareDialog({ deck, onClose }: { deck: Deck; onClose: () => void
             <button
               onClick={copy}
               className={`shrink-0 rounded-lg px-3.5 py-2 text-[12.5px] font-semibold text-white ${
-                copied ? "bg-app-success" : "bg-app-accent hover:opacity-90"
+                copied ? "bg-app-text" : "bg-app-accent hover:opacity-90"
               }`}
             >
               {copied ? "복사됨" : "복사"}

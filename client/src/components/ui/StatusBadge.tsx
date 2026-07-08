@@ -14,8 +14,8 @@ const STYLES: Record<BadgeStatus, { cls: string; dot: string; pulse: boolean }> 
     pulse: true,
   },
   done: {
-    // 모노크롬 v2 — 완료는 유채색 대신 중립색
-    cls: "text-app-text bg-app-accent-soft border-app-border",
+    // 모노크롬 v2 (Design 2a) — 완료는 정적 점 + 진한 중립 테두리(#D4D4CE)로 생성중과 구분
+    cls: "text-app-text bg-app-accent-soft border-app-accent-border",
     dot: "#1A1A1A",
     pulse: false,
   },

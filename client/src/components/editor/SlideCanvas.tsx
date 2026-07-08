@@ -42,6 +42,7 @@ export function SlideCanvas({
   penColor = "#E5484D",
   penWidth = 4,
   penOpacity = 1,
+  penErase = false,
   onPathDrawn,
 }: {
   slide: Slide;
@@ -60,6 +61,7 @@ export function SlideCanvas({
   penColor?: string;
   penWidth?: number;
   penOpacity?: number;
+  penErase?: boolean;
   onPathDrawn?: (d: string, x: number, y: number, w: number, h: number, stroke: string, strokeWidth: number) => void;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -530,11 +532,11 @@ export function SlideCanvas({
     };
   }, [readOnly, dims]);
 
-  // 펜(자유 드로잉) 모드 — isDrawingMode + PencilBrush 색/굵기
+  // 펜(자유 드로잉) 모드 — isDrawingMode + PencilBrush 색/굵기. 지우개는 드로잉 대신 획 클릭 삭제
   useEffect(() => {
     const fc = fcRef.current;
     if (!fc) return;
-    fc.isDrawingMode = penMode && !readOnly;
+    fc.isDrawingMode = penMode && !readOnly && !penErase;
     if (fc.isDrawingMode) {
       const brush = fc.freeDrawingBrush ?? new PencilBrush(fc);
       // 불투명도를 rgba로 반영해 라이브 프리뷰가 확정 획(element opacity)과 일치하게
@@ -546,7 +548,25 @@ export function SlideCanvas({
       brush.width = penWidth;
       fc.freeDrawingBrush = brush;
     }
-  }, [penMode, penColor, penWidth, penOpacity, readOnly]);
+  }, [penMode, penColor, penWidth, penOpacity, penErase, readOnly]);
+
+  // 지우개 — 펜 모드 + 지우개일 때 획(path) 클릭 시 삭제(획 단위)
+  useEffect(() => {
+    const fc = fcRef.current;
+    if (!fc || !(penMode && penErase && !readOnly)) return;
+    const onDown = (opt: { target?: FabricObject }) => {
+      const t = opt.target;
+      if (!t) return;
+      const el = slideRef.current.elements.find((x) => x.id === getElementData(t)?.elementId);
+      if (el?.type === "path") {
+        useDeckStore.getState().removeElement(slideRef.current.id, el.id);
+      }
+    };
+    fc.on("mouse:down", onDown);
+    return () => {
+      fc.off("mouse:down", onDown);
+    };
+  }, [penMode, penErase, readOnly]);
 
   // 슬라이드/테마 변경 시 재렌더 (Fabric 발 갱신은 스킵 — 값만 이미 동기화됨)
   useEffect(() => {

@@ -50,13 +50,13 @@ const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
   { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실시간", icon: "dashboard" },
   { id: "users", name: "사용자 관리", desc: "검색·플랜 필터·차단", icon: "group" },
   { id: "workspaces", name: "워크스페이스", desc: "팀 워크스페이스 · 시트 · 플랜", icon: "workspaces" },
-  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크·멤버 권한·강제 잠금", icon: "folder_shared" },
+  { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크·멤버 권한·강제 잠금", icon: "slideshow" },
   { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션", icon: "forum" },
-  { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정", icon: "palette" },
-  { id: "sbtpl", name: "스토리보드 템플릿", desc: "와이어프레임 라이브러리 노출·순서", icon: "view_carousel" },
-  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 잡 모니터링", icon: "manage_history" },
+  { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정", icon: "grid_view" },
+  { id: "sbtpl", name: "스토리보드 템플릿", desc: "와이어프레임 라이브러리 노출·순서", icon: "view_quilt" },
+  { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 잡 모니터링", icon: "sync" },
   { id: "usage", name: "사용량 리포트", desc: "생성·토큰·모델별 소비 추이", icon: "monitoring" },
-  { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용", icon: "smart_toy" },
+  { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용", icon: "auto_awesome" },
   { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그", icon: "toll" },
   { id: "flags", name: "기능 플래그", desc: "롤아웃 % · 타겟 · ON/OFF", icon: "flag" },
   { id: "abtest", name: "A/B 테스트", desc: "실험 · 변형 전환율 · 승자 적용", icon: "science" },
@@ -67,29 +67,28 @@ const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
   { id: "banners", name: "공지 / 배너", desc: "사용자 화면 상단 안내 관리", icon: "campaign" },
   { id: "emails", name: "이메일 로그", desc: "발송 상태 · 전송률 · 재발송", icon: "mail" },
   { id: "health", name: "시스템 상태", desc: "서비스 헬스 · 인시던트 · 점검", icon: "monitor_heart" },
-  { id: "errors", name: "오류 로그", desc: "미해결 오류 그룹", icon: "bug_report" },
-  { id: "audit", name: "감사 로그", desc: "append-only 관리자 기록", icon: "history_edu" },
+  { id: "errors", name: "오류 로그", desc: "미해결 오류 그룹", icon: "error" },
+  { id: "audit", name: "감사 로그", desc: "append-only 관리자 기록", icon: "history" },
   { id: "exports", name: "데이터 내보내기", desc: "CSV/JSON · GDPR 요청", icon: "download" },
   { id: "apikeys", name: "API 키 관리", desc: "서버 연동 키 · 회전 · 폐기", icon: "key" },
-  { id: "roles", name: "역할 · 권한", desc: "관리자 멤버 · 권한 매트릭스", icon: "shield_person" },
+  { id: "roles", name: "역할 · 권한", desc: "관리자 멤버 · 권한 매트릭스", icon: "admin_panel_settings" },
   { id: "settings", name: "서비스 설정", desc: "한도·점검 모드·모델 정책", icon: "settings" },
 ];
 
 // 그룹형 아코디언 내비 (6그룹)
 const NAV_GROUPS: { label: string; ids: PageId[] }[] = [
   { label: "개요", ids: ["dash"] },
-  { label: "사용자·콘텐츠", ids: ["users", "workspaces", "decks", "collab", "templates", "sbtpl"] },
-  { label: "생성·AI", ids: ["jobs", "usage", "models", "credits", "flags", "abtest", "funnel"] },
-  { label: "매출·정책", ids: ["plans", "refunds", "policies"] },
+  { label: "사용자 · 콘텐츠", ids: ["users", "workspaces", "decks", "collab", "templates", "sbtpl"] },
+  { label: "생성 · AI", ids: ["jobs", "models", "credits", "flags", "abtest", "funnel", "usage"] },
+  { label: "매출 · 정책", ids: ["plans", "refunds", "policies"] },
   { label: "커뮤니케이션", ids: ["banners", "emails"] },
-  { label: "시스템·보안", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
+  { label: "시스템 · 운영", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
 ];
 
-// 그룹별 주의 배지(미해결 잡·공지·오류 등)
-const GROUP_BADGES: Record<string, number> = {
-  "생성·AI": 2,
-  "시스템·보안": 3,
-};
+// pageId → 그룹 라벨 (레일 검색 결과에 그룹 표기 + 배지 매핑)
+const PAGE_GROUP: Record<string, string> = Object.fromEntries(
+  NAV_GROUPS.flatMap((g) => g.ids.map((id) => [id, g.label])),
+);
 
 const fmtTime = (ts: number) => {
   const d = new Date(ts);
@@ -230,16 +229,19 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   );
 }
 
-function StatusPill({ ok, label }: { ok: boolean; label: string }) {
+// ok(긍정) 브랜치는 중립 모노(text #1A1A1A / bg #F0F0EE). green 변형은 워크스페이스 활성 등 시안이 초록인 경우에만.
+function StatusPill({ ok, label, green = false }: { ok: boolean; label: string; green?: boolean }) {
+  const okCls = green
+    ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]"
+    : "border-app-border-soft bg-app-border-soft text-app-text";
+  const okDot = green ? "bg-[#1E7F4F]" : "bg-app-text";
   return (
     <span
       className={`inline-flex items-center gap-[5px] rounded-full border px-2 py-[3px] text-[10.5px] font-semibold ${
-        ok
-          ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]"
-          : "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger"
+        ok ? okCls : "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger"
       }`}
     >
-      <span className={`h-[5px] w-[5px] rounded-full ${ok ? "bg-[#1E7F4F]" : "bg-app-danger"}`} />
+      <span className={`h-[5px] w-[5px] rounded-full ${ok ? okDot : "bg-app-danger"}`} />
       {label}
     </span>
   );
@@ -315,29 +317,8 @@ function DashPage() {
             <span>{m.daily[m.daily.length - 1]?.day}</span>
           </div>
         </Card>
+        {/* 테마 사용 비율 도넛 — 상단 우측 (AD8) */}
         <Card className="px-5 py-[18px]">
-          <div className="mb-3.5 text-[13.5px] font-bold">파이프라인 단계별 평균 소요 (p50)</div>
-          {m.pipeline.map((p) => (
-            <div key={p.name} className="flex items-center gap-3 py-[7px]">
-              <span className="w-[110px] flex-none text-[12px] text-[#4A4A45]">{p.name}</span>
-              <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
-                <div
-                  className="h-full rounded bg-app-accent"
-                  style={{ width: `${Math.max(2, (p.ms / maxMs) * 100)}%`, opacity: 0.75 }}
-                />
-              </div>
-              <span className="w-[52px] flex-none text-right text-[11.5px] font-bold">
-                {p.ms ? `${(p.ms / 1000).toFixed(1)}s` : "—"}
-              </span>
-            </div>
-          ))}
-          <div className="mt-3 border-t border-[#F0F0EE] pt-2.5 text-[11px] text-app-faint">
-            events 실측 평균 · 데이터 없으면 — 표시
-          </div>
-        </Card>
-      </div>
-      {/* 테마 사용 비율 도넛 (AD8) */}
-      <Card className="px-5 py-[18px]">
         <div className="mb-3.5 text-[13.5px] font-bold">테마 사용 비율</div>
         {(() => {
           const dist = m.themeDist ?? [];
@@ -383,6 +364,31 @@ function DashPage() {
             </div>
           );
         })()}
+        </Card>
+      </div>
+      {/* 파이프라인 단계별 소요 — 하단 전폭 */}
+      <Card className="px-5 py-[18px]">
+        <div className="mb-3 text-[13.5px] font-bold">파이프라인 단계별 평균 소요 (p50)</div>
+        {m.pipeline.map((p, i) => (
+          <div key={p.name} className="flex items-center gap-3 py-[7px]">
+            <span className="w-[130px] flex-none text-[12px] text-[#4A4A45]">{p.name}</span>
+            <div className="h-3 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
+              <div
+                className="h-full rounded"
+                style={{
+                  width: `${Math.max(2, (p.ms / maxMs) * 100)}%`,
+                  background: ["#1A1A1A", "#8A8A84", "#C9C9C4", "#E0D8F9"][i % 4],
+                }}
+              />
+            </div>
+            <span className="w-[52px] flex-none text-right text-[11.5px] font-bold">
+              {p.ms ? `${(p.ms / 1000).toFixed(1)}s` : "—"}
+            </span>
+          </div>
+        ))}
+        <div className="mt-3 border-t border-[#F0F0EE] pt-2.5 text-[11px] text-app-faint">
+          events 실측 평균 · 데이터 없으면 — 표시
+        </div>
       </Card>
     </>
   );
@@ -397,10 +403,11 @@ function UsersPage() {
     void adminApi.users().then((r) => setUsers(r.users)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
   useEffect(load, [load]);
-  const emailOf = (name: string) => `${name.toLowerCase().replace(/\s/g, "")}@example.com`;
+  // 프레즌스 기반 users 응답엔 이메일이 없음 — 백엔드가 email을 주면 사용, 없으면 "—"(가짜 이메일 생성 금지).
+  const emailFor = (u: AdminUser) => u.email ?? "—";
   const rows = users.filter((u) => {
     const needle = q.trim().toLowerCase();
-    if (needle && !u.name.toLowerCase().includes(needle) && !emailOf(u.name).includes(needle)) return false;
+    if (needle && !u.name.toLowerCase().includes(needle) && !emailFor(u).toLowerCase().includes(needle)) return false;
     if (planFilter !== "전체" && (plans[u.name] ?? "Free") !== planFilter) return false;
     return true;
   });
@@ -440,7 +447,7 @@ function UsersPage() {
               </span>
               <div className="min-w-0">
                 <div className="text-[12.5px] font-semibold">{u.name}</div>
-                <div className="truncate text-[10.5px] text-app-faint">{emailOf(u.name)}</div>
+                <div className="truncate text-[10.5px] text-app-faint">{emailFor(u)}</div>
               </div>
             </div>
             <span className="flex-1">
@@ -458,7 +465,8 @@ function UsersPage() {
               </select>
             </span>
             <span className="w-[70px] flex-none text-center text-[12.5px]">{u.decks}</span>
-            <span className="w-[90px] flex-none text-center text-[12.5px]">{Math.round(u.decks * 2.2)}</span>
+            {/* 이번 달 생성 — 백엔드 제공 시 u.gens, 없으면 — (프레즌스 응답엔 생성 카운트 없음) */}
+            <span className="w-[90px] flex-none text-center text-[12.5px]">{u.gens ?? "—"}</span>
             <span className="flex-1 text-[12px] text-app-muted">{rel(u.last)}</span>
             <span className="flex-1">
               <StatusPill ok={!u.blocked} label={u.blocked ? "차단됨" : "활성"} />
@@ -503,6 +511,14 @@ const KIND_LABEL: Record<string, string> = {
   regen: "재생성",
 };
 
+// 잡 상태 4종 — Done/Running(중립+dgPulse 점) · Failed(빨강) · Queued(회색)
+const JOB_ST: Record<string, { label: string; cls: string; dot: string; pulse?: boolean }> = {
+  done: { label: "Done", cls: "border-app-border-soft bg-app-border-soft text-app-text", dot: "#1A1A1A" },
+  running: { label: "Running", cls: "border-app-border-soft bg-app-border-soft text-app-text", dot: "#1A1A1A", pulse: true },
+  failed: { label: "Failed", cls: "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger", dot: "#E5484D" },
+  queued: { label: "Queued", cls: "border-app-border bg-white text-app-faint", dot: "#B4B4AE" },
+};
+
 function JobsPage() {
   const [jobs, setJobs] = useState<AdminJob[]>([]);
   useEffect(() => {
@@ -510,23 +526,21 @@ function JobsPage() {
   }, []);
   const failN = jobs.filter((j) => !j.ok).length;
   const doneToday = jobs.filter((j) => j.ok && new Date(j.ts).toDateString() === new Date().toDateString()).length;
-  // 이벤트 로그 기반이라 완결 잡만 기록 → 실행/대기는 0
+  // 실행/대기는 status 필드에서 실제 집계(이벤트 로그는 완결 잡만이라 보통 0)
+  const runningN = jobs.filter((j) => j.status === "running").length;
+  const queuedN = jobs.filter((j) => j.status === "queued").length;
   const stats = [
-    { name: "실행 중", count: 0, dot: "#8A8A84" },
-    { name: "대기", count: 0, dot: "#8A8A84" },
-    { name: "완료 (오늘)", count: doneToday || 43, dot: "#1A1A1A" },
-    { name: "실패", count: failN, dot: "#E5484D" },
+    { name: "실행 중", count: runningN, dot: "#1A1A1A", pulse: true },
+    { name: "대기", count: queuedN, dot: "#B4B4AE", pulse: false },
+    { name: "완료 (오늘)", count: doneToday, dot: "#1A1A1A", pulse: false },
+    { name: "실패", count: failN, dot: "#E5484D", pulse: false },
   ];
-  const userOf = (id: string | number) => {
-    const n = Math.abs([...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0)) % 40;
-    return `user${String(n).padStart(2, "0")}@deckgen.app`;
-  };
   return (
     <>
       <div className="mb-3.5 flex gap-2.5">
         {stats.map((s) => (
           <Card key={s.name} className="flex flex-1 items-center gap-2.5 rounded-[11px] px-4 py-3">
-            <span className="h-2 w-2 rounded-full" style={{ background: s.dot }} />
+            <span className={`h-2 w-2 rounded-full ${s.pulse ? "animate-dg-pulse" : ""}`} style={{ background: s.dot }} />
             <span className="flex-1 text-[12px] text-app-muted">{s.name}</span>
             <span className="text-[17px] font-extrabold">{s.count}</span>
           </Card>
@@ -549,11 +563,20 @@ function JobsPage() {
           >
             <span className="w-[90px] flex-none font-mono text-[11.5px] text-app-muted">J-{String(j.id).replace(/\D/g, "").slice(-5).padStart(5, "8")}</span>
             <span className="flex-[1.6] truncate pr-2.5 text-[12px] font-medium text-app-text">{j.meta || j.err || "—"}</span>
-            <span className="w-[160px] flex-none truncate text-[11.5px] text-app-muted">{userOf(j.id)}</span>
+            <span className="w-[160px] flex-none truncate text-[11.5px] text-app-muted">{j.user ?? "—"}</span>
             <span className="w-[100px] flex-none text-[12.5px] font-semibold">{KIND_LABEL[j.kind] ?? j.kind}</span>
             <span className="w-[70px] flex-none text-[12px] text-app-muted">{(j.ms / 1000).toFixed(1)}s</span>
             <span className="flex w-[140px] flex-none items-center gap-2">
-              <StatusPill ok={j.ok} label={j.ok ? "Done" : "Failed"} />
+              {(() => {
+                const st = j.status ?? (j.ok ? "done" : "failed");
+                const cfg = JOB_ST[st] ?? JOB_ST.done;
+                return (
+                  <span className={`inline-flex items-center gap-[5px] rounded-full border px-2 py-[3px] text-[10.5px] font-semibold ${cfg.cls}`}>
+                    <span className={`h-[5px] w-[5px] rounded-full ${cfg.pulse ? "animate-dg-pulse" : ""}`} style={{ background: cfg.dot }} />
+                    {cfg.label}
+                  </span>
+                );
+              })()}
               {!j.ok && (
                 <button onClick={() => showToast(`${j.id} 재시도를 큐에 넣었어요`)} className="rounded-[6px] border border-app-border bg-white px-2 py-[3px] text-[10.5px] font-semibold">재시도</button>
               )}
@@ -578,9 +601,21 @@ function ErrorsPage() {
   useEffect(load, [load]);
   return (
     <Card className="overflow-hidden">
-      {errors.map((er, i) => {
-        // 발생 횟수로 심각도 추정
-        const sev = er.count >= 10 ? { label: "HIGH", dot: "#E5484D", bg: "#FFF0F0", fg: "#E5484D" } : er.count >= 3 ? { label: "MED", dot: "#B45309", bg: "#FEF3E2", fg: "#B45309" } : { label: "LOW", dot: "#8A8A84", bg: "#F0F0EE", fg: "#6B6B66" };
+      {errors.map((er) => {
+        // 심각도: 서버가 주면 사용, 없으면 발생 횟수로 추정(≥10 HIGH · ≥3 MED · 그 외 LOW)
+        const level = er.severity ?? (er.count >= 10 ? "HIGH" : er.count >= 3 ? "MED" : "LOW");
+        const SEV = {
+          HIGH: { label: "HIGH", dot: "#E5484D", bg: "#FFF0F0", fg: "#E5484D" },
+          MED: { label: "MED", dot: "#B45309", bg: "#FEF3E2", fg: "#B45309" },
+          LOW: { label: "LOW", dot: "#8A8A84", bg: "#F0F0EE", fg: "#6B6B66" },
+        } as const;
+        const sev = SEV[level];
+        // 힌트: 서버가 주면 사용, 없으면 메시지·유형 기반으로 파생(하드코딩 배열 제거)
+        const hint =
+          er.hint ??
+          (er.msg
+            ? `대표 메시지: ${er.msg.length > 90 ? er.msg.slice(0, 90) + "…" : er.msg}`
+            : `${er.type} 유형 · ${level} 심각도 · 최근 ${rel(er.lastAt)}`);
         return (
         <div key={er.id} className="flex gap-3.5 border-b border-[#F0F0EE] px-[18px] py-3.5">
           <span className="mt-[5px] h-2 w-2 flex-none rounded-full" style={{ background: sev.dot }} />
@@ -595,9 +630,7 @@ function ErrorsPage() {
             <div className="mt-1 truncate rounded-[7px] border border-[#F0F0EE] bg-[#FBFBFA] px-[11px] py-2 font-mono text-[12px] text-app-muted">
               {er.msg || "(메시지 없음)"}
             </div>
-            <div className="mt-1 text-[10.5px] text-app-faint">
-              {["생성 프롬프트의 차트 스키마 검증 강화 필요", "내보내기 타임아웃 — 대용량 슬라이드 청크 처리 검토", "레이트리밋 임계 조정 검토"][i % 3]} · {er.type} 외 {Math.max(0, er.count - 1)}건
-            </div>
+            <div className="mt-1 truncate text-[10.5px] text-app-faint">{hint}</div>
           </div>
           <button
             onClick={() => {
@@ -928,6 +961,9 @@ function TemplatesPage() {
           </Card>
         ))}
       </div>
+      <div className="mt-3 text-[11px] text-app-faint">
+        비활성 템플릿은 갤러리에서 숨겨집니다 · PRO 지정 시 유료 배지 · 이름은 카드에서 바로 수정
+      </div>
     </>
   );
 }
@@ -1059,7 +1095,6 @@ function DecksPage() {
   useEffect(() => {
     void adminApi.decks().then((r) => setDecks(r.decks)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
-  const owners = ["우진", "김대리", "이수민", "박하늘"];
   return (
     <>
       <Card className="overflow-hidden">
@@ -1070,7 +1105,7 @@ function DecksPage() {
           <span className="w-[130px] flex-none">공유 링크</span>
           <span className="w-[190px] flex-none">조치</span>
         </div>
-        {decks.map((d, i) => (
+        {decks.map((d) => (
           <div key={d.id} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]">
             <div className="flex-[1.9]">
               <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
@@ -1080,11 +1115,11 @@ function DecksPage() {
                 )}
               </div>
               <div className="text-[10.5px] text-app-faint">
-                {owners[i % owners.length]}@deckgen.app · {d.slides}장 · <span className="font-mono">/d/{d.id.slice(0, 6)}</span>
+                — · {d.slides}장 · <span className="font-mono">/d/{d.id.slice(0, 6)}</span>
               </div>
             </div>
-            <span className="w-[60px] flex-none text-center text-[12.5px]">{(i % 4) + 1}</span>
-            <span className="w-[70px] flex-none text-center text-[12.5px]">{[12, 31, 4, 9][i % 4]}</span>
+            <span className="w-[60px] flex-none text-center text-[12.5px]">—</span>
+            <span className="w-[70px] flex-none text-center text-[12.5px]">—</span>
             <span className="w-[130px] flex-none">
               <select
                 className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]"
@@ -1235,7 +1270,7 @@ function ModelsPage() {
           </span>
           <span className="flex-1"><Toggle on={r.free} onClick={() => upd(r.id, { free: !r.free })} /></span>
           <span className="flex-1">
-            <button onClick={() => upd(r.id, { on: !r.on })} className={`rounded-[7px] border px-2.5 py-[5px] text-[11px] font-semibold ${r.on ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : "border-app-border bg-white text-app-faint"}`}>{r.on ? "운영 중" : "중지됨"}</button>
+            <button onClick={() => upd(r.id, { on: !r.on })} className={`rounded-full border px-3 py-[5px] text-[11px] font-semibold ${r.on ? "border-app-text bg-app-text text-white" : "border-app-border bg-white text-app-faint"}`}>{r.on ? "운영 중" : "중지됨"}</button>
           </span>
         </div>
       ))}
@@ -1327,11 +1362,11 @@ function CreditsPage() {
   ];
   const maxN = Math.max(1, ...byModel.map((b) => b.n));
   const log = [
-    { t: "09:52", user: "mina@studio.kr", mk: "Claude Fable 5 / 슬라이드 생성 ×8", c: -24 },
-    { t: "09:41", user: "woojin@deckgen.app", mk: "GPT-5.5 / AI 수정 ×3", c: -9 },
-    { t: "09:33", user: "kim@company.co.kr", mk: "이미지 모델 / AI 이미지 ×2", c: -12 },
-    { t: "09:20", user: "lee@company.co.kr", mk: "DeckGen 1.1 / 아웃라인", c: -2 },
-    { t: "09:05", user: "guest_9f2", mk: "Gemini 3.1 Pro / 슬라이드 생성 ×5", c: -15 },
+    { t: "09:52", user: "mina@studio.kr", model: "Claude Fable 5", action: "슬라이드 생성 ×8", c: -24 },
+    { t: "09:41", user: "woojin@deckgen.app", model: "GPT-5.5", action: "AI 수정 ×3", c: -9 },
+    { t: "09:33", user: "kim@company.co.kr", model: "이미지 모델", action: "AI 이미지 ×2", c: -12 },
+    { t: "09:20", user: "lee@company.co.kr", model: "DeckGen 1.1", action: "아웃라인", c: -2 },
+    { t: "09:05", user: "guest_9f2", model: "Gemini 3.1 Pro", action: "슬라이드 생성 ×5", c: -15 },
   ];
   return (
     <>
@@ -1340,7 +1375,7 @@ function CreditsPage() {
           { name: "오늘 소모", value: "1,284", sub: "어제 1,102 · +16%" },
           { name: "이번 달 누적", value: "38.6K", sub: "한도 50K의 77%" },
           { name: "생성당 평균", value: "4.2", sub: "크레딧 / 덱 생성" },
-          { name: "최대 사용자", value: "mina", sub: "이번 주 2,140 크레딧" },
+          { name: "최다 사용자", value: "mina", sub: "이번 주 2,140 크레딧" },
         ].map((k) => (
           <Card key={k.name} className="px-[18px] py-4">
             <div className="text-[12px] text-app-muted">{k.name}</div>
@@ -1371,7 +1406,10 @@ function CreditsPage() {
             <div key={i} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-2 text-[11.5px] last:border-b-0">
               <span className="w-12 flex-none text-app-muted">{l.t}</span>
               <span className="flex-1 truncate">{l.user}</span>
-              <span className="flex-[1.5] truncate text-app-muted">{l.mk}</span>
+              <span className="flex-[1.5] min-w-0">
+                <span className="block truncate">{l.model}</span>
+                <span className="block truncate text-[10px] text-app-faint">{l.action}</span>
+              </span>
               <span className="w-12 flex-none text-right font-semibold text-app-danger">{l.c}</span>
             </div>
           ))}
@@ -1432,17 +1470,30 @@ function HealthPage() {
     { name: "큐", latency: "12ms", uptime: "100%", ok: true },
   ];
   const down = services.filter((s) => !s.ok).length;
+  // 배너 부제는 상태에 따라 달라짐 (item 13)
+  const overallSub = maint
+    ? "점검 모드 진행 중 · 생성 3종이 일시 중단되고 상태 페이지에 배너가 게시됩니다"
+    : down
+      ? `${down}개 서비스 성능 저하 · SLA 영향은 없으며 자동 복구를 시도 중입니다`
+      : "실시간 헬스 체크 · 30초 주기 · 모든 SLA 충족";
+  // 서비스 상태 라벨(정상=중립 모노 / 성능저하=앰버 / 장애=빨강)
+  const svcStatus = (s: (typeof services)[number]) =>
+    s.ok
+      ? { label: "정상", color: "#1A1A1A", dot: "#1A1A1A" }
+      : parseFloat(s.uptime) < 99.5
+        ? { label: "장애", color: "#E5484D", dot: "#E5484D" }
+        : { label: "성능저하", color: "#B45309", dot: "#B45309" };
   return (
     <>
       <Card className="mb-5 flex items-center gap-3 px-5 py-4">
-        <span className={`flex h-9 w-9 items-center justify-center rounded-full text-[18px] ${maint ? "bg-[#FEF3E2]" : down ? "bg-[#FFF0F0]" : "bg-[#EAF7F0]"}`}>
-          <span className="mi text-[18px]">{maint ? "build" : down ? "warning" : "check_circle"}</span>
+        <span className={`flex h-9 w-9 items-center justify-center rounded-full text-[18px] ${maint ? "bg-[#FEF3E2]" : down ? "bg-[#FFF0F0]" : "bg-[#F0F0EE]"}`}>
+          <span className="mi text-[18px]" style={{ color: maint ? "#B45309" : down ? "#E5484D" : "#1A1A1A" }}>{maint ? "build" : down ? "warning" : "check_circle"}</span>
         </span>
         <div className="flex-1">
           <div className="text-[14px] font-bold">
             {maint ? "점검 모드 진행 중" : down ? `${down}개 서비스 성능 저하` : "모든 서비스 정상"}
           </div>
-          <div className="text-[11.5px] text-app-faint">실시간 헬스 체크 · 30초 주기</div>
+          <div className="text-[11.5px] text-app-faint">{overallSub}</div>
         </div>
         <button
           onClick={toggleMaint}
@@ -1451,37 +1502,51 @@ function HealthPage() {
           {maint ? "점검 모드 끄기" : "점검 모드 켜기"}
         </button>
       </Card>
-      <div className="mb-5 grid grid-cols-4 gap-3">
-        {services.map((s) => (
-          <Card key={s.name} className="px-4 py-3.5">
-            <div className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${s.ok ? "bg-[#1E7F4F]" : "bg-app-danger"}`} />
-              <span className="text-[12.5px] font-semibold">{s.name}</span>
-            </div>
-            <div className="mt-2 flex justify-between text-[11px] text-app-muted">
-              <span>지연 {s.latency}</span>
-              <span>업타임 {s.uptime}</span>
-            </div>
-          </Card>
-        ))}
+      <div className="mb-5 grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
+        {services.map((s) => {
+          const st = svcStatus(s);
+          return (
+            <Card key={s.name} className="px-4 py-3.5">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full" style={{ background: st.dot }} />
+                <span className="flex-1 text-[12.5px] font-semibold">{s.name}</span>
+                <span className="text-[10px] font-bold" style={{ color: st.color }}>{st.label}</span>
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-app-muted">
+                <span>지연 {s.latency}</span>
+                <span>업타임 {s.uptime}</span>
+              </div>
+            </Card>
+          );
+        })}
       </div>
       <Card className="overflow-hidden">
-        <div className={thCls}><span className="flex-[2]">인시던트</span><span className="flex-1">발생</span><span className="w-24 flex-none">조치</span></div>
+        <div className="border-b border-[#F0F0EE] px-[18px] py-3 text-[13px] font-bold">인시던트 이력</div>
         {incidents.map((ic) => (
-          <div key={ic.id} className={rowCls}>
-            <div className="flex-[2]">
-              <div className="text-[12.5px] font-semibold">{ic.title}</div>
-              <div className="text-[10.5px] text-app-faint">{ic.detail}</div>
+          <div key={ic.id} className="flex gap-3 border-b border-[#F0F0EE] px-[18px] py-3 last:border-b-0">
+            <span className="mt-[5px] h-[9px] w-[9px] flex-none rounded-full" style={{ background: ic.ok ? "#8A8A84" : "#E5484D" }} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[12.5px] font-semibold">{ic.title}</span>
+                <span
+                  className="rounded-[5px] px-1.5 py-0.5 text-[10.5px] font-bold"
+                  style={ic.ok ? { background: "#F0F0EE", color: "#1A1A1A" } : { background: "#FFF0F0", color: "#E5484D" }}
+                >
+                  {ic.ok ? "해결됨" : "진행 중"}
+                </span>
+              </div>
+              <div className="mt-0.5 text-[11px] text-app-faint">{ic.detail}</div>
             </div>
-            <span className="flex-1 text-[11.5px] text-app-muted">{ic.when}</span>
-            <span className="w-24 flex-none">
-              {ic.ok ? <StatusPill ok label="해결됨" /> : (
-                <button onClick={() => { setIncidents((p) => p.map((x) => x.id === ic.id ? { ...x, ok: true } : x)); showToast("인시던트를 해결 처리했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">해결</button>
-              )}
-            </span>
+            <span className="flex-none self-start font-mono text-[11px] text-app-faint">{ic.when}</span>
+            {!ic.ok && (
+              <button onClick={() => { setIncidents((p) => p.map((x) => x.id === ic.id ? { ...x, ok: true } : x)); showToast("인시던트를 해결 처리했어요"); }} className="flex-none self-start rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">해결</button>
+            )}
           </div>
         ))}
       </Card>
+      <div className="mt-2.5 text-[11px] text-app-faint">
+        헬스체크는 30초 주기 · degraded는 SLA 영향 없는 성능 저하 · 점검 모드 시 상태 페이지에 배너가 게시됩니다
+      </div>
     </>
   );
 }
@@ -1499,7 +1564,8 @@ function ExportsPage() {
   ]);
   return (
     <>
-      <Card className="mb-4 px-5 py-4">
+      <div className="mb-4 grid grid-cols-2 items-start gap-4">
+      <Card className="px-5 py-4">
         <div className="mb-3 text-[13px] font-bold">새 내보내기</div>
         <div className="mb-3 flex flex-wrap gap-1.5">
           {DATASETS.map(([k, l]) => (
@@ -1520,15 +1586,16 @@ function ExportsPage() {
           </button>
         </div>
       </Card>
-      <Card className="mb-4 px-5 py-4">
+      <Card className="px-5 py-4">
         <div className="mb-1 text-[13px] font-bold">개인정보 요청 (GDPR)</div>
         <div className="mb-3 text-[11.5px] text-app-faint">이메일로 사용자를 특정해 데이터 이동권(추출)·삭제권(파기)을 처리합니다.</div>
+        <input value={gdprEmail} onChange={(e) => setGdprEmail(e.target.value)} placeholder="사용자 이메일" className="mb-2 w-full rounded-lg border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none" />
         <div className="flex items-center gap-2">
-          <input value={gdprEmail} onChange={(e) => setGdprEmail(e.target.value)} placeholder="user@example.com" className="flex-1 rounded-lg border border-app-border px-3 py-2 text-[12.5px] focus:border-app-accent focus:outline-none" />
-          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 추출을 시작했어요`)} className="rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold">데이터 추출</button>
-          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 파기를 예약했어요`)} className="rounded-lg border border-[#F5C6C8] bg-[#FFF0F0] px-3.5 py-2 text-[12px] font-semibold text-app-danger">데이터 파기</button>
+          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 추출을 시작했어요`)} className="flex-1 rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold">데이터 추출</button>
+          <button onClick={() => gdprEmail && showToast(`${gdprEmail} 데이터 파기를 예약했어요`)} className="flex-1 rounded-lg border border-[#F5C6C8] bg-[#FFF0F0] px-3.5 py-2 text-[12px] font-semibold text-app-danger">데이터 파기</button>
         </div>
       </Card>
+      </div>
       <Card className="overflow-hidden">
         <div className={thCls}><span className="flex-[1.4]">데이터셋</span><span className="flex-1">형식</span><span className="flex-1">행</span><span className="flex-1">생성</span><span className="w-24 flex-none">조치</span></div>
         {jobs.map((j) => (
@@ -1543,6 +1610,9 @@ function ExportsPage() {
           </div>
         ))}
       </Card>
+      <div className="mt-2.5 text-[11px] text-app-faint">
+        추출 파일은 암호화되어 24시간 후 자동 삭제 · 모든 추출·파기는 감사 로그에 기록됩니다
+      </div>
     </>
   );
 }
@@ -1578,7 +1648,7 @@ function AbtestPage() {
                 {ex.vars.map((v) => (
                   <div key={v.n} className="flex items-center gap-3">
                     <div className="w-40 flex-none">
-                      <div className="flex items-center gap-1.5 text-[12px] font-semibold">{v.n}{v.win && <span className="text-[10.5px] font-bold text-[#1E7F4F]">▲우세</span>}</div>
+                      <div className="flex items-center gap-1.5 text-[12px] font-semibold">{v.n}{v.win && <span className="rounded-[5px] bg-[#F0F0EE] px-1.5 py-0.5 text-[9.5px] font-bold text-[#1A1A1A]">▲ 우세</span>}</div>
                       <div className="text-[10.5px] text-app-faint">{v.users.toLocaleString()}명 · 배분 {v.share}%</div>
                     </div>
                     <div className="h-4 flex-1 overflow-hidden rounded bg-[#F0F0EE]">
@@ -1598,6 +1668,9 @@ function AbtestPage() {
           );
         })}
       </div>
+      <div className="mt-2.5 text-[11px] text-app-faint">
+        전환율 차이는 통계적 유의성(95%) 도달 시 승자 배지 표시 · 승자 적용 시 해당 변형이 100% 롤아웃되고 실험 종료
+      </div>
     </>
   );
 }
@@ -1611,7 +1684,7 @@ function EmailsPage() {
     { id: 4, time: "09:30", to: "bad@spam.io", tpl: "재동의 요청", subject: "약관 변경 안내", st: "반송" },
     { id: 5, time: "08:47", to: "park@corp.com", tpl: "비밀번호 재설정", subject: "비밀번호 재설정 링크", st: "전송됨" },
   ];
-  const pill = (st: string) => st === "열람" ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : st === "반송" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
+  const pill = (st: string) => st === "열람" ? "border-[#D4D4CE] bg-[#F0F0EE] text-[#1A1A1A]" : st === "반송" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
   return (
     <>
       <KpiGrid items={[
@@ -1633,6 +1706,9 @@ function EmailsPage() {
           </div>
         ))}
       </Card>
+      <div className="mt-2.5 text-[11px] text-app-faint">
+        발송 이벤트는 메일 프로바이더 웹훅으로 수집(전송/오픈/바운스/스팸) · 바운스 주소는 자동 억제 목록에 추가됩니다
+      </div>
     </>
   );
 }
@@ -1640,9 +1716,9 @@ function EmailsPage() {
 // ===== 기능 플래그 (flags) =====
 function FlagsPage() {
   const [rows, setRows] = useState([
-    { id: "fig_export", name: "Figma 내보내기", desc: "SVG zip 핸드오프", rollout: 100, target: "전체", on: true },
+    { id: "fig_export", name: "Figma 내보내기", desc: "SVG zip 핸드오프", rollout: 100, target: "전체 사용자", on: true },
     { id: "auto_agent", name: "Auto Agent", desc: "멀티스텝 자동 편집", rollout: 20, target: "내부 스탭", on: false },
-    { id: "realtime_collab", name: "실시간 협업", desc: "라이브 커서·프레즌스", rollout: 100, target: "전체", on: true },
+    { id: "realtime_collab", name: "실시간 협업", desc: "라이브 커서·프레즌스", rollout: 100, target: "전체 사용자", on: true },
     { id: "web_research", name: "웹 리서치", desc: "생성 시 웹 검색 보강", rollout: 30, target: "Plus 이상", on: false },
     { id: "new_editor", name: "신규 에디터", desc: "차기 캔버스 엔진", rollout: 10, target: "내부 스탭", on: false },
     { id: "video_embed", name: "동영상 임베드", desc: "YouTube 슬라이드", rollout: 50, target: "Plus 이상", on: true },
@@ -1657,7 +1733,7 @@ function FlagsPage() {
       </div>
       <Card className="overflow-hidden">
         {rows.map((r) => (
-          <div key={r.id} className="flex items-center gap-3 border-b border-[#F0F0EE] px-[18px] py-3 last:border-b-0">
+          <div key={r.id} className="flex items-center gap-3 border-b border-[#F0F0EE] px-[18px] py-3 last:border-b-0" style={{ opacity: r.on ? 1 : 0.55 }}>
             <div className="flex-[1.6]">
               <div className="text-[12.5px] font-semibold">{r.name}</div>
               <div className="font-mono text-[10.5px] text-app-faint">{r.id} · {r.desc}</div>
@@ -1667,7 +1743,7 @@ function FlagsPage() {
               <span className="w-10 text-right text-[11px] font-bold tabular-nums">{r.rollout}%</span>
             </div>
             <select value={r.target} onChange={(e) => upd(r.id, { target: e.target.value })} className="w-28 flex-none rounded-md border border-app-border px-1.5 py-1 text-[11px]">
-              <option>전체 사용자</option><option>Plus 이상</option><option>내부 스탭</option>
+              <option value="전체 사용자">전체 사용자</option><option value="Plus 이상">Plus 이상</option><option value="내부 스탭">내부 스탭</option>
             </select>
             <Toggle on={r.on} onClick={() => upd(r.id, { on: !r.on })} />
           </div>
@@ -1696,24 +1772,28 @@ function PoliciesPage() {
         <span className="rounded-full border border-app-border bg-white px-2.5 py-1 text-[11.5px] font-semibold">게시됨 {pub} / {rows.length}</span>
       </div>
       <Card className="overflow-hidden">
-        <div className={thCls}><span className="flex-[1.8]">문서</span><span className="flex-1">버전</span><span className="flex-1">상태</span><span className="w-[220px] flex-none">조치</span></div>
         {rows.map((r) => (
-          <div key={r.id} className={rowCls}>
-            <div className="flex-[1.8]">
-              <div className="flex items-center">
-                <span className="text-[12.5px] font-semibold">{r.name}</span>
-                {r.reconsent && <span className="ml-2 rounded-full border border-[#F5C6C8] bg-[#FFF0F0] px-1.5 py-[1px] text-[10px] font-semibold text-app-danger">재동의 필요</span>}
+          <div key={r.id} className="flex items-center gap-3 border-b border-[#F0F0EE] px-[18px] py-3.5 last:border-b-0">
+            <span className="mi flex-none text-[18px] text-[#55554F]">description</span>
+            <div className="min-w-0 flex-[1.6]">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[13px] font-semibold">{r.name}</span>
+                <span className="rounded-[5px] bg-[#F0F0EE] px-1.5 py-0.5 text-[10.5px] font-bold text-[#1A1A1A]">{r.version}</span>
+                {r.reconsent && <span className="rounded-[5px] border border-[#D4D4CE] px-1.5 py-0.5 text-[9.5px] font-bold text-[#1A1A1A]">재동의 필요</span>}
               </div>
-              <div className="text-[10.5px] text-app-faint">최종 수정 {r.updated}</div>
+              <div className="mt-0.5 text-[10.5px] text-app-faint">최종 수정 {r.updated}</div>
             </div>
-            <span className="flex-1 font-mono text-[11.5px]">{r.version}</span>
-            <span className="flex-1"><StatusPill ok={!r.draft} label={r.draft ? "초안" : "게시됨"} /></span>
-            <span className="flex w-[220px] flex-none gap-1.5">
-              <button onClick={() => showToast(`${r.name} 새 버전을 만들었어요`)} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">새 버전</button>
+            <span className="flex-none">
+              <span className={`rounded-full px-2.5 py-[3px] text-[10.5px] font-bold ${r.draft ? "border border-app-border bg-white text-app-muted" : "bg-[#F0F0EE] text-[#1A1A1A]"}`}>
+                {r.draft ? "초안" : "게시됨"}
+              </span>
+            </span>
+            <span className="flex w-[230px] flex-none justify-end gap-1.5">
+              <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, version: `v${(parseFloat(x.version.replace(/^v/, "")) + 0.1).toFixed(1)}`, draft: true } : x)); showToast(`${r.name} 새 버전(초안)을 만들었어요`); }} className="rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">새 버전</button>
               {r.draft
-                ? <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, draft: false } : x)); showToast("게시했어요"); }} className="rounded-[7px] bg-app-text px-2 py-[5px] text-[11px] font-semibold text-white">게시</button>
-                : <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, reconsent: true } : x)); showToast("재동의를 요청했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">재동의 요청</button>}
-              <button onClick={() => showToast("버전 이력을 표시합니다")} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold">이력</button>
+                ? <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, draft: false } : x)); showToast("게시했어요"); }} className="rounded-[7px] bg-app-text px-2.5 py-[5px] text-[11px] font-semibold text-white">게시</button>
+                : <button onClick={() => { setRows((p) => p.map((x) => x.id === r.id ? { ...x, reconsent: true } : x)); showToast("재동의를 요청했어요"); }} className="rounded-[7px] border border-app-border bg-white px-2.5 py-[5px] text-[11px] font-semibold">재동의 요청</button>}
+              <button onClick={() => showToast("버전 이력을 표시합니다")} className="rounded-[7px] border border-app-border bg-white px-2 py-[5px] text-[11px] font-semibold text-app-muted">이력</button>
             </span>
           </div>
         ))}
@@ -1733,7 +1813,7 @@ function RefundsPage() {
     { id: "INV-2039", user: "lee@corp.com", plan: "Plus", amt: "₩19,000", method: "카드", st: "실패" },
     { id: "INV-2038", user: "park@corp.com", plan: "Team", amt: "₩99,000", method: "세금계산서", st: "결제 완료" },
   ]);
-  const pill = (st: string) => st === "결제 완료" ? "border-[#C9EBD9] bg-[#EAF7F0] text-[#1E7F4F]" : st === "실패" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
+  const pill = (st: string) => st === "결제 완료" ? "border-[#D4D4CE] bg-[#F0F0EE] text-[#1A1A1A]" : st === "실패" ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-app-bg text-app-muted";
   return (
     <>
       <KpiGrid items={[
@@ -1760,6 +1840,9 @@ function RefundsPage() {
           </div>
         ))}
       </Card>
+      <p className="mt-3 text-[11px] text-app-faint">
+        환불은 PG사 API로 즉시 요청되며 결제 취소·부분 환불이 감사 로그·웹훅으로 기록됩니다
+      </p>
     </>
   );
 }
@@ -1767,53 +1850,70 @@ function RefundsPage() {
 // ===== 역할 · 권한 (roles) =====
 function RolesPage() {
   const [staff, setStaff] = useState([
-    { id: 1, name: "관리자 (나)", email: "admin@deckgen.io", role: "관리자", owner: true },
-    { id: 2, name: "이서포트", email: "support@deckgen.io", role: "서포트", owner: false },
-    { id: 3, name: "박애널", email: "analyst@deckgen.io", role: "분석가", owner: false },
+    { id: 1, name: "관리자 (나)", email: "admin@deckgen.io", role: "관리자", owner: true, last: "지금 접속 중" },
+    { id: 2, name: "이서포트", email: "support@deckgen.io", role: "서포트", owner: false, last: "2시간 전" },
+    { id: 3, name: "박애널", email: "analyst@deckgen.io", role: "분석가", owner: false, last: "어제" },
   ]);
   const [email, setEmail] = useState("");
   const perms = [
-    { name: "대시보드", admin: true, support: true, analyst: true },
+    { name: "대시보드 조회", admin: true, support: true, analyst: true },
     { name: "사용자 관리", admin: true, support: true, analyst: false },
-    { name: "결제·환불", admin: true, support: false, analyst: false },
+    { name: "결제·매출", admin: true, support: false, analyst: false },
     { name: "서비스 설정", admin: true, support: false, analyst: false },
     { name: "감사 로그", admin: true, support: false, analyst: true },
   ];
-  const cell = (ok: boolean) => <span className={ok ? "text-[#1E7F4F]" : "text-app-faint"}>{ok ? <span className="mi text-[16px]">check</span> : "—"}</span>;
+  const cell = (ok: boolean) => <span className="mi text-[16px]" style={{ color: ok ? "#1A1A1A" : "#C9C9C4" }}>{ok ? "check_circle" : "remove"}</span>;
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-[1.2fr_1fr] items-start gap-4">
       <Card className="overflow-hidden">
-        <div className="border-b border-app-border px-[18px] py-2.5 text-[12.5px] font-bold">관리자 멤버 ({staff.length})</div>
+        <div className="flex items-center border-b border-app-border px-[18px] py-2.5">
+          <span className="flex-1 text-[12.5px] font-bold">관리자 멤버</span>
+          <span className="text-[11px] text-app-faint">{staff.length}명</span>
+        </div>
         {staff.map((s) => (
-          <div key={s.id} className="flex items-center gap-2 border-b border-[#F0F0EE] px-[18px] py-2.5 last:border-b-0">
+          <div key={s.id} className="flex items-center gap-2.5 border-b border-[#F0F0EE] px-[18px] py-2.5 last:border-b-0">
+            <span className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-app-text text-[11.5px] font-bold text-white">
+              {s.name.slice(0, 1)}
+            </span>
             <div className="min-w-0 flex-1">
               <div className="text-[12.5px] font-semibold">{s.name}</div>
-              <div className="truncate text-[10.5px] text-app-faint">{s.email}</div>
+              <div className="truncate text-[10.5px] text-app-faint">{s.email} · {s.last}</div>
             </div>
-            <select value={s.role} disabled={s.owner} onChange={(e) => setStaff((p) => p.map((x) => x.id === s.id ? { ...x, role: e.target.value } : x))} className="rounded-md border border-app-border px-1.5 py-1 text-[11px] disabled:opacity-50">
-              <option>관리자</option><option>서포트</option><option>분석가</option>
-            </select>
-            {!s.owner && <button onClick={() => setStaff((p) => p.filter((x) => x.id !== s.id))} className="rounded-md border border-[#F5C6C8] bg-[#FFF0F0] px-2 py-1 text-[11px] font-semibold text-app-danger">제거</button>}
+            {s.owner ? (
+              <span className="px-1.5 text-[11px] font-bold text-app-text">소유자</span>
+            ) : (
+              <>
+                <select value={s.role} onChange={(e) => setStaff((p) => p.map((x) => x.id === s.id ? { ...x, role: e.target.value } : x))} className="rounded-md border border-app-border px-1.5 py-1 text-[11px]">
+                  <option>관리자</option><option>서포트</option><option>분석가</option>
+                </select>
+                <button onClick={() => setStaff((p) => p.filter((x) => x.id !== s.id))} title="제거" className="flex-none p-1 text-[#B4B4AE] hover:text-app-danger">
+                  <span className="mi text-[15px]">close</span>
+                </button>
+              </>
+            )}
           </div>
         ))}
         <div className="flex gap-1.5 px-[18px] py-3">
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="멤버 이메일 초대" className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12px] focus:border-app-accent focus:outline-none" />
-          <button onClick={() => { if (email) { setStaff((p) => [...p, { id: Date.now(), name: email.split("@")[0], email, role: "서포트", owner: false }]); setEmail(""); showToast("초대 메일을 보냈어요"); } }} className="flex-none rounded-lg bg-app-text px-3 py-2 text-[12px] font-semibold text-white">초대</button>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="이메일로 관리자 초대" className="min-w-0 flex-1 rounded-lg border border-app-border px-3 py-2 text-[12px] focus:border-app-accent focus:outline-none" />
+          <button onClick={() => { if (email) { setStaff((p) => [...p, { id: Date.now(), name: email.split("@")[0], email, role: "서포트", owner: false, last: "미접속" }]); setEmail(""); showToast("초대 메일을 보냈어요"); } }} className="flex-none rounded-lg bg-app-text px-3 py-2 text-[12px] font-semibold text-white">초대</button>
         </div>
       </Card>
       <Card className="overflow-hidden">
-        <div className="border-b border-app-border px-[18px] py-2.5 text-[12.5px] font-bold">역할별 권한</div>
+        <div className="border-b border-app-border px-[18px] py-2.5 text-[12.5px] font-bold">역할별 권한 매트릭스</div>
         <div className="flex border-b border-[#F0F0EE] bg-[#FBFBFA] px-[18px] py-2 text-[11px] font-bold text-app-faint">
-          <span className="flex-[1.6]">권한</span><span className="flex-1 text-center">관리자</span><span className="flex-1 text-center">서포트</span><span className="flex-1 text-center">분석가</span>
+          <span className="flex-[1.4]">권한</span><span className="flex-1 text-center">관리자</span><span className="flex-1 text-center">서포트</span><span className="flex-1 text-center">분석가</span>
         </div>
         {perms.map((p) => (
-          <div key={p.name} className="flex border-b border-[#F0F0EE] px-[18px] py-2.5 text-[12px] last:border-b-0">
-            <span className="flex-[1.6]">{p.name}</span>
+          <div key={p.name} className="flex items-center border-b border-[#F0F0EE] px-[18px] py-2.5 text-[12px]">
+            <span className="flex-[1.4]">{p.name}</span>
             <span className="flex-1 text-center">{cell(p.admin)}</span>
             <span className="flex-1 text-center">{cell(p.support)}</span>
             <span className="flex-1 text-center">{cell(p.analyst)}</span>
           </div>
         ))}
+        <div className="px-[18px] py-2.5 text-[10.5px] text-app-faint">
+          소유자는 모든 권한을 가지며 변경할 수 없습니다 · 권한 변경은 감사 로그에 기록됩니다
+        </div>
       </Card>
     </div>
   );
@@ -1866,7 +1966,7 @@ function SbtplPage() {
           활성 {onCount} / {rows.length}
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(215px,1fr))] gap-3.5">
         {rows.map((r, i) => (
           <Card key={r.id} className={`p-2.5 ${r.on ? "" : "opacity-60"}`}>
             <div className="mb-2 aspect-[16/10] overflow-hidden rounded-lg border border-app-border-soft">
@@ -1884,6 +1984,9 @@ function SbtplPage() {
           </Card>
         ))}
       </div>
+      <div className="mt-3 text-[11px] text-app-faint">
+        비활성 와이어프레임은 홈 "스토리보드로 시작" 갤러리에서 숨겨집니다 · 순서·노출 변경은 즉시 반영됩니다
+      </div>
     </>
   );
 }
@@ -1891,13 +1994,28 @@ function SbtplPage() {
 // ===== 온보딩 퍼널 (funnel) =====
 function FunnelPage() {
   const [period, setPeriod] = useState("30일");
-  const stages = [
+  const BASE = [
     { name: "가입 완료", n: 3880, pct: 100 },
     { name: "온보딩 시작", n: 3337, pct: 86 },
     { name: "용도 선택", n: 2794, pct: 72 },
     { name: "첫 프롬프트/템플릿", n: 1901, pct: 49 },
     { name: "아웃라인 생성", n: 1707, pct: 44 },
     { name: "첫 덱 완성", n: 1474, pct: 38 },
+  ];
+  // 기간 토글이 실제로 단계별 인원을 스케일(비율 pct는 유지)
+  const factor = period === "7일" ? 0.28 : period === "90일" ? 2.85 : 1;
+  const stages = BASE.map((s) => ({ ...s, n: Math.round(s.n * factor) }));
+  let maxDrop = 0, maxStage = "";
+  stages.forEach((s, i) => {
+    if (i < stages.length - 1) {
+      const d = s.n - stages[i + 1].n;
+      if (d > maxDrop) { maxDrop = d; maxStage = `${s.name} → ${stages[i + 1].name}`; }
+    }
+  });
+  const kpis = [
+    { label: "전체 전환율", value: `${stages[stages.length - 1].pct}%`, sub: "가입 → 첫 덱 완성" },
+    { label: "최대 이탈 구간", value: maxStage, sub: `${maxDrop.toLocaleString()}명 이탈`, small: true },
+    { label: "평균 소요 시간", value: "4분 12초", sub: "가입 → 첫 덱" },
   ];
   return (
     <>
@@ -1908,29 +2026,6 @@ function FunnelPage() {
             <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 text-[12px] font-semibold ${period === p ? "bg-app-text text-white" : "bg-white text-app-muted"}`}>{p}</button>
           ))}
         </div>
-      </div>
-      {/* 요약 KPI 3카드 */}
-      <div className="mb-4 grid grid-cols-3 gap-3">
-        {(() => {
-          let maxDrop = 0, maxStage = "";
-          stages.forEach((s, i) => {
-            if (i < stages.length - 1) {
-              const d = s.n - stages[i + 1].n;
-              if (d > maxDrop) { maxDrop = d; maxStage = `${s.name} → ${stages[i + 1].name}`; }
-            }
-          });
-          return [
-            { label: "전체 전환율", value: `${stages[stages.length - 1].pct}%`, sub: "가입 → 첫 덱 완성" },
-            { label: "최대 이탈 구간", value: maxStage, sub: `${maxDrop.toLocaleString()}명 이탈`, small: true },
-            { label: "평균 소요 시간", value: "4분 12초", sub: "가입 → 첫 덱" },
-          ].map((k) => (
-            <Card key={k.label} className="px-4 py-3.5">
-              <div className="text-[11px] font-semibold text-app-faint">{k.label}</div>
-              <div className={`mt-1 font-extrabold ${k.small ? "text-[14px] leading-tight" : "text-[22px]"}`}>{k.value}</div>
-              <div className="mt-0.5 text-[11px] text-app-muted">{k.sub}</div>
-            </Card>
-          ));
-        })()}
       </div>
       <Card className="px-5 py-4">
         {stages.map((s, i) => {
@@ -1956,22 +2051,31 @@ function FunnelPage() {
           );
         })}
       </Card>
-      <p className="mt-3 rounded-lg border border-app-border bg-app-bg px-4 py-2.5 text-[11.5px] text-app-muted">
-        <span className="mi align-middle text-[14px] mr-1">lightbulb</span>
-        가장 큰 이탈은 <b className="text-app-text">용도 선택 → 첫 프롬프트/템플릿</b> 구간입니다. 온보딩 추천 템플릿 노출을 강화하면 전환율 개선 여지가 큽니다.
-      </p>
+      {/* 요약 KPI 3카드 — 퍼널 바 다음에 배치 */}
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        {kpis.map((k) => (
+          <Card key={k.label} className="px-4 py-3.5">
+            <div className="text-[11px] font-semibold text-app-faint">{k.label}</div>
+            <div className={`mt-1 font-extrabold ${k.small ? "text-[14px] leading-tight" : "text-[22px]"}`}>{k.value}</div>
+            <div className="mt-0.5 text-[11px] text-app-muted">{k.sub}</div>
+          </Card>
+        ))}
+      </div>
+      <div className="mt-3 text-[11px] text-app-faint">
+        가장 큰 이탈 지점은 <b className="text-app-text">용도 선택 → 첫 프롬프트/템플릿</b> 구간 · 추천 템플릿 도입 후 개선 추세
+      </div>
     </>
   );
 }
 
 // ===== 워크스페이스 (팀 워크스페이스 · 시트 · 플랜) =====
 function WorkspacesPage() {
-  const all = [
-    { name: "우진의 팀", owner: "wds0119@deckgen.app", plan: "Pro", seats: "8 / 10", decks: 142, active: true },
-    { name: "마케팅본부", owner: "kim@deckgen.app", plan: "Plus", seats: "5 / 5", decks: 88, active: true },
-    { name: "제품팀", owner: "lee@deckgen.app", plan: "Plus", seats: "3 / 5", decks: 51, active: true },
-    { name: "디자인 스튜디오", owner: "park@deckgen.app", plan: "Free", seats: "2 / 2", decks: 12, active: false },
-  ];
+  const [all, setAll] = useState([
+    { name: "우진의 팀", owner: "wds0119@deckgen.app", plan: "Pro", members: 8, decks: 142, creditPct: 68, creditLabel: "6.8K / 10K", active: true },
+    { name: "마케팅본부", owner: "kim@deckgen.app", plan: "Plus", members: 5, decks: 88, creditPct: 91, creditLabel: "4.6K / 5K", active: true },
+    { name: "제품팀", owner: "lee@deckgen.app", plan: "Plus", members: 3, decks: 51, creditPct: 40, creditLabel: "2.0K / 5K", active: true },
+    { name: "디자인 스튜디오", owner: "park@deckgen.app", plan: "Free", members: 2, decks: 12, creditPct: 22, creditLabel: "220 / 1K", active: false },
+  ]);
   const [q, setQ] = useState("");
   const [plan, setPlan] = useState("전체");
   const rows = all.filter((w) => {
@@ -2009,87 +2113,160 @@ function WorkspacesPage() {
       <Card className="overflow-hidden">
         <div className={thCls}>
           <span className="flex-1">워크스페이스</span>
-          <span className="w-[220px] flex-none">소유자</span>
-          <span className="w-[90px] flex-none text-center">플랜</span>
-          <span className="w-[90px] flex-none text-center">시트</span>
-          <span className="w-[80px] flex-none text-right">덱 수</span>
-          <span className="w-[80px] flex-none text-center">상태</span>
+          <span className="w-[210px] flex-none">소유자</span>
+          <span className="w-[70px] flex-none text-center">플랜</span>
+          <span className="w-[60px] flex-none text-center">멤버</span>
+          <span className="w-[60px] flex-none text-center">덱</span>
+          <span className="w-[130px] flex-none">크레딧</span>
+          <span className="w-[70px] flex-none text-center">상태</span>
+          <span className="w-[80px] flex-none" />
         </div>
         {rows.map((w) => (
           <div key={w.name} className={rowCls}>
             <span className="flex flex-1 items-center gap-2 text-[12.5px] font-semibold">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-app-text text-[10px] font-bold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-app-text text-[11px] font-bold text-white">
                 {w.name.slice(0, 1)}
               </span>
               {w.name}
             </span>
-            <span className="w-[220px] flex-none truncate text-[11.5px] text-app-muted">{w.owner}</span>
-            <span className="w-[90px] flex-none text-center text-[12px] font-semibold">{w.plan}</span>
-            <span className="w-[90px] flex-none text-center text-[12px]">{w.seats}</span>
-            <span className="w-[80px] flex-none text-right text-[12.5px] font-semibold">{w.decks}</span>
-            <span className="flex w-[80px] flex-none justify-center">
-              <StatusPill ok={w.active} label={w.active ? "활성" : "휴면"} />
+            <span className="w-[210px] flex-none truncate text-[11.5px] text-app-muted">{w.owner}</span>
+            <span className="w-[70px] flex-none text-center text-[12px] font-semibold">{w.plan}</span>
+            <span className="w-[60px] flex-none text-center text-[12.5px] font-semibold">{w.members}</span>
+            <span className="w-[60px] flex-none text-center text-[12.5px] font-semibold">{w.decks}</span>
+            <span className="w-[130px] flex-none pr-3">
+              <div className="mb-0.5 h-1.5 overflow-hidden rounded-full bg-[#F0F0EE]">
+                <div className="h-full rounded-full" style={{ width: `${w.creditPct}%`, background: w.creditPct >= 90 ? "#E5484D" : "#1A1A1A" }} />
+              </div>
+              <div className="text-[10px] text-app-faint">{w.creditLabel}</div>
+            </span>
+            <span className="flex w-[70px] flex-none justify-center">
+              <StatusPill ok={w.active} green label={w.active ? "활성" : "정지"} />
+            </span>
+            <span className="flex w-[80px] flex-none justify-end gap-1.5">
+              <button
+                onClick={() => { setAll((p) => p.map((x) => x.name === w.name ? { ...x, active: !x.active } : x)); showToast(w.active ? `'${w.name}' 정지됨` : `'${w.name}' 활성화됨`); }}
+                title={w.active ? "정지" : "활성화"}
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-app-border bg-white"
+              >
+                <span className="mi text-[15px]" style={{ color: w.active ? "#E5484D" : "#8A8A84" }}>{w.active ? "pause" : "play_arrow"}</span>
+              </button>
+              <button onClick={() => showToast(`'${w.name}' 상세를 표시합니다`)} title="상세" className="flex h-7 w-7 items-center justify-center rounded-md border border-app-border bg-white">
+                <span className="mi text-[15px] text-app-muted">chevron_right</span>
+              </button>
             </span>
           </div>
         ))}
       </Card>
+      <p className="mt-3 text-[11px] text-app-faint">
+        정지 시 소속 멤버의 편집·생성이 차단되고 공유 링크가 비활성화됩니다 (감사 로그 기록)
+      </p>
     </>
   );
 }
 
 // ===== 사용량 리포트 (생성·토큰·모델별 소비 추이) =====
 function UsagePage() {
-  const [period, setPeriod] = useState("30일");
-  const days = [42, 55, 48, 61, 73, 58, 67, 80, 72, 65, 88, 94, 79, 102];
-  const max = Math.max(...days);
-  const models = [
-    { n: "DeckGen 1.1", pct: 46, tok: "1.24M" },
-    { n: "Claude Fable 5", pct: 28, tok: "760K" },
-    { n: "Gemini 3.1 Pro", pct: 18, tok: "490K" },
-    { n: "GPT-5.5", pct: 8, tok: "215K" },
+  const [period, setPeriod] = useState("14일");
+  // 일별 2계열 (생성 / 내보내기)
+  const days = [
+    { label: "6/25", gen: 42, exp: 18 }, { label: "6/26", gen: 55, exp: 22 }, { label: "6/27", gen: 48, exp: 20 },
+    { label: "6/28", gen: 61, exp: 24 }, { label: "6/29", gen: 73, exp: 31 }, { label: "6/30", gen: 58, exp: 26 },
+    { label: "7/1", gen: 67, exp: 29 }, { label: "7/2", gen: 80, exp: 34 }, { label: "7/3", gen: 72, exp: 30 },
+    { label: "7/4", gen: 65, exp: 27 }, { label: "7/5", gen: 88, exp: 38 }, { label: "7/6", gen: 94, exp: 41 },
+    { label: "7/7", gen: 79, exp: 33 }, { label: "7/8", gen: 102, exp: 46 },
+  ];
+  const maxTot = Math.max(...days.map((d) => d.gen + d.exp));
+  const formats = [
+    { name: "PPTX", pct: 62 },
+    { name: "PDF", pct: 21 },
+    { name: "PNG", pct: 12 },
+    { name: "Figma", pct: 5 },
+  ];
+  const topWs = [
+    { initial: "우", name: "우진의 팀", credits: "6.8K", color: "#1A1A1A" },
+    { initial: "마", name: "마케팅본부", credits: "4.6K", color: "#55554F" },
+    { initial: "제", name: "제품팀", credits: "2.0K", color: "#8A8A84" },
+    { initial: "디", name: "디자인 스튜디오", credits: "1.4K", color: "#B4B4AE" },
+    { initial: "S", name: "Studio Kim", credits: "0.9K", color: "#C9C9C4" },
+  ];
+  const exportCsv = () => {
+    const csv = ["day,generated,exported"].concat(days.map((d) => `${d.label},${d.gen},${d.exp}`)).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+    a.download = "usage-report.csv";
+    a.click();
+  };
+  const kpis = [
+    { name: "슬라이드 생성", value: "18,240", delta: "▲ 전주 대비 +6%" },
+    { name: "덱 내보내기", value: "4,120", delta: "▲ 전주 대비 +11%" },
+    { name: "AI 크레딧 소비", value: "38.6K", delta: "▲ 한도 50K의 77%" },
+    { name: "평균 생성 시간", value: "8.4초", delta: "▼ p95 21초" },
   ];
   return (
     <>
       <div className="mb-4 flex items-center gap-2">
-        <span className="flex-1 text-[12.5px] text-app-muted">생성 호출·토큰 소비·모델별 비중을 기간별로 추적합니다.</span>
+        <span className="flex-1 text-[12.5px] text-app-muted">플랫폼 전반의 생성·내보내기·크레딧 사용 추이입니다.</span>
         <div className="flex overflow-hidden rounded-lg border border-app-border">
-          {["7일", "30일", "90일"].map((p) => (
+          {["7일", "14일", "30일"].map((p) => (
             <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 text-[12px] font-semibold ${period === p ? "bg-app-text text-white" : "bg-white text-app-muted"}`}>{p}</button>
           ))}
         </div>
+        <button onClick={exportCsv} className="flex items-center gap-1 rounded-lg border border-app-border bg-white px-3.5 py-2 text-[12px] font-semibold">
+          <span className="mi text-[15px]">download</span>CSV
+        </button>
       </div>
-      <KpiGrid
-        items={[
-          { name: "총 생성 호출", value: "18,240", sub: "전일 대비 +6%" },
-          { name: "총 토큰 소비", value: "2.7M", sub: "입력 1.6M · 출력 1.1M" },
-          { name: "평균 생성 시간", value: "8.4초", sub: "p50 · p95 21초" },
-          { name: "실패율", value: "1.9%", sub: "재시도 포함 0.4%" },
-        ]}
-      />
-      <div className="grid grid-cols-[1.6fr_1fr] gap-3.5">
-        <Card className="px-5 py-4">
-          <div className="mb-3 text-[12.5px] font-bold">일별 생성 호출 (최근 14일)</div>
-          <div className="flex h-40 items-end gap-1.5">
-            {days.map((v, i) => (
-              <div key={i} className="flex-1 rounded-t" style={{ height: `${(v / max) * 100}%`, background: i === days.length - 1 ? "#1A1A1A" : "#D4D4CE" }} title={`${v}회`} />
-            ))}
-          </div>
-        </Card>
-        <Card className="px-5 py-4">
-          <div className="mb-3 text-[12.5px] font-bold">모델별 토큰 비중</div>
-          <div className="flex flex-col gap-2.5">
-            {models.map((m) => (
-              <div key={m.n}>
-                <div className="mb-1 flex items-center justify-between text-[11.5px]">
-                  <span className="font-semibold">{m.n}</span>
-                  <span className="text-app-faint">{m.tok} · {m.pct}%</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded bg-[#F0F0EE]">
-                  <div className="h-full rounded bg-app-text" style={{ width: `${m.pct}%` }} />
-                </div>
+      <div className="mb-4 grid grid-cols-4 gap-3">
+        {kpis.map((k) => (
+          <Card key={k.name} className="px-4 py-3.5">
+            <div className="text-[11px] text-app-muted">{k.name}</div>
+            <div className="mt-1 text-[21px] font-extrabold tracking-tight">{k.value}</div>
+            <div className="mt-0.5 text-[10.5px] text-app-muted">{k.delta}</div>
+          </Card>
+        ))}
+      </div>
+      <Card className="mb-4 px-5 py-[18px]">
+        <div className="mb-4 flex items-center gap-3.5">
+          <span className="text-[14px] font-bold">일별 슬라이드 생성</span>
+          <span className="flex-1" />
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-app-muted"><span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: "#1A1A1A" }} />생성</span>
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-app-muted"><span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: "#C9C9C4" }} />내보내기</span>
+        </div>
+        <div className="flex h-[180px] items-end gap-1.5">
+          {days.map((d) => (
+            <div key={d.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${d.label} · 생성 ${d.gen} · 내보내기 ${d.exp}`}>
+              <div className="flex w-full flex-col items-center justify-end gap-0.5" style={{ height: "100%" }}>
+                <div className="w-[70%] rounded-t-[3px]" style={{ height: `${(d.gen / maxTot) * 100}%`, background: "#1A1A1A" }} />
+                <div className="w-[70%] rounded-t-[3px]" style={{ height: `${(d.exp / maxTot) * 100}%`, background: "#C9C9C4" }} />
               </div>
-            ))}
-          </div>
+              <span className="text-[9px] text-app-faint">{d.label}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="px-5 py-[18px]">
+          <div className="mb-3.5 text-[14px] font-bold">내보내기 형식 비중</div>
+          {formats.map((f) => (
+            <div key={f.name} className="mb-3">
+              <div className="mb-1 flex text-[12px]">
+                <span className="flex-1">{f.name}</span>
+                <span className="font-bold">{f.pct}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded bg-[#F0F0EE]">
+                <div className="h-full rounded bg-app-text" style={{ width: `${f.pct}%` }} />
+              </div>
+            </div>
+          ))}
+        </Card>
+        <Card className="px-5 py-[18px]">
+          <div className="mb-3.5 text-[14px] font-bold">크레딧 소비 상위 워크스페이스</div>
+          {topWs.map((t) => (
+            <div key={t.name} className="flex items-center gap-2.5 border-b border-[#F7F7F5] py-2 last:border-b-0">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-[7px] text-[10.5px] font-extrabold text-white" style={{ background: t.color }}>{t.initial}</span>
+              <span className="flex-1 text-[12.5px]">{t.name}</span>
+              <span className="text-[12.5px] font-bold">{t.credits}</span>
+            </div>
+          ))}
         </Card>
       </div>
     </>
@@ -2105,6 +2282,21 @@ export function AdminPage() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(NAV_GROUPS.map((g) => [g.label, true])),
   );
+  // 항목별 실시간 배지 = jobs(실행+대기) · banners(활성) · errors(개수). 그룹 배지 = 소속 항목 배지 합.
+  const [itemBadges, setItemBadges] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!authed) return;
+    void Promise.all([
+      adminApi.jobs().catch(() => ({ jobs: [] })),
+      adminApi.errors().catch(() => ({ errors: [] })),
+      adminApi.banners().catch(() => ({ banners: [] })),
+    ]).then(([j, e, b]) => {
+      const runningQueued = j.jobs.filter((x) => x.status === "running" || x.status === "queued").length;
+      const activeBanners = b.banners.filter((x) => x.on).length;
+      setItemBadges({ jobs: runningQueued, banners: activeBanners, errors: e.errors.length });
+    });
+  }, [authed]);
+  const groupBadge = (ids: PageId[]) => ids.reduce((a, id) => a + (itemBadges[id] ?? 0), 0);
   const toggleSidebar = () => {
     const next = !collapsed;
     localStorage.setItem("dg_admin_sidebar", next ? "0" : "1");
@@ -2160,7 +2352,10 @@ export function AdminPage() {
                   className="mb-1 w-full rounded-lg bg-[rgba(255,255,255,.08)] px-2.5 py-1.5 text-[12px] text-white placeholder:text-[rgba(255,255,255,.4)] focus:outline-none"
                 />
                 <div className="max-h-64 overflow-y-auto">
-                  {PAGES.filter((p) => !railQuery.trim() || p.name.includes(railQuery.trim())).map((p) => (
+                  {PAGES.filter((p) => {
+                    const q = railQuery.trim();
+                    return !q || p.name.includes(q) || (PAGE_GROUP[p.id] ?? "").includes(q);
+                  }).map((p) => (
                     <button
                       key={p.id}
                       onClick={() => setPage(p.id)}
@@ -2168,10 +2363,14 @@ export function AdminPage() {
                       style={{ background: page === p.id ? "rgba(255,255,255,.18)" : "transparent" }}
                     >
                       <span className="mi text-[16px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.6)" }}>{p.icon}</span>
-                      <span className="text-[12px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.7)" }}>{p.name}</span>
+                      <span className="flex-1 text-[12px]" style={{ color: page === p.id ? "#fff" : "rgba(255,255,255,.7)" }}>{p.name}</span>
+                      <span className="text-[9.5px] text-[rgba(255,255,255,.35)]">{PAGE_GROUP[p.id]}</span>
                     </button>
                   ))}
-                  {PAGES.filter((p) => p.name.includes(railQuery.trim())).length === 0 && (
+                  {PAGES.filter((p) => {
+                    const q = railQuery.trim();
+                    return p.name.includes(q) || (PAGE_GROUP[p.id] ?? "").includes(q);
+                  }).length === 0 && (
                     <div className="px-2.5 py-3 text-center text-[11.5px] text-[rgba(255,255,255,.4)]">검색 결과 없음</div>
                   )}
                 </div>
@@ -2183,7 +2382,7 @@ export function AdminPage() {
               NAV_GROUPS.map((g) => {
                 const items = g.ids.map((id) => PAGES.find((p) => p.id === id)!).filter(Boolean);
                 const rep = items.find((p) => p.id === page) ?? items[0];
-                const badge = GROUP_BADGES[g.label] ?? 0;
+                const badge = groupBadge(g.ids);
                 const active = items.some((p) => p.id === page);
                 return (
                   <div key={g.label} className="group/rail relative mb-0.5">
@@ -2220,7 +2419,7 @@ export function AdminPage() {
               NAV_GROUPS.map((g) => {
                 const items = g.ids.map((id) => PAGES.find((p) => p.id === id)!).filter(Boolean);
                 const open = openGroups[g.label];
-                const badge = GROUP_BADGES[g.label] ?? 0;
+                const badge = groupBadge(g.ids);
                 return (
                   <div key={g.label} className="mb-1">
                     <button
@@ -2236,7 +2435,9 @@ export function AdminPage() {
                       )}
                     </button>
                     {open &&
-                      items.map((p) => (
+                      items.map((p) => {
+                        const ib = itemBadges[p.id] ?? 0;
+                        return (
                         <button
                           key={p.id}
                           onClick={() => setPage(p.id)}
@@ -2253,8 +2454,14 @@ export function AdminPage() {
                           >
                             {p.name}
                           </span>
+                          {ib > 0 && (
+                            <span className="flex h-4 min-w-4 flex-none items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
+                              {ib}
+                            </span>
+                          )}
                         </button>
-                      ))}
+                        );
+                      })}
                   </div>
                 );
               })}
@@ -2290,8 +2497,8 @@ export function AdminPage() {
           <span className="text-[16px] font-bold">{cur.name}</span>
           <span className="text-[12px] text-app-faint">{cur.desc}</span>
           <span className="flex-1" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C9EBD9] bg-[#EAF7F0] px-2.5 py-1 text-[11.5px] font-semibold text-[#1E7F4F]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#1E7F4F]" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4CE] bg-[#F0F0EE] px-2.5 py-1 text-[11.5px] font-semibold text-[#1A1A1A]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#1A1A1A]" />
             API 정상 · p95 1.2s
           </span>
           <span className="font-mono text-[11px] text-app-faint">{nowKst}</span>

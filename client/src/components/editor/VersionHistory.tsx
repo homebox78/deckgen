@@ -100,7 +100,7 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
                     {r.mark}
                   </span>
                   <span
-                    className={`min-w-0 flex-1 truncate ${r.mark === "추가" ? "font-semibold text-app-success" : r.mark === "변경" ? "font-semibold text-app-text" : "text-app-muted"}`}
+                    className={`min-w-0 flex-1 truncate ${r.mark === "추가" ? "font-semibold text-app-text" : r.mark === "변경" ? "font-semibold text-app-text" : "text-app-muted"}`}
                   >
                     {r.b || "—"}
                   </span>

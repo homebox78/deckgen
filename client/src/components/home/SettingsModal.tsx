@@ -34,7 +34,7 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(20,20,26,.5)] p-4" onClick={onClose}>
       <div
-        className="max-h-[90vh] w-[880px] max-w-[95vw] overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,.3)]"
+        className="max-h-[90vh] w-[760px] max-w-[95vw] overflow-y-auto rounded-2xl bg-[#F7F7F5] p-6 shadow-[0_24px_64px_rgba(0,0,0,.3)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-1 flex items-start justify-between">
@@ -87,26 +87,33 @@ export function UpgradeModal({ onClose }: { onClose: () => void }) {
             );
           })}
         </div>
-        <div className="mt-5 overflow-hidden rounded-xl border border-app-border">
-          <div className="grid grid-cols-5 border-b border-app-border bg-[#FBFBFA] px-3 py-2 text-[11px] font-bold text-app-faint">
-            <span>기능</span>
+        <div className="mt-5 rounded-xl border border-app-border bg-white p-4">
+          <p className="mb-2.5 text-[11px] font-bold tracking-[.08em] text-app-faint">플랜 비교</p>
+          <div className="grid grid-cols-5 border-b border-app-border px-1 py-2 text-[11px] font-bold text-app-text">
+            <span />
             <span className="text-center">Free</span>
             <span className="text-center">Beginner</span>
             <span className="text-center">Plus</span>
             <span className="text-center">Pro</span>
           </div>
           {COMPARE.map((row) => (
-            <div key={row[0]} className="grid grid-cols-5 border-b border-[#F0F0EE] px-3 py-1.5 text-[11.5px] last:border-0">
-              <span className="text-app-muted">{row[0]}</span>
-              {row.slice(1).map((c, i) => (
-                <span key={i} className="text-center">
-                  {c === "supported" ? (
-                    <span className="mi text-[16px] text-app-text">check</span>
-                  ) : (
-                    <span className="text-app-faint">{c}</span>
-                  )}
-                </span>
-              ))}
+            <div key={row[0]} className="grid grid-cols-5 items-center border-b border-[#F0F0EE] px-1 py-2 text-[11.5px] last:border-0">
+              <span className="text-app-text">{row[0]}</span>
+              {row.slice(1).map((c, i) => {
+                const isPlus = i === 2; // Plus 열 강조
+                return (
+                  <span
+                    key={i}
+                    className={`text-center ${isPlus ? "font-semibold text-app-text" : "text-app-muted"}`}
+                  >
+                    {c === "supported" ? (
+                      <span className={`mi text-[16px] ${isPlus ? "text-app-text" : "text-app-muted"}`}>check</span>
+                    ) : (
+                      c
+                    )}
+                  </span>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -192,19 +199,17 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
               ))}
             </div>
           </Row>
-          <Row label="푸터 표시" sub="모든 슬라이드 하단에 로고·페이지">
+          <Row label="푸터 표시" sub="표지·섹션 제외 전 슬라이드에 로고·푸터·쪽번호">
             <Toggle on={s.brandFooter} onClick={() => patchSettings({ brandFooter: !s.brandFooter })} />
           </Row>
-          {s.brandFooter && (
-            <Row label="푸터 문구">
-              <input
-                value={s.brandFooterText}
-                onChange={(e) => patchSettings({ brandFooterText: e.target.value })}
-                placeholder="© 2026 회사명"
-                className="w-40 rounded-lg border border-app-border px-2.5 py-1.5 text-[12px] focus:border-app-accent focus:outline-none"
-              />
-            </Row>
-          )}
+          <Row label="푸터 문구">
+            <input
+              value={s.brandFooterText}
+              onChange={(e) => patchSettings({ brandFooterText: e.target.value })}
+              placeholder="© 2026 회사명"
+              className="w-40 rounded-lg border border-app-border px-2.5 py-1.5 text-[12px] focus:border-app-accent focus:outline-none"
+            />
+          </Row>
 
           <div className="mt-4" />
           <SectionTitle>기본 생성 설정</SectionTitle>
@@ -241,20 +246,29 @@ export function SettingsModal({ onClose, onRerunOnboarding }: { onClose: () => v
 
           <div className="mt-4" />
           <SectionTitle>에디터</SectionTitle>
-          <Row label="발표자 노트 표시">
+          <Row label="발표 모드에서 발표자 노트 표시" sub="N 키로 언제든 전환">
             <Toggle on={s.showNotes} onClick={() => patchSettings({ showNotes: !s.showNotes })} />
           </Row>
           <Row label="슬라이드 전환 효과">
-            <div className="flex overflow-hidden rounded-lg border border-app-border">
-              {(["slide", "fade", "zoom", "none"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => patchSettings({ transition: t })}
-                  className={`border-l border-app-border px-2.5 py-1 text-[11px] font-semibold first:border-l-0 ${s.transition === t ? "bg-app-accent-soft text-app-accent" : "text-app-faint"}`}
-                >
-                  {t === "slide" ? "슬라이드" : t === "fade" ? "페이드" : t === "zoom" ? "줌" : "없음"}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className="flex overflow-hidden rounded-lg border border-app-border">
+                {(["slide", "fade", "zoom", "none"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => patchSettings({ transition: t })}
+                    className={`border-l border-app-border px-2.5 py-1 text-[11px] font-semibold first:border-l-0 ${s.transition === t ? "bg-app-accent-soft text-app-accent" : "text-app-faint"}`}
+                  >
+                    {t === "slide" ? "슬라이드" : t === "fade" ? "페이드" : t === "zoom" ? "줌" : "없음"}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => showToast("전환 미리보기")}
+                title="전환 미리보기"
+                className="flex items-center gap-1 rounded-lg border border-app-border bg-white px-2.5 py-1 text-[11px] font-semibold text-app-muted hover:border-app-accent"
+              >
+                <span className="mi text-[15px]">play_arrow</span>미리보기
+              </button>
             </div>
           </Row>
 

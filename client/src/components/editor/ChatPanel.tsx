@@ -43,7 +43,7 @@ const useChatStore = create<ChatState>()((set) => ({
   setPending: (pending) => set({ pending }),
 }));
 
-const SUGGESTION_CHIPS = ["제목을 더 임팩트 있게", "차트를 파이로 바꿔줘", "불릿 하나 추가해줘"];
+const SUGGESTION_CHIPS = ["제목을 더 임팩트 있게", "차트를 파이로 바꿔줘", "막대 차트로 되돌려줘"];
 
 /** §6.1 시그니처 — 에이전트 작업 로그 타임라인 (모노 폰트) */
 function AgentLog({ deckId }: { deckId: string }) {
@@ -60,7 +60,7 @@ function AgentLog({ deckId }: { deckId: string }) {
               <span className="flex flex-col items-center">
                 <span
                   className={`mt-1 h-[7px] w-[7px] shrink-0 rounded-full ${
-                    active ? "animate-dg-pulse bg-app-accent" : "bg-app-success"
+                    active ? "animate-dg-pulse bg-app-accent" : "bg-app-accent"
                   }`}
                 />
               </span>

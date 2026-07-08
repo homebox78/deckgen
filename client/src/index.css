@@ -30,14 +30,11 @@
 }
 
 @theme {
-  /* 토스 조합 — Headline: sf 700 / Body: Basier Square 400.
-     두 폰트 모두 로컬에 없으면 SD Gothic Neo → Pretendard 순으로 대체된다. */
+  /* 시안(Feature Spec §타이포) — UI 전역 Pretendard Variable 통일. 헤딩·본문 동일 폰트. */
   --font-sans:
-    "Basier Square", "Toss Product Sans", "SD Gothic Neo", "Pretendard Variable",
-    Pretendard, "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, "Noto Sans KR", -apple-system, sans-serif;
   --font-display:
-    "sf", "SF Pro Display", -apple-system, "SD Gothic Neo", "Basier Square",
-    "Pretendard Variable", Pretendard, sans-serif;
+    "Pretendard Variable", Pretendard, "Noto Sans KR", -apple-system, sans-serif;
   /* §6.1 앱 UI 팔레트 + 디자인 시안(1a) 확장 토큰 */
   --color-app-bg: #f7f7f5;
   --color-app-surface: #ffffff;
@@ -144,6 +141,29 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+/* 화이트보드 리액션 스탬프 */
+@keyframes wbPop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes wbFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
   }
 }
 .dg-motion-fade {

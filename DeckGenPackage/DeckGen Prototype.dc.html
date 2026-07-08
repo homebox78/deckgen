@@ -26,6 +26,9 @@ body{margin:0;background:#F7F7F5;font-family:"Basier Square","SD Gothic Neo","To
 textarea:focus,input:focus,select:focus{outline:2px solid #1A1A1A33}
 button,input,textarea,select,option{font-family:"Basier Square","SD Gothic Neo","Toss Product Sans","Noto Sans KR",Roboto,"Segoe UI",-apple-system,sans-serif}
 button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="font-weight:700"],input[style*="font-weight:800"]{font-family:"sf","SF Pro Display","SF Pro KR","Toss Product Sans","SD Gothic Neo","Noto Sans KR",-apple-system,sans-serif}
+@keyframes wbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes wbPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes wbSpin{to{transform:rotate(var(--endDeg))}}
 </style>
 </helmet>
 
@@ -148,6 +151,12 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
       <div style="width:720px;max-width:92vw;margin-top:40px">
         <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px"><span style="font-size:16px;font-weight:600;color:#1A1A1A">스토리보드로 시작</span><span style="font-size:12px;color:#8A8A84">와이어프레임을 조합해 장표 흐름을 먼저 설계하세요</span></div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:7px;border:1px solid #E4E4E0;border-radius:99px;padding:6px 12px;background:#FFFFFF;width:100%;box-sizing:border-box;margin-bottom:4px">
+            <span class="mi" style="font-size:16px;color:#8A8A84">search</span>
+            <input value="{{ wfSearch }}" onChange="{{ onWfSearch }}" placeholder="프레임 검색 — 예: 표, 타임라인, KPI" style="flex:1;border:none;background:transparent;font-family:inherit;font-size:12.5px;color:#1A1A1A"></input>
+            <sc-if value="{{ hasWfSearch }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearWfSearch }}" style="border:none;background:transparent;cursor:pointer;color:#8A8A84;display:inline-flex"><span class="mi" style="font-size:15px">close</span></button></sc-if>
+          </div>
+          <button onClick="{{ toggleWfSort }}" title="정렬 전환" style="display:inline-flex;align-items:center;gap:4px;border:1px solid {{ wfSortBorder }};background:{{ wfSortBg }};color:{{ wfSortColor }};border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px"><span class="mi" style="font-size:14px">sort</span>{{ wfSortLabel }}</button>
           <sc-for list="{{ wfCatTabs }}" as="tab" hint-placeholder-count="6">
             <button onClick="{{ tab.pick }}" style="border:1px solid {{ tab.border }};background:{{ tab.bg }};color:{{ tab.color }};border-radius:99px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">{{ tab.label }}</button>
           </sc-for>
@@ -162,10 +171,13 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
                   <span class="wf-bk" style="position:absolute;left:{{ bk.l }};top:{{ bk.t }};width:{{ bk.w }};height:{{ bk.h }};border-radius:{{ bk.r }};background:{{ bk.bg }};--d:{{ bk.delay }}"></span>
                 </sc-for>
               </div>
-              <div style="padding:9px 12px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A">{{ wf.name }}</div><div style="display:flex;align-items:center;gap:8px"><button onClick="{{ wf.toggleFav }}" title="즐겨찾기" style="border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:15px;color:{{ wf.favColor }}">{{ wf.favIcon }}</span></button><button onClick="{{ wf.zoom }}" title="크게 보기" style="border:none;background:transparent;padding:0;font-size:11px;color:#8A8A84;cursor:pointer" style-hover="color:#1A1A1A"><span class="mi" style="font-size:12px;margin-right:2px;vertical-align:-2px">open_in_full</span>확대</button><span style="font-size:11px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
+              <div style="padding:9px 12px;display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:6px;min-width:0"><div style="font-size:12.5px;font-weight:600;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ wf.name }}</div><span style="flex:none;font-size:10px;color:#8A8A84">· {{ wf.uses }}</span></div><div style="display:flex;align-items:center;gap:8px;flex:none"><button onClick="{{ wf.toggleFav }}" title="즐겨찾기" style="border:none;background:transparent;padding:0;cursor:pointer;display:inline-flex"><span class="mi" style="font-size:15px;color:{{ wf.favColor }}">{{ wf.favIcon }}</span></button><button onClick="{{ wf.zoom }}" title="크게 보기" style="border:none;background:transparent;padding:0;font-size:11px;color:#8A8A84;cursor:pointer" style-hover="color:#1A1A1A"><span class="mi" style="font-size:12px;margin-right:2px;vertical-align:-2px">open_in_full</span>확대</button><span style="font-size:11px;font-weight:600;color:#1A1A1A">+ 추가</span></div></div>
             </div>
           </sc-for>
         </div>
+        <sc-if value="{{ grp.empty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px;text-align:center;font-size:12.5px;color:#8A8A84;border:1px dashed #E4E4E0;border-radius:12px">검색 결과가 없어요 — 다른 키워드로 찾아보세요</div>
+        </sc-if>
         </sc-for>
         <sc-if value="{{ wfZoomOpen }}" hint-placeholder-val="{{ false }}">
           <div onClick="{{ wfZoomClose }}" style="position:fixed;inset:0;background:rgba(20,20,26,.5);z-index:45;display:flex;align-items:center;justify-content:center">
@@ -598,6 +610,7 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
       <button onClick="{{ toggleGrid }}" style="display:inline-flex;align-items:center;gap:4px;background:{{ gridBtnBg }};color:{{ gridBtnColor }};border:1px solid {{ gridBtnBorder }};border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">grid_view</span>개요</button>
       <button onClick="{{ toggleTimeline }}" style="display:inline-flex;align-items:center;gap:4px;background:{{ tlBtnBg }};color:{{ tlBtnColor }};border:1px solid {{ tlBtnBorder }};border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">movie</span>모션</button>
       <button onClick="{{ openHistory }}" style="display:inline-flex;align-items:center;gap:4px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">history</span>버전</button>
+      <button onClick="{{ toggleWhiteboard }}" title="이 덱을 화이트보드로 전환" style="display:inline-flex;align-items:center;gap:4px;background:{{ wbBtnBg }};color:{{ wbBtnColor }};border:1px solid {{ wbBtnBorder }};border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">dashboard</span>화이트보드</button>
       <button onClick="{{ startPresent }}" style="display:inline-flex;align-items:center;gap:4px;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">play_arrow</span>발표</button>
       <button onClick="{{ openShare }}" style="display:inline-flex;align-items:center;gap:4px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none"><span class="mi" style="font-size:14px">share</span>공유</button>
       <div style="display:flex;align-items:center">
@@ -813,6 +826,11 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
       <div ref="{{ canvasRef }}" onClick="{{ deselect }}" style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:{{ canvasBg }};overflow:hidden;transition:background .3s">
         <div data-export-canvas="1" style="transform:scale({{ slideScale }});transform-origin:center center;flex:none">
         <div data-export-slide="1" onClick="{{ slideAreaClick }}" onMouseDown="{{ marqueeDown }}" onContextMenu="{{ slideCtx }}" key="{{ slideAnimKey }}" style="width:820px;height:461px;background:{{ slideBgCss }};box-shadow:0 8px 28px rgba(0,0,0,.14);border-radius:4px;position:relative;padding:38px 42px;box-sizing:border-box;transition:background .25s;overflow:hidden;cursor:{{ slideCursor }};animation:{{ slideAnim }}">
+          <svg width="820" height="461" viewBox="0 0 820 461" style="position:absolute;left:0;top:0;pointer-events:none;z-index:6">
+            <sc-for list="{{ inkPaths }}" as="ip" hint-placeholder-count="0">
+              <path d="{{ ip.d }}" fill="none" stroke="{{ ip.color }}" stroke-width="{{ ip.w }}" stroke-opacity="{{ ip.opacity }}" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:{{ ip.blend }}"></path>
+            </sc-for>
+          </svg>
           <sc-if value="{{ curLocked }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;top:12px;right:12px;z-index:7;display:inline-flex;align-items:center;gap:6px;background:rgba(26,26,26,.82);color:#fff;border-radius:99px;padding:6px 12px;font-size:11.5px;font-weight:600">
               <svg viewBox="0 0 24 24" style="width:12px;height:12px" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
@@ -1149,6 +1167,36 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
               </div>
             </sc-if>
             <div style="position:relative;display:flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;padding:4px 6px;box-shadow:0 6px 24px rgba(0,0,0,.1);max-width:calc(100vw - 460px)">
+              <sc-if value="{{ penOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;bottom:44px;left:0;width:236px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.18);z-index:8;overflow:hidden">
+                  <div style="padding:13px 15px 9px">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
+                      <input type="range" min="1" max="24" value="{{ penSize }}" onChange="{{ onPenSize }}" style="flex:1;accent-color:#1A1A1A"></input>
+                      <span style="font-size:14px;font-weight:800;color:#1A1A1A;min-width:20px;text-align:right">{{ penSize }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <input type="range" min="10" max="100" value="{{ penOpacity }}" onChange="{{ onPenOpacity }}" style="flex:1;accent-color:#1A1A1A"></input>
+                      <span style="font-size:13px;font-weight:700;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:7px;padding:3px 7px;min-width:32px;text-align:center">{{ penOpacity }}</span>
+                    </div>
+                  </div>
+                  <div style="height:1px;background:#F0F0EE;margin:0 14px"></div>
+                  <div style="padding:11px 14px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+                    <sc-for list="{{ penSwatches }}" as="sw" hint-placeholder-count="15">
+                      <button onClick="{{ sw.pick }}" title="{{ sw.hex }}" style="width:28px;height:28px;border-radius:50%;background:{{ sw.hex }};border:{{ sw.border }};cursor:pointer;box-shadow:{{ sw.ring }}"></button>
+                    </sc-for>
+                  </div>
+                  <div style="height:1px;background:#F0F0EE;margin:0 14px"></div>
+                  <div style="padding:10px 14px 12px;display:flex;align-items:center;gap:6px">
+                    <sc-for list="{{ penTypes }}" as="pt" hint-placeholder-count="5">
+                      <button onClick="{{ pt.pick }}" title="{{ pt.label }}" style="flex:1;height:34px;border:1px solid {{ pt.border }};background:{{ pt.bg }};color:{{ pt.color }};border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:17px">{{ pt.icon }}</span></button>
+                    </sc-for>
+                  </div>
+                  <div style="padding:0 14px 12px;display:flex;gap:6px">
+                    <button onClick="{{ clearInk }}" style="flex:1;border:1px solid #E4E4E0;background:#fff;color:#6B6B66;border-radius:9px;padding:8px;font-size:12px;font-weight:600;cursor:pointer">이 슬라이드 지우기</button>
+                    <button onClick="{{ closePenPanel }}" style="flex:none;border:1px solid #E4E4E0;background:#fff;color:#1A1A1A;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer">완료</button>
+                  </div>
+                </div>
+              </sc-if>
               <sc-for list="{{ canvasTools }}" as="ct" hint-placeholder-count="3">
                 <button onClick="{{ ct.pick }}" title="{{ ct.tip }}" style="border:none;background:{{ ct.bg }};color:{{ ct.color }};border-radius:8px;width:29px;height:29px;flex:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><span class="mi" style="font-size:16px">{{ ct.icon }}</span></button>
               </sc-for>
@@ -2152,6 +2200,268 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
   </div>
 </sc-if>
 
+<sc-if value="{{ whiteboardOn }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:60;background:#EDEDEA;display:flex;flex-direction:column">
+    <div style="height:100vh;display:flex;flex-direction:column;overflow:hidden;background:#EDEDEA;position:relative">
+
+  <!-- TOP BAR -->
+  <div style="display:flex;align-items:center;gap:12px;padding:9px 16px;background:#FFFFFF;border-bottom:1px solid #E4E4E0;z-index:20">
+    <sc-if value="{{ wb.embedded }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ wb.exitBoard }}" title="덱 편집으로 돌아가기" style="display:inline-flex;align-items:center;gap:5px;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:15px">slideshow</span>덱으로</button>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#1A1A1A"><span class="mi" style="font-size:16px;color:#8A8A84">dashboard</span>{{ wb.boardTitle }}</span>
+      <span style="font-size:10.5px;font-weight:600;color:#8A8A84;background:#F0F0EE;border-radius:5px;padding:2px 7px">화이트보드 모드</span>
+    </sc-if>
+    <sc-if value="{{ wb.notEmbedded }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:9px">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;flex:none"><rect width="24" height="24" rx="7" fill="#1A1A1A"></rect><rect x="4.5" y="5.5" width="15" height="10.5" rx="2" fill="#FFFFFF"></rect><rect x="7" y="8" width="7.5" height="2" rx="1" fill="#1A1A1A"></rect><rect x="7" y="11.5" width="5" height="1.6" rx="0.8" fill="rgba(26,26,26,.4)"></rect><circle cx="14.6" cy="17.3" r="2.8" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.2"></circle><circle cx="18.9" cy="17.3" r="2.8" fill="rgba(255,255,255,.6)" stroke="#1A1A1A" stroke-width="1.2"></circle></svg>
+        <span style="font-size:14px;font-weight:700;color:#1A1A1A">DeckGen</span>
+        <span style="font-size:11px;font-weight:600;color:#1A1A1A;background:#F0F0EE;border-radius:5px;padding:2px 7px">Whiteboard</span>
+      </div>
+      <span style="width:1px;height:20px;background:#E4E4E0"></span>
+      <span class="mi" style="font-size:15px;color:#8A8A84">dashboard</span>
+      <input value="{{ wb.boardTitle }}" onChange="{{ wb.onTitle }}" style="border:none;background:transparent;font-size:13.5px;font-weight:600;color:#1A1A1A;width:180px"></input>
+    </sc-if>
+    <span style="width:1px;height:20px;background:#E4E4E0"></span>
+    <button onClick="{{ wb.undo }}" title="실행취소 (Ctrl+Z)" style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;background:#fff;color:{{ wb.undoColor }};cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:16px">undo</span></button>
+    <button onClick="{{ wb.redo }}" title="다시 실행 (Ctrl+Shift+Z)" style="width:30px;height:30px;border-radius:8px;border:1px solid #E4E4E0;background:#fff;color:{{ wb.redoColor }};cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:16px">redo</span></button>
+    <span style="flex:1"></span>
+    <sc-if value="{{ wb.privateMode }}" hint-placeholder-val="{{ false }}">
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#1A1A1A;background:#F0F0EE;border:1px solid #D4D4CE;border-radius:99px;padding:5px 11px"><span class="mi" style="font-size:14px">visibility_off</span>비공개 모드</span>
+    </sc-if>
+    <div style="display:flex;align-items:center;margin-right:4px">
+      <sc-for list="{{ wb.peers }}" as="p" hint-placeholder-count="4">
+        <span title="{{ p.name }}" style="width:30px;height:30px;border-radius:50%;background:{{ p.color }};color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #FFFFFF;margin-left:-6px;box-shadow:0 1px 3px rgba(0,0,0,.2)">{{ p.initial }}</span>
+      </sc-for>
+    </div>
+    <sc-if value="{{ wb.hasToDeck }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ wb.toDeck }}" title="프레임 제목·포스트잇을 덱 슬라이드로 반영" style="display:inline-flex;align-items:center;gap:5px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">slideshow</span>덱에 반영</button>
+    </sc-if>
+    <button onClick="{{ wb.exportPdf }}" title="보드를 PDF로 내보내기" style="display:inline-flex;align-items:center;gap:5px;background:#FFFFFF;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">picture_as_pdf</span>PDF</button>
+    <sc-if value="{{ wb.notEmbedded }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ wb.share }}" style="display:inline-flex;align-items:center;gap:5px;background:#1A1A1A;color:#fff;border:none;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:14px">group_add</span>공유</button>
+    </sc-if>
+  </div>
+
+  <div style="flex:1;display:flex;overflow:hidden;position:relative">
+
+    <!-- LEFT TOOL RAIL -->
+    <div style="width:52px;flex:none;background:#FFFFFF;border-right:1px solid #E4E4E0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;z-index:15">
+      <sc-for list="{{ wb.tools }}" as="tl" hint-placeholder-count="6">
+        <button onClick="{{ tl.pick }}" title="{{ tl.label }}" style="width:38px;height:38px;border:none;border-radius:10px;background:{{ tl.bg }};color:{{ tl.color }};cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:19px">{{ tl.icon }}</span></button>
+      </sc-for>
+      <span style="width:24px;height:1px;background:#E4E4E0;margin:5px 0"></span>
+      <button onClick="{{ wb.addRetro }}" title="회고 템플릿 (Start·Stop·Continue)" style="width:38px;height:38px;border:none;border-radius:10px;background:#F0F0EE;color:#1A1A1A;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:19px">view_column</span></button>
+      <button onClick="{{ wb.addWheel }}" title="스피너 휠" style="width:38px;height:38px;border:none;border-radius:10px;background:#F0F0EE;color:#1A1A1A;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:19px">casino</span></button>
+      <button onClick="{{ wb.tidyFrames }}" title="프레임 자동 정렬" style="width:38px;height:38px;border:none;border-radius:10px;background:#F0F0EE;color:#1A1A1A;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:19px">dashboard_customize</span></button>
+    </div>
+
+    <!-- CANVAS -->
+    <div ref="{{ wb.canvasRef }}" onMouseDown="{{ wb.onCanvasDown }}" onDragOver="{{ wb.onCanvasDragOver }}" onDrop="{{ wb.onCanvasDrop }}" style="flex:1;position:relative;overflow:hidden;cursor:{{ wb.canvasCursor }};background-color:#EDEDEA;background-image:radial-gradient(#CFCFC9 1.1px,transparent 1.1px);background-size:22px 22px">
+
+      <div style="position:absolute;left:0;top:0;transform:translate({{ wb.panX }},{{ wb.panY }});transform-origin:0 0">
+
+        <!-- ink strokes -->
+        <svg width="4000" height="3000" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2">
+          <sc-for list="{{ wb.strokePaths }}" as="sp" hint-placeholder-count="0">
+            <path d="{{ sp.d }}" fill="none" stroke="{{ sp.color }}" stroke-width="{{ sp.w }}" stroke-opacity="{{ sp.opacity }}" stroke-linecap="round" stroke-linejoin="round" style="mix-blend-mode:{{ sp.blend }}"></path>
+          </sc-for>
+        </svg>
+
+<!-- connectors -->
+        <svg width="4000" height="3000" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:3">
+          <defs><marker id="wbArrow" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#55554F"></path></marker></defs>
+          <sc-for list="{{ wb.connectorLines }}" as="cl" hint-placeholder-count="0">
+            <line x1="{{ cl.x1 }}" y1="{{ cl.y1 }}" x2="{{ cl.x2 }}" y2="{{ cl.y2 }}" stroke="#55554F" stroke-width="2" marker-end="url(#wbArrow)"></line>
+            <line onClick="{{ cl.del }}" x1="{{ cl.x1 }}" y1="{{ cl.y1 }}" x2="{{ cl.x2 }}" y2="{{ cl.y2 }}" stroke="transparent" stroke-width="16" style="pointer-events:stroke;cursor:pointer"></line>
+          </sc-for>
+        </svg>
+
+        <!-- retro frames -->
+        <sc-for list="{{ wb.frames }}" as="fr" hint-placeholder-count="0">
+          <div style="position:absolute;left:{{ fr.x }};top:{{ fr.y }};width:{{ fr.w }};height:{{ fr.h }};border:1.5px solid #D4D4CE;border-radius:14px;background:{{ fr.bg }};overflow:hidden;transition:{{ fr.trans }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 15px"><span style="font-size:14px;font-weight:700;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fr.title }}</span><span class="mi" style="font-size:16px;color:#B4B4AE">more_horiz</span></div>
+            <sc-if value="{{ fr.isSlide }}" hint-placeholder-val="{{ false }}">
+              <div style="margin:0 14px 12px;background:#FFFFFF;border:1px solid #EAEAE6;border-radius:8px;height:{{ fr.bodyH }};padding:12px 14px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px">
+                <div style="width:20%;height:4px;background:#1A1A1A;border-radius:2px"></div>
+                <div style="width:82%;height:6px;background:#E4E4E0;border-radius:3px"></div>
+                <div style="width:64%;height:6px;background:#EDEDEA;border-radius:3px"></div>
+                <div style="width:74%;height:6px;background:#EDEDEA;border-radius:3px"></div>
+                <span style="flex:1"></span>
+                <span style="align-self:flex-start;font-size:9.5px;font-weight:700;color:#8A8A84;background:#F0F0EE;border-radius:5px;padding:2px 7px">{{ fr.layout }}</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <!-- polling widget -->
+        <sc-for list="{{ wb.polls }}" as="pl" hint-placeholder-count="0">
+          <div style="position:absolute;left:{{ pl.x }};top:{{ pl.y }};width:280px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:16px 18px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><span class="mi" style="font-size:16px;color:#1A1A1A">bar_chart</span><span style="font-size:13.5px;font-weight:700;color:#1A1A1A">라이브 투표</span></div>
+            <sc-for list="{{ pl.opts }}" as="op" hint-placeholder-count="3">
+              <div onClick="{{ op.vote }}" style="margin-bottom:9px;cursor:pointer">
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#4A4A45;margin-bottom:4px"><span>{{ op.label }}</span><span style="font-weight:700;color:#1A1A1A">{{ op.count }}</span></div>
+                <div style="height:12px;border-radius:99px;background:#F0F0EE;overflow:hidden"><div style="height:100%;width:{{ op.pct }};background:#1A1A1A;border-radius:99px;transition:width .3s"></div></div>
+              </div>
+            </sc-for>
+            <div style="font-size:10.5px;color:#8A8A84;margin-top:4px">막대를 클릭해 투표 · 총 {{ pl.total }}표</div>
+          </div>
+        </sc-for>
+
+        <!-- spinner wheel -->
+        <sc-for list="{{ wb.wheels }}" as="wl" hint-placeholder-count="0">
+          <div style="position:absolute;left:{{ wl.x }};top:{{ wl.y }};width:230px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:16px;text-align:center">
+            <div style="font-size:12.5px;font-weight:700;color:#1A1A1A;margin-bottom:12px">무엇부터 논의할까요?</div>
+            <div style="position:relative;width:170px;height:170px;margin:0 auto">
+              <div style="width:170px;height:170px;border-radius:50%;background:{{ wl.gradient }};transform:{{ wl.rot }};transition:{{ wl.trans }}"></div>
+              <span style="position:absolute;top:-4px;left:50%;transform:translateX(-50%);border-left:9px solid transparent;border-right:9px solid transparent;border-top:14px solid #1A1A1A"></span>
+              <button onClick="{{ wl.spin }}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:#1A1A1A;color:#fff;border:3px solid #fff;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)">Spin</button>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1A1A1A;margin-top:12px;min-height:16px">{{ wl.result }}</div>
+          </div>
+        </sc-for>
+
+<!-- images -->
+        <sc-for list="{{ wb.images }}" as="im" hint-placeholder-count="0">
+          <div onMouseDown="{{ im.down }}" style="position:absolute;left:{{ im.x }};top:{{ im.y }};width:{{ im.w }};height:{{ im.h }};border-radius:6px;box-shadow:0 3px 12px rgba(0,0,0,.16);cursor:grab;z-index:4;background-image:{{ im.bg }};background-size:cover;background-position:center">
+            <span onMouseDown="{{ im.resize }}" title="드래그해서 크기 조절" style="position:absolute;bottom:-6px;right:-6px;width:14px;height:14px;background:#1A1A1A;border:2px solid #fff;border-radius:3px;cursor:nwse-resize;box-shadow:0 1px 4px rgba(0,0,0,.3)"></span>
+          </div>
+        </sc-for>
+
+        <!-- sticky notes -->
+        <sc-for list="{{ wb.notes }}" as="n" hint-placeholder-count="3">
+          <div onMouseDown="{{ n.down }}" onDoubleClick="{{ n.edit }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:158px;min-height:158px;background:{{ n.color }};border-radius:4px;box-shadow:{{ n.shadow }};padding:14px;box-sizing:border-box;cursor:grab;outline:{{ n.outline }};outline-offset:2px;transition:{{ n.trans }}">
+            <sc-if value="{{ n.editing }}" hint-placeholder-val="{{ false }}">
+              <textarea value="{{ n.text }}" onChange="{{ n.onText }}" onBlur="{{ n.blur }}" autofocus="{{ true }}" style="width:100%;height:128px;border:none;background:transparent;resize:none;font-family:inherit;font-size:13.5px;line-height:1.5;color:#1A1A1A"></textarea>
+            </sc-if>
+            <sc-if value="{{ n.notEditing }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:13.5px;line-height:1.5;color:{{ n.textColor }};white-space:pre-wrap;word-break:break-word;min-height:128px">{{ n.text }}</div>
+            </sc-if>
+            <div style="position:absolute;bottom:6px;right:9px;font-size:10px;color:rgba(0,0,0,.35);font-weight:600">{{ n.author }}</div>
+            <button onClick="{{ n.vote }}" onMouseDown="{{ n.stop }}" title="투표 (닷 보팅)" style="position:absolute;top:-9px;right:-9px;display:inline-flex;align-items:center;gap:3px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:2px 8px 2px 6px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.14)"><span class="mi" style="font-size:13px;color:{{ n.voteColor }}">{{ n.voteIcon }}</span><span style="font-size:11px;font-weight:800;color:#1A1A1A">{{ n.votes }}</span></button>
+          </div>
+        </sc-for>
+
+        <!-- reaction stamps -->
+        <sc-for list="{{ wb.stamps }}" as="st" hint-placeholder-count="0">
+          <div style="position:absolute;left:{{ st.x }};top:{{ st.y }};animation:wbPop .4s ease-out,wbFloat 2.6s ease-in-out infinite;pointer-events:none">
+            <div style="display:flex;align-items:center;gap:5px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:5px 11px 5px 8px;box-shadow:0 4px 14px rgba(0,0,0,.14)"><span style="font-size:15px">{{ st.emoji }}</span><span style="font-size:11.5px;font-weight:700;color:#1A1A1A">{{ st.label }}</span></div>
+          </div>
+        </sc-for>
+
+        <!-- live collaborator cursors -->
+        <sc-for list="{{ wb.cursors }}" as="c" hint-placeholder-count="0">
+          <div style="position:absolute;left:{{ c.x }};top:{{ c.y }};pointer-events:none;transition:left .9s linear,top .9s linear;z-index:9">
+            <span class="mi" style="font-size:20px;color:{{ c.color }};transform:rotate(-12deg);filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))">navigation</span>
+            <span style="display:inline-block;margin-top:-2px;background:{{ c.color }};color:#fff;font-size:10.5px;font-weight:700;border-radius:5px 5px 5px 0;padding:2px 7px;white-space:nowrap">{{ c.name }}</span>
+          </div>
+        </sc-for>
+
+      </div>
+
+      <!-- reaction bar (bottom center) -->
+      <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:99px;padding:5px 8px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:14">
+        <sc-for list="{{ wb.reactions }}" as="r" hint-placeholder-count="5">
+          <button onClick="{{ r.fire }}" title="{{ r.label }}" style="border:none;background:transparent;font-size:19px;cursor:pointer;padding:4px 6px;border-radius:8px" style-hover="background:#F0F0EE">{{ r.emoji }}</button>
+        </sc-for>
+        <span style="width:1px;height:20px;background:#E4E4E0;margin:0 4px"></span>
+        <button onClick="{{ wb.togglePrivate }}" title="비공개 모드" style="display:inline-flex;align-items:center;gap:5px;border:none;background:{{ wb.privBg }};color:{{ wb.privColor }};border-radius:99px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer"><span class="mi" style="font-size:15px">visibility_off</span>비공개</button>
+      </div>
+
+<!-- minimap -->
+      <sc-if value="{{ wb.minimapOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;right:16px;bottom:64px;width:172px;z-index:14">
+          <div ref="{{ wb.minimapRef }}" onClick="{{ wb.minimapClick }}" title="클릭해서 이동" style="position:relative;width:172px;height:112px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);overflow:hidden;cursor:pointer">
+            <div style="position:absolute;top:6px;left:9px;font-size:9.5px;font-weight:700;color:#8A8A84;letter-spacing:.04em;z-index:2">MINIMAP</div>
+            <button onClick="{{ wb.toggleMinimap }}" title="미니맵 접기" style="position:absolute;top:4px;right:4px;z-index:3;width:20px;height:20px;border:none;background:#F0F0EE;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#6B6B66"><span class="mi" style="font-size:13px">close_fullscreen</span></button>
+            <sc-for list="{{ wb.mmFrames }}" as="mf" hint-placeholder-count="0">
+              <div style="position:absolute;left:{{ mf.x }};top:{{ mf.y }};width:{{ mf.w }};height:{{ mf.h }};background:#EDEDEA;border:1px solid #D4D4CE;border-radius:2px"></div>
+            </sc-for>
+            <sc-for list="{{ wb.mmNotes }}" as="mn" hint-placeholder-count="0">
+              <div style="position:absolute;left:{{ mn.x }};top:{{ mn.y }};width:5px;height:5px;border-radius:1px;background:{{ mn.color }}"></div>
+            </sc-for>
+            <div style="position:absolute;left:{{ wb.mmView.x }};top:{{ wb.mmView.y }};width:{{ wb.mmView.w }};height:{{ wb.mmView.h }};border:1.5px solid #1A1A1A;background:rgba(26,26,26,.06);border-radius:2px;pointer-events:none"></div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ wb.minimapClosed }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ wb.toggleMinimap }}" title="미니맵 열기" style="position:absolute;right:16px;bottom:64px;z-index:14;display:inline-flex;align-items:center;gap:5px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:10px;padding:7px 11px;font-size:12px;font-weight:600;color:#1A1A1A;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08)"><span class="mi" style="font-size:15px">map</span>미니맵</button>
+      </sc-if>
+
+      <!-- zoom controls (bottom left) -->
+      <div style="position:absolute;bottom:16px;left:16px;display:flex;align-items:center;gap:2px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:10px;padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.08);z-index:14">
+        <button onClick="{{ wb.zoomOut }}" style="width:30px;height:30px;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#1A1A1A;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:17px">remove</span></button>
+        <span style="font-size:12px;font-weight:600;color:#1A1A1A;min-width:42px;text-align:center">{{ wb.zoomPct }}</span>
+        <button onClick="{{ wb.zoomIn }}" style="width:30px;height:30px;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#1A1A1A;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:17px">add</span></button>
+        <span style="width:1px;height:18px;background:#E4E4E0;margin:0 2px"></span>
+        <button onClick="{{ wb.fitView }}" title="화면 맞춤" style="width:30px;height:30px;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#1A1A1A;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:16px">fit_screen</span></button>
+      </div>
+
+      <!-- timer (top right of canvas) -->
+      <div style="position:absolute;top:14px;right:16px;display:flex;align-items:center;gap:9px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:11px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,0,0,.1);z-index:14">
+        <span class="mi" style="font-size:16px;color:#1A1A1A">timer</span>
+        <span style="font-size:15px;font-weight:800;color:#1A1A1A;font-variant-numeric:tabular-nums;min-width:44px">{{ wb.timerText }}</span>
+        <button onClick="{{ wb.toggleTimer }}" style="border:none;background:#1A1A1A;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:15px">{{ wb.timerIcon }}</span></button>
+        <button onClick="{{ wb.resetTimer }}" style="border:1px solid #E4E4E0;background:#fff;color:#6B6B66;border-radius:7px;width:28px;height:28px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:15px">replay</span></button>
+      </div>
+
+<!-- PEN PANEL -->
+      <sc-if value="{{ wb.penOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:14px;top:14px;width:236px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.18);z-index:18;overflow:hidden">
+          <div style="padding:14px 16px 10px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <input type="range" min="1" max="24" value="{{ wb.penSize }}" onChange="{{ wb.onPenSize }}" style="flex:1;accent-color:#1A1A1A"></input>
+              <span style="font-size:14px;font-weight:800;color:#1A1A1A;min-width:20px;text-align:right">{{ wb.penSize }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="flex:1;height:8px;border-radius:99px;background:linear-gradient(90deg,transparent,#1A1A1A);position:relative">
+                <input type="range" min="10" max="100" value="{{ wb.penOpacity }}" onChange="{{ wb.onPenOpacity }}" style="position:absolute;inset:-6px 0;width:100%;accent-color:#1A1A1A;opacity:.65"></input>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:#1A1A1A;border:1px solid #E4E4E0;border-radius:7px;padding:4px 8px;min-width:34px;text-align:center">{{ wb.penOpacity }}</span>
+            </div>
+          </div>
+          <div style="height:1px;background:#F0F0EE;margin:0 14px"></div>
+          <div style="padding:12px 14px;display:grid;grid-template-columns:repeat(5,1fr);gap:9px">
+            <sc-for list="{{ wb.penSwatches }}" as="sw" hint-placeholder-count="15">
+              <button onClick="{{ sw.pick }}" title="{{ sw.hex }}" style="width:30px;height:30px;border-radius:50%;background:{{ sw.hex }};border:{{ sw.border }};cursor:pointer;box-shadow:{{ sw.ring }}"></button>
+            </sc-for>
+          </div>
+          <div style="height:1px;background:#F0F0EE;margin:0 14px"></div>
+          <div style="padding:10px 14px 12px;display:flex;align-items:center;gap:6px">
+            <sc-for list="{{ wb.penTypes }}" as="pt" hint-placeholder-count="5">
+              <button onClick="{{ pt.pick }}" title="{{ pt.label }}" style="flex:1;height:36px;border:1px solid {{ pt.border }};background:{{ pt.bg }};color:{{ pt.color }};border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span class="mi" style="font-size:18px">{{ pt.icon }}</span></button>
+            </sc-for>
+          </div>
+          <div style="padding:0 14px 12px;display:flex;gap:6px">
+            <button onClick="{{ wb.clearInk }}" style="flex:1;border:1px solid #E4E4E0;background:#fff;color:#6B6B66;border-radius:9px;padding:8px;font-size:12px;font-weight:600;cursor:pointer">전체 지우기</button>
+            <button onClick="{{ wb.closePen }}" style="flex:none;border:1px solid #E4E4E0;background:#fff;color:#1A1A1A;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer">완료</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- AI agent -->
+      <sc-if value="{{ wb.agentOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;right:16px;bottom:74px;width:272px;background:#FFFFFF;border:1px solid #E4E4E0;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.16);overflow:hidden;z-index:16">
+          <div style="display:flex;align-items:center;gap:7px;padding:12px 14px;border-bottom:1px solid #F0F0EE"><span class="mi" style="font-size:16px;color:#1A1A1A">auto_awesome</span><span style="font-size:13px;font-weight:700;color:#1A1A1A">AI 퍼실리테이터</span><span style="flex:1"></span><button onClick="{{ wb.toggleAgent }}" style="border:none;background:transparent;cursor:pointer;color:#8A8A84;display:inline-flex"><span class="mi" style="font-size:16px">close</span></button></div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:7px">
+            <button onClick="{{ wb.agentCluster }}" style="text-align:left;border:1px solid #E4E4E0;background:#FBFBFA;border-radius:9px;padding:9px 11px;font-size:12px;color:#1A1A1A;cursor:pointer" style-hover="background:#F0F0EE"><span class="mi" style="font-size:13px;vertical-align:-2px;margin-right:5px">hub</span>유사 포스트잇 자동 그룹화</button>
+            <button onClick="{{ wb.agentSummary }}" style="text-align:left;border:1px solid #E4E4E0;background:#FBFBFA;border-radius:9px;padding:9px 11px;font-size:12px;color:#1A1A1A;cursor:pointer" style-hover="background:#F0F0EE"><span class="mi" style="font-size:13px;vertical-align:-2px;margin-right:5px">summarize</span>보드 인사이트 요약</button>
+            <button onClick="{{ wb.agentDeck }}" style="text-align:left;border:1px solid #E4E4E0;background:#FBFBFA;border-radius:9px;padding:9px 11px;font-size:12px;color:#1A1A1A;cursor:pointer" style-hover="background:#F0F0EE"><span class="mi" style="font-size:13px;vertical-align:-2px;margin-right:5px">slideshow</span>이 보드를 덱으로 전환</button>
+          </div>
+        </div>
+      </sc-if>
+      <button onClick="{{ wb.toggleAgent }}" style="position:absolute;right:16px;bottom:16px;display:inline-flex;align-items:center;gap:6px;background:#1A1A1A;color:#fff;border:none;border-radius:99px;padding:10px 15px;font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2);z-index:15"><span class="mi" style="font-size:16px">auto_awesome</span>AI</button>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ wb.hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;font-size:12.5px;font-weight:600;border-radius:10px;padding:10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:40">{{ wb.toast }}</div>
+  </sc-if>
+
+</div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50">{{ toast }}</div>
 </sc-if>
@@ -2161,6 +2471,38 @@ button[style*="font-weight:700"],button[style*="font-weight:800"],input[style*="
 <script type="text/x-dc" data-dc-script data-props="{&quot;genSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1.3,&quot;min&quot;:0.3,&quot;max&quot;:3,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;시뮬레이션&quot;,&quot;unit&quot;:&quot;x&quot;}}">
 class Component extends DCLogic {
   state = {
+    wbs: {
+    boardTitle: '팀 워크숍 — Q1 회고',
+    tool: 'select',
+    panX: 40, panY: 24, zoom: 1,
+    privateMode: false,
+    agentOpen: false,
+    timer: 300, timerRunning: false,
+    toast: '',
+    canvasW: 900, canvasH: 560,
+    connectors: [], connectFrom: null,
+    images: [],
+    strokes: [], drawing: null,
+    penType: 'pen', penColor: '#1A1A1A', penSize: 3, penOpacity: 100,
+    notes: [
+      { id: 1, x: 250, y: 150, text: '온보딩 이탈률이 개선됐다', color: '#FFE380', author: '김대리', votes: 2 },
+      { id: 2, x: 430, y: 180, text: '릴리스 주기가 빨라짐', color: '#B8E6C1', author: '이과장', votes: 5 },
+      { id: 3, x: 300, y: 330, text: 'QA 리소스가 부족했다', color: '#F5B8C4', author: '박팀장', votes: 3 },
+      { id: 4, x: 500, y: 350, text: '문서화를 자동화하자', color: '#BBD9F5', author: '우진', votes: 1 }
+    ],
+    frames: [
+      { id: 1, x: 200, y: 90, w: 260, h: 360, title: 'Keep' },
+      { id: 2, x: 480, y: 90, w: 260, h: 360, title: 'Problem' },
+      { id: 3, x: 760, y: 90, w: 260, h: 360, title: 'Try' }
+    ],
+    polls: [],
+    wheels: [],
+    stamps: [],
+    cursors: [
+      { id: 1, name: 'Adria', color: '#7A5AF8', x: 620, y: 260 },
+      { id: 2, name: 'Hiroku', color: '#0EA5A5', x: 350, y: 420 }
+    ]
+  },
     screen: 'home',
     wsMenuOpen: false,
     savedTpls: [],
@@ -2239,6 +2581,8 @@ class Component extends DCLogic {
     sbDropIdx: null,
     wfZoomIdx: null,
     wfCat: 'all',
+    wfSort: 'default',
+    wfSearch: '',
     wfFavs: {},
     ratio: '16:9',
     model: 'DeckGen 1.1',
@@ -2255,6 +2599,8 @@ class Component extends DCLogic {
     aiToolOpen: false,
     aiToolPrompt: '',
     aiToolModel: 'dg-img-lite',
+    penInk: {}, penDrawing: null, penOpen: false,
+    penType: 'pen', penColor: '#1A1A1A', penSize: 3, penOpacity: 100,
     comments: [{ id: 1, slide: 1, x: 62, y: 38, author: '김대리', initial: '김', text: '42% 막대가 제일 중요한 수치인데 색이 좀 더 강했으면 좋겠어요.', time: '10분 전', resolved: false }],
     collab: [
       { id: 'kim', name: '김대리', initial: '김', color: '#55554F', x: 540, y: 150, slide: 1, editing: false },
@@ -2774,6 +3120,7 @@ class Component extends DCLogic {
     if (Math.abs(scale - this.state.slideScale) > 0.005) this.setState({ slideScale: scale });
   };
   componentDidMount() {
+    this._wbMount();
     this._onResize = () => this._measure();
     window.addEventListener('resize', this._onResize);
     this._measureIv = setInterval(this._measure, 400);
@@ -2906,6 +3253,7 @@ class Component extends DCLogic {
     }, 900);
   }
   componentWillUnmount() {
+    this._wbUnmount();
     this._timers.forEach(clearTimeout);
     window.removeEventListener('resize', this._onResize);
     window.removeEventListener('keydown', this._onKey);
@@ -2957,10 +3305,23 @@ class Component extends DCLogic {
     { id: 'consortium', name: '컨소시엄 3사', viz: 'none', blocks: [[24, 8, 52, 8, 1], [38, 28, 24, 34, 2], [8, 38, 24, 30, 2], [68, 38, 24, 30, 2], [8, 80, 20, 8], [30, 80, 20, 8], [52, 80, 20, 8], [74, 80, 18, 8]] },
     { id: 'persona', name: '페르소나 3인 인용', viz: 'none', blocks: [[24, 8, 52, 8, 1], [25, 20, 9, 14, 2], [56, 20, 9, 14, 2], [87, 20, 9, 14, 2], [5, 26, 28, 60], [36, 26, 28, 60], [67, 26, 28, 60]] },
     { id: 'news', name: '보도자료 3단', viz: 'none', blocks: [[24, 8, 52, 8, 1], [5, 22, 28, 9, 1], [5, 33, 28, 30], [5, 65, 28, 18], [36, 22, 28, 9, 1], [36, 33, 28, 30], [36, 65, 28, 18], [67, 22, 28, 9, 1], [67, 33, 28, 30], [67, 65, 28, 18]] },
-    { id: 'swot', name: 'SWOT 4분면', viz: 'none', blocks: [[24, 8, 52, 8, 1], [6, 21, 43, 9, 1], [6, 31, 43, 32], [51, 21, 43, 9, 1], [51, 31, 43, 32], [6, 66, 43, 9, 1], [6, 76, 43, 16], [51, 66, 43, 9, 1], [51, 76, 43, 16]] },
+    { id: 'swot', name: 'SWOT 매트릭스', viz: 'none', blocks: [[24, 8, 52, 8, 1], [6, 21, 43, 9, 1], [6, 31, 43, 32], [51, 21, 43, 9, 1], [51, 31, 43, 32], [6, 66, 43, 9, 1], [6, 76, 43, 16], [51, 66, 43, 9, 1], [51, 76, 43, 16]] },
     { id: 'milestone', name: '마일스톤 로드맵', viz: 'none', blocks: [[24, 8, 52, 8, 1], [6, 50, 88, 5, 1], [11, 46, 7, 13, 2], [27, 46, 7, 13, 2], [43, 46, 7, 13, 2], [59, 46, 7, 13, 2], [75, 46, 7, 13, 2], [88, 44, 8, 17, 2], [8, 28, 18, 15], [40, 28, 18, 15], [72, 28, 18, 15], [24, 64, 18, 15], [56, 64, 18, 15]] },
-    { id: 'stackbar', name: '스택 막대 차트', viz: 'none', blocks: [[8, 12, 55, 10, 1], [10, 40, 13, 42], [10, 33, 13, 7, 1], [30, 48, 13, 34], [30, 40, 13, 8, 1], [50, 44, 13, 38], [50, 36, 13, 8, 1], [70, 52, 13, 30], [70, 42, 13, 10, 1], [8, 86, 84, 3]] }
+    { id: 'stackbar', name: '스택 막대 차트', viz: 'none', blocks: [[8, 12, 55, 10, 1], [10, 40, 13, 42], [10, 33, 13, 7, 1], [30, 48, 13, 34], [30, 40, 13, 8, 1], [50, 44, 13, 38], [50, 36, 13, 8, 1], [70, 52, 13, 30], [70, 42, 13, 10, 1], [8, 86, 84, 3]] },
+    { id: 'funnel', name: '퍼널 차트', viz: 'none', blocks: [[24, 8, 52, 8, 1], [14, 24, 58, 12, 1], [21, 39, 44, 12], [28, 54, 30, 12], [35, 69, 16, 12, 1], [77, 24, 16, 12], [77, 39, 16, 12], [77, 54, 16, 12], [77, 69, 16, 12]] },
+    { id: 'orgtree', name: '조직 계층도', viz: 'none', blocks: [[24, 8, 52, 8, 1], [38, 22, 24, 13, 1], [49, 35, 2, 9], [22, 44, 56, 3], [22, 44, 3, 9], [77, 44, 3, 9], [10, 53, 28, 13, 1], [62, 53, 28, 13, 1], [23, 66, 2, 8], [77, 66, 2, 8], [4, 76, 18, 12], [24, 76, 18, 12], [58, 76, 18, 12], [78, 76, 18, 12]] },
+    { id: 'geoheat', name: '지도 히트맵', viz: 'none', blocks: [[8, 9, 44, 8, 1], [6, 22, 52, 66], [16, 32, 12, 12, 2], [30, 46, 16, 16, 2], [22, 62, 10, 10, 2], [40, 28, 8, 8, 2], [62, 24, 32, 10, 1], [62, 37, 32, 8], [62, 47, 32, 8], [62, 57, 32, 8], [62, 67, 32, 8], [62, 80, 32, 8]] },
+    { id: 'kanban', name: '칸반 보드', viz: 'none', blocks: [[24, 8, 52, 8, 1], [5, 22, 28, 9, 1], [5, 33, 28, 14], [5, 49, 28, 14], [5, 65, 28, 14], [36, 22, 28, 9, 1], [36, 33, 28, 14], [36, 49, 28, 14], [67, 22, 28, 9, 1], [67, 33, 28, 14], [67, 49, 28, 14], [67, 65, 28, 14]] },
+    { id: 'radar', name: '레이더 차트', viz: 'none', blocks: [[24, 8, 52, 8, 1], [22, 26, 40, 56, 2], [30, 34, 24, 40, 2], [40.5, 24, 3, 60], [22, 52, 40, 3], [28, 34, 28, 44], [66, 26, 30, 11, 1], [66, 40, 30, 8], [66, 50, 30, 8], [66, 60, 30, 8], [66, 70, 30, 8]] },
+    { id: 'gauge', name: '게이지 차트', viz: 'none', blocks: [[24, 8, 52, 8, 1], [12, 30, 24, 24, 2], [18, 60, 12, 6, 1], [40, 30, 24, 24, 2], [46, 60, 12, 6, 1], [68, 30, 24, 24, 2], [74, 60, 12, 6, 1], [10, 74, 28, 10], [38, 74, 28, 10], [66, 74, 28, 10]] },
+    { id: 'waterfall', name: '워터폴 차트', viz: 'none', blocks: [[24, 8, 52, 8, 1], [8, 40, 12, 42, 1], [24, 34, 12, 12], [24, 46, 2, 12], [38, 46, 12, 10], [38, 56, 2, 10], [54, 56, 12, 14], [54, 44, 2, 12], [70, 30, 12, 40], [70, 26, 2, 8], [86, 26, 8, 56, 1], [8, 86, 86, 3]] }
   ];
+
+  _wfUses(id) {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return 40 + (h % 460);
+  }
 
   _wfBlocks(w) {
     return w.blocks.map((b, i) => ({
@@ -3456,7 +3817,38 @@ class Component extends DCLogic {
       pinModeBg: s.pinMode ? '#1A1A1A' : '#FFFFFF',
       pinModeColor: s.pinMode ? '#FFFFFF' : '#1A1A1A',
       pinModeBorder: s.pinMode ? '#1A1A1A' : '#D4D4CE',
-      slideCursor: s.pinMode ? 'crosshair' : 'default',
+      slideCursor: s.pinMode ? 'crosshair' : (s.tool === 'pen' ? 'crosshair' : 'default'),
+      inkPaths: (() => {
+        const arr = (s.penInk[s.cur] || []).slice();
+        if (s.penDrawing) arr.push(s.penDrawing);
+        return arr.map(st => { const sty = this._inkStyle(st); return { d: this._inkPathD(st.pts), color: st.color, w: sty.w, opacity: sty.opacity, blend: sty.blend }; });
+      })(),
+      penOpen: s.penOpen && s.tool === 'pen',
+      closePenPanel: () => this.setState({ penOpen: false, tool: 'select' }),
+      penSize: s.penSize,
+      onPenSize: (e) => this.setState({ penSize: +e.target.value }),
+      penOpacity: s.penOpacity,
+      onPenOpacity: (e) => this.setState({ penOpacity: +e.target.value }),
+      penSwatches: ['#1A1A1A', '#F5C518', '#F59E0B', '#EA580C', '#DC2626', '#DB2777', '#EC4899', '#7C3AED', '#8B5CF6', '#38BDF8', '#2563EB', '#0EA5A5', '#16A34A', '#9CA3AF', '#FFFFFF'].map(hex => ({
+        hex,
+        border: hex === '#FFFFFF' ? '1px solid #D4D4CE' : '1px solid rgba(0,0,0,.08)',
+        ring: s.penColor === hex ? '0 0 0 2px #FFFFFF,0 0 0 4px #1A1A1A' : 'none',
+        pick: () => this.setState({ penColor: hex })
+      })),
+      penTypes: [
+        { id: 'pen', icon: 'edit', label: '펜' },
+        { id: 'marker', icon: 'brush', label: '마커' },
+        { id: 'highlighter', icon: 'ink_highlighter', label: '형광펜' },
+        { id: 'pencil', icon: 'draw', label: '연필' },
+        { id: 'eraser', icon: 'ink_eraser', label: '지우개' }
+      ].map(p => ({
+        icon: p.icon, label: p.label,
+        bg: s.penType === p.id ? '#1A1A1A' : '#FFFFFF',
+        color: s.penType === p.id ? '#FFFFFF' : '#4A4A45',
+        border: s.penType === p.id ? '#1A1A1A' : '#E4E4E0',
+        pick: () => this.setState({ penType: p.id })
+      })),
+      clearInk: () => { this.setState(st => ({ penInk: { ...st.penInk, [st.cur]: [] } })); this._showToast('이 슬라이드의 잉크를 지웠어요'); },
       slideAreaClick: (e) => {
         if (!s.pinMode || s.presenting) return;
         e.stopPropagation();
@@ -3555,7 +3947,615 @@ class Component extends DCLogic {
     };
   }
 
-  renderVals() {
+  _inkStyle(st) {
+    const t = st.type;
+    if (t === 'highlighter') return { w: st.size * 4.5, opacity: 0.32, blend: 'multiply' };
+    if (t === 'marker') return { w: st.size * 2.2, opacity: st.opacity, blend: 'normal' };
+    if (t === 'pencil') return { w: Math.max(1, st.size * 0.7), opacity: st.opacity * 0.85, blend: 'normal' };
+    return { w: st.size, opacity: st.opacity, blend: 'normal' };
+  }
+  _inkPathD(pts) {
+    if (!pts || !pts.length) return '';
+    if (pts.length === 1) { const p = pts[0]; return 'M ' + p[0] + ' ' + p[1] + ' L ' + (p[0] + 0.1) + ' ' + p[1]; }
+    return 'M ' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ');
+  }
+  _startInk(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const scale = this.state.slideScale || 1;
+    const cur = this.state.cur;
+    const toXY = (ev) => [(ev.clientX - rect.left) / scale, (ev.clientY - rect.top) / scale];
+    if (this.state.penType === 'eraser') {
+      const erase = (ev) => { const p = toXY(ev); this.setState(st => ({ penInk: { ...st.penInk, [cur]: (st.penInk[cur] || []).filter(s => !s.pts.some(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 14)) } })); };
+      erase(e);
+      const up = () => { window.removeEventListener('mousemove', erase); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', erase); window.addEventListener('mouseup', up);
+      return;
+    }
+    const pts = [toXY(e)];
+    const base = { id: Date.now(), type: this.state.penType, color: this.state.penColor, size: this.state.penSize, opacity: this.state.penOpacity / 100 };
+    this.setState({ penDrawing: { ...base, pts } });
+    const mv = (ev) => { ev.preventDefault(); pts.push(toXY(ev)); this.setState({ penDrawing: { ...base, pts: [...pts] } }); };
+    const up = () => {
+      window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up);
+      this.setState(st => ({ penInk: { ...st.penInk, [cur]: [...(st.penInk[cur] || []), { ...base, pts: [...pts] }] }, penDrawing: null }));
+    };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
+
+  _boardToDeck(payload) {
+    const frameTitles = payload.frameTitles || [];
+    const noteTexts = payload.noteTexts || [];
+    this.setState(st => {
+      let outline = [...st.outline];
+      frameTitles.forEach((t, i) => {
+        if (i < outline.length) outline[i] = { ...outline[i], title: t };
+        else outline.push({ title: t, bullets: '핵심 포인트를 입력하세요\n두 번째 포인트', viz: 'none', layout: 'plain' });
+      });
+      let statuses = [...st.statuses];
+      while (statuses.length < outline.length) statuses.push('done');
+      if (noteTexts.length) {
+        outline.push({ title: '화이트보드 아이디어', bullets: noteTexts.slice(0, 6).join('\n'), viz: 'none', layout: 'bullets' });
+        statuses.push('done');
+      }
+      return { outline, statuses, count: outline.length, whiteboardOn: false, cur: Math.min(st.cur, outline.length - 1), selEl: 'title', tab: 'props' };
+    });
+    this._showToast('화이트보드 내용을 덱에 반영했어요 — 프레임 제목과 포스트잇이 슬라이드로 정리됐어요');
+  }
+
+  _wbSetState(patch, cb){ this.setState(prev => { const cur = prev.wbs || {}; const p = (typeof patch === 'function') ? patch(cur) : patch; return { wbs: Object.assign({}, cur, p) }; }, cb); }
+  _wbExit(){ this.setState({ whiteboardOn: false }); }
+  _wbOnToDeck(p){ this._boardToDeck(p || {}); }
+  _wbSlideLayout(o){ if(!o) return 'plain'; if(o.viz==='bar'||o.viz==='pie'||o.viz==='line') return 'chart'; if(o.viz==='kpi') return 'kpi'; if(o.viz==='table') return 'table'; return o.layout || 'bullets'; }
+  get _wbSeedSlides(){ const arr=(this.state.outline&&this.state.outline.length)?this.state.outline:this.OUTLINE_DATA; return arr.map((o,i)=>({title:o.title||('슬라이드 '+(i+1)),layout:this._wbSlideLayout(o)})); }
+  get _wbDeckTitle(){ return '경영바우처 지원 제안서'; }
+  componentDidUpdate(){ this._wbUpdate(); }
+  renderVals(){ const v = this._deckRender(); v.wb = this._wbRender(); return v; }
+
+_wbSeed() {
+    const slides = this._wbSeedSlides;
+    if (!slides || !slides.length) return;
+    const cols = 3, fw = 330, fh = 205, gapX = 44, gapY = 54, ox = 60, oy = 108;
+    const frames = slides.map((sl, i) => {
+      const r = Math.floor(i / cols), c = i % cols;
+      return { id: i + 1, x: ox + c * (fw + gapX), y: oy + r * (fh + gapY), w: fw, h: fh, title: (i + 1) + '. ' + (sl.title || '슬라이드'), slide: true, layout: sl.layout || '' };
+    });
+    this._wbSetState({ frames, notes: [], boardTitle: (this._wbDeckTitle || '덱') + ' — 스토리보드', cursors: this.state.wbs.cursors });
+  }
+
+  _wbNid = 100;
+  _wbTimers = [];
+  _wbAfter(ms, fn) { const t = setTimeout(fn, ms); this._wbTimers.push(t); return t; }
+  _wbToast(m) { this._wbSetState({ toast: m }); this._wbAfter(2200, () => this._wbSetState({ toast: '' })); }
+
+  _wbPast = []; _wbFuture = []; _wbLast = null; _wbApplying = false;
+  _wbDocSnap() {
+    const s = this.state.wbs;
+    return JSON.stringify({ notes: s.notes, frames: s.frames, connectors: s.connectors, strokes: s.strokes, polls: s.polls, wheels: s.wheels, images: s.images });
+  }
+  _wbUpdate() {
+    if (!this.state.whiteboardOn) return;
+    if (this._wbApplying) return;
+    const cur = this._wbDocSnap();
+    if (this._wbLast === null) { this._wbLast = cur; return; }
+    if (cur === this._wbLast) return;
+    clearTimeout(this._wbHistT);
+    this._wbHistT = setTimeout(() => {
+      this._wbPast.push(this._wbLast);
+      if (this._wbPast.length > 300) this._wbPast.shift();
+      this._wbFuture = [];
+      this._wbLast = cur;
+      this.forceUpdate();
+    }, 320);
+  }
+  _wbFlush() {
+    clearTimeout(this._wbHistT);
+    const cur = this._wbDocSnap();
+    if (cur !== this._wbLast) { this._wbPast.push(this._wbLast); this._wbLast = cur; this._wbFuture = []; }
+    return cur;
+  }
+  _wbUndo() {
+    const cur = this._wbFlush();
+    if (!this._wbPast.length) { this._wbToast('되돌릴 작업이 없어요'); return; }
+    this._wbFuture.push(cur);
+    const prev = this._wbPast.pop();
+    this._wbApplying = true;
+    this._wbSetState(JSON.parse(prev), () => { this._wbApplying = false; this._wbLast = prev; this.forceUpdate(); });
+    this._wbToast('실행취소');
+  }
+  _wbRedo() {
+    clearTimeout(this._wbHistT);
+    if (!this._wbFuture.length) { this._wbToast('다시 실행할 작업이 없어요'); return; }
+    this._wbPast.push(this._wbLast);
+    const next = this._wbFuture.pop();
+    this._wbApplying = true;
+    this._wbSetState(JSON.parse(next), () => { this._wbApplying = false; this._wbLast = next; this.forceUpdate(); });
+    this._wbToast('다시 실행');
+  }
+  _wbMount() {
+    this._wbSeed();
+    this._wbOnKey = (e) => {
+      const k = e.key.toLowerCase();
+      if ((e.metaKey || e.ctrlKey) && k === 'z') { e.preventDefault(); if (e.shiftKey) this._wbRedo(); else this._wbUndo(); }
+      else if ((e.metaKey || e.ctrlKey) && k === 'y') { e.preventDefault(); this._wbRedo(); }
+    };
+    window.addEventListener('keydown', this._wbOnKey);
+    this._wbOnPaste = (e) => {
+      const items = (e.clipboardData && e.clipboardData.items) || [];
+      for (const it of items) {
+        if (it.type && it.type.indexOf('image') === 0) {
+          const file = it.getAsFile();
+          if (file) { e.preventDefault(); this._wbAddImage(file); }
+        }
+      }
+    };
+    window.addEventListener('paste', this._wbOnPaste);
+    this._wbCurIv = setInterval(() => {
+      if (!this.state.whiteboardOn) return;
+      if (this._wbCanvas) { const r = this._wbCanvas.getBoundingClientRect(); if (r.width && (r.width !== this.state.wbs.canvasW || r.height !== this.state.wbs.canvasH)) this._wbSetState({ canvasW: r.width, canvasH: r.height }); }
+      this._wbSetState(s => ({
+        cursors: s.cursors.map(c => ({
+          ...c,
+          x: Math.max(120, Math.min(980, c.x + (Math.random() - 0.5) * 130)),
+          y: Math.max(120, Math.min(520, c.y + (Math.random() - 0.5) * 110))
+        }))
+      }));
+    }, 1400);
+    this._wbTickIv = setInterval(() => {
+      if (!this.state.whiteboardOn) return;
+      this._wbSetState(s => {
+        if (!s.timerRunning || s.timer <= 0) return {};
+        const t = s.timer - 1;
+        return { timer: t, timerRunning: t > 0 };
+      });
+    }, 1000);
+  }
+  _wbUnmount() { clearInterval(this._wbCurIv); clearInterval(this._wbTickIv); this._wbTimers.forEach(clearTimeout); clearTimeout(this._wbHistT); window.removeEventListener('keydown', this._wbOnKey); window.removeEventListener('paste', this._wbOnPaste); }
+
+  _wbDownload(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  }
+  _wbRrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  _wbWrap(ctx, text, x, y, maxW, lh, maxLines) {
+    const words = String(text).split(/\s+/); let line = '', ln = 0;
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y + ln * lh); line = words[i]; ln++; if (ln >= maxLines - 1 && i < words.length - 1) { ctx.fillText(words[i] + '…', x, y + ln * lh); return; } }
+      else line = test;
+    }
+    ctx.fillText(line, x, y + ln * lh);
+  }
+  async _wbBuildPdf() {
+    const s = this.state.wbs;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const ext = (x, y, w, h) => { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x + (w || 0)); maxY = Math.max(maxY, y + (h || 0)); };
+    s.frames.forEach(f => ext(f.x, f.y, f.w, f.h));
+    s.notes.forEach(n => ext(n.x, n.y, 158, 158));
+    s.images.forEach(i => ext(i.x, i.y, i.w, i.h));
+    s.strokes.forEach(st => st.pts.forEach(p => ext(p[0], p[1], 0, 0)));
+    if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 900; maxY = 560; }
+    const pad = 48; minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const cw = maxX - minX, ch = maxY - minY;
+    const scale = Math.min(1.6, 2000 / cw, 1400 / ch);
+    const W = Math.round(cw * scale), H = Math.round(ch * scale);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#EDEDEA'; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.scale(scale, scale); ctx.translate(-minX, -minY);
+    // frames
+    s.frames.forEach(f => {
+      ctx.fillStyle = f.slide ? '#FBFBFA' : 'rgba(255,255,255,.5)'; this._wbRrect(ctx, f.x, f.y, f.w, f.h, 14); ctx.fill();
+      ctx.strokeStyle = '#D4D4CE'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = '#1A1A1A'; ctx.font = '700 15px Pretendard, sans-serif'; ctx.fillText(String(f.title).slice(0, 40), f.x + 15, f.y + 25);
+    });
+    // connectors
+    const by = {}; s.notes.forEach(n => { by[n.id] = n; });
+    ctx.strokeStyle = '#55554F'; ctx.lineWidth = 2;
+    s.connectors.forEach(c => { const a = by[c.from], b = by[c.to]; if (!a || !b) return; const x1 = a.x + 79, y1 = a.y + 79, x2 = b.x + 79, y2 = b.y + 79; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); const ang = Math.atan2(y2 - y1, x2 - x1); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - 10 * Math.cos(ang - 0.4), y2 - 10 * Math.sin(ang - 0.4)); ctx.lineTo(x2 - 10 * Math.cos(ang + 0.4), y2 - 10 * Math.sin(ang + 0.4)); ctx.closePath(); ctx.fillStyle = '#55554F'; ctx.fill(); });
+    // strokes
+    s.strokes.forEach(st => { const sty = this._inkStyle(st); ctx.strokeStyle = st.color; ctx.lineWidth = sty.w; ctx.globalAlpha = sty.opacity; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); st.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); }); ctx.stroke(); ctx.globalAlpha = 1; });
+    // images
+    const imgEls = await Promise.all(s.images.map(im => new Promise(res => { const g = new Image(); g.onload = () => res({ g, im }); g.onerror = () => res(null); g.src = im.src; })));
+    imgEls.forEach(o => { if (o) ctx.drawImage(o.g, o.im.x, o.im.y, o.im.w, o.im.h); });
+    // notes
+    s.notes.forEach(n => {
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.14)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+      ctx.fillStyle = n.color; ctx.fillRect(n.x, n.y, 158, 158); ctx.restore();
+      ctx.fillStyle = '#1A1A1A'; ctx.font = '13px Pretendard, sans-serif';
+      this._wbWrap(ctx, n.text || '', n.x + 14, n.y + 26, 130, 19, 6);
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '10px Pretendard, sans-serif'; ctx.fillText(n.author || '', n.x + 14, n.y + 150);
+      if (n.votes) { ctx.fillStyle = '#1A1A1A'; ctx.font = '700 11px Pretendard, sans-serif'; ctx.fillText('▲ ' + n.votes, n.x + 118, n.y + 14); }
+    });
+    ctx.restore();
+    // PDF wrap (single page, JPEG)
+    const durl = cv.toDataURL('image/jpeg', 0.85);
+    const bin = atob(durl.split(',')[1]); const img = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
+    const parts = []; let len = 0;
+    const offsets = []; const mark = () => offsets.push(len);
+    const pS = (s2) => { const b = new TextEncoder().encode(s2); parts.push(b); len += b.length; };
+    const pB = (b) => { parts.push(b); len += b.length; };
+    pS('%PDF-1.4\n');
+    mark(); pS('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    mark(); pS('2 0 obj\n<< /Type /Pages /Kids [5 0 R] /Count 1 >>\nendobj\n');
+    mark(); pS('3 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + W + ' /Height ' + H + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.length + ' >>\nstream\n'); pB(img); pS('\nendstream\nendobj\n');
+    const content = 'q ' + W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do Q';
+    mark(); pS('4 0 obj\n<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream\nendobj\n');
+    mark(); pS('5 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + H + '] /Resources << /XObject << /Im0 3 0 R >> >> /Contents 4 0 R >>\nendobj\n');
+    const xrefPos = len;
+    pS('xref\n0 6\n0000000000 65535 f \n');
+    offsets.forEach(o => pS(String(o).padStart(10, '0') + ' 00000 n \n'));
+    pS('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xrefPos + '\n%%EOF');
+    return new Blob(parts, { type: 'application/pdf' });
+  }
+  _wbExportPdf() {
+    this._wbToast('PDF를 생성하는 중…');
+    this._wbBuildPdf().then(blob => { this._wbDownload((this.state.wbs.boardTitle || 'whiteboard') + '.pdf', blob); this._wbToast('PDF 다운로드 완료'); }).catch(err => this._wbToast('PDF 오류: ' + err.message));
+  }
+
+  _wbImgResize(id) {
+    return (e) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      const z = this.state.wbs.zoom, sx = e.clientX;
+      const im = this.state.wbs.images.find(i => i.id === id); if (!im) return;
+      const bw = im.w, ratio = im.h / im.w;
+      const mv = (ev) => { const w = Math.max(60, bw + (ev.clientX - sx) / z); this._wbSetState(st => ({ images: st.images.map(i => i.id === id ? { ...i, w: Math.round(w), h: Math.round(w * ratio) } : i) })); };
+      const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+    };
+  }
+  _wbAddImage(file, atX, atY) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const src = ev.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const w = 260, h = Math.round(260 * (img.naturalHeight / img.naturalWidth) || 180);
+        const cx = atX != null ? atX : (-this.state.wbs.panX + this.state.wbs.canvasW / 2) / this.state.wbs.zoom;
+        const cy = atY != null ? atY : (-this.state.wbs.panY + this.state.wbs.canvasH / 2) / this.state.wbs.zoom;
+        this._wbSetState(st => ({ images: [...st.images, { id: ++this._wbNid, x: cx - w / 2, y: cy - h / 2, w, h, src }] }));
+        this._wbToast('이미지를 붙여넣었어요');
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  }
+  _wbImgDrag(id) {
+    return (e) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      if (this.state.wbs.tool === 'connector') return;
+      const z = this.state.wbs.zoom, sx = e.clientX, sy = e.clientY;
+      const im = this.state.wbs.images.find(i => i.id === id); if (!im) return;
+      const bx = im.x, by = im.y;
+      const mv = (ev) => { const dx = (ev.clientX - sx) / z, dy = (ev.clientY - sy) / z; this._wbSetState(st => ({ images: st.images.map(i => i.id === id ? { ...i, x: bx + dx, y: by + dy } : i) })); };
+      const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+    };
+  }
+
+  _wbMeasureNoop() {}
+
+  _wbConnect(id) {
+    const from = this.state.wbs.connectFrom;
+    if (from == null) { this._wbSetState({ connectFrom: id }); this._wbToast('연결 시작 — 대상 포스트잇을 클릭하세요'); }
+    else if (from === id) { this._wbSetState({ connectFrom: null }); }
+    else { this._wbSetState(st => ({ connectors: [...st.connectors, { id: ++this._wbNid, from, to: id }], connectFrom: null })); this._wbToast('연결선을 만들었어요'); }
+  }
+  _wbNoteDrag(id) {
+    return (e) => {
+      if (e.button !== 0) return;
+      if (this.state.wbs.tool === 'connector') { e.stopPropagation(); this._wbConnect(id); return; }
+      e.stopPropagation();
+      const z = this.state.wbs.zoom;
+      const sx = e.clientX, sy = e.clientY;
+      const note = this.state.wbs.notes.find(n => n.id === id);
+      if (!note || note.editing) return;
+      const bx = note.x, by = note.y;
+      let moved = false;
+      const mv = (ev) => {
+        const dx = (ev.clientX - sx) / z, dy = (ev.clientY - sy) / z;
+        if (!moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+        moved = true;
+        this._wbSetState(st => ({ notes: st.notes.map(n => n.id === id ? { ...n, x: bx + dx, y: by + dy } : n), sel: id }));
+      };
+      const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); if (!moved) this._wbSetState({ sel: id }); };
+      window.addEventListener('mousemove', mv);
+      window.addEventListener('mouseup', up);
+    };
+  }
+
+  _wbStrokeStyle(st) {
+    const t = st.type;
+    if (t === 'highlighter') return { w: st.size * 4.5, opacity: 0.32, blend: 'multiply' };
+    if (t === 'marker') return { w: st.size * 2.2, opacity: st.opacity, blend: 'normal' };
+    if (t === 'pencil') return { w: Math.max(1, st.size * 0.7), opacity: st.opacity * 0.85, blend: 'normal' };
+    return { w: st.size, opacity: st.opacity, blend: 'normal' };
+  }
+  _wbPathD(pts) {
+    if (!pts || !pts.length) return '';
+    if (pts.length === 1) { const p = pts[0]; return 'M ' + p[0] + ' ' + p[1] + ' L ' + (p[0] + 0.1) + ' ' + p[1]; }
+    return 'M ' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ');
+  }
+  _wbStartStroke(e) {
+    const r = this._wbCanvas.getBoundingClientRect();
+    const toXY = (ev) => [(ev.clientX - r.left - this.state.wbs.panX) / this.state.wbs.zoom, (ev.clientY - r.top - this.state.wbs.panY) / this.state.wbs.zoom];
+    if (this.state.wbs.penType === 'eraser') {
+      const erase = (ev) => { const p = toXY(ev); this._wbSetState(st => ({ strokes: st.strokes.filter(s => !s.pts.some(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 16)) })); };
+      erase(e);
+      const up = () => { window.removeEventListener('mousemove', erase); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mousemove', erase); window.addEventListener('mouseup', up);
+      return;
+    }
+    const pts = [toXY(e)];
+    const base = { id: ++this._wbNid, type: this.state.wbs.penType, color: this.state.wbs.penColor, size: this.state.wbs.penSize, opacity: this.state.wbs.penOpacity / 100 };
+    this._wbSetState({ drawing: { ...base, pts } });
+    const mv = (ev) => { pts.push(toXY(ev)); this._wbSetState({ drawing: { ...base, pts: [...pts] } }); };
+    const up = () => {
+      window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up);
+      this._wbSetState(st => ({ strokes: [...st.strokes, { ...base, pts: [...pts] }], drawing: null }));
+    };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
+
+  _wbPanDrag(e) {
+    if (e.button !== 0) return;
+    const t = this.state.wbs.tool;
+    if (t === 'pen') { this._wbStartStroke(e); return; }
+    if (t === 'note') {
+      const r = this._wbCanvas.getBoundingClientRect();
+      const x = (e.clientX - r.left - this.state.wbs.panX) / this.state.wbs.zoom;
+      const y = (e.clientY - r.top - this.state.wbs.panY) / this.state.wbs.zoom;
+      const palette = ['#FFE380', '#B8E6C1', '#F5B8C4', '#BBD9F5', '#E4C7F5'];
+      const id = ++this._wbNid;
+      this._wbSetState(st => ({ notes: [...st.notes, { id, x: x - 79, y: y - 79, text: '', color: palette[st.notes.length % 5], author: '우진', editing: true }], tool: 'select' }));
+      return;
+    }
+    const sx = e.clientX, sy = e.clientY, bx = this.state.wbs.panX, by = this.state.wbs.panY;
+    const mv = (ev) => this._wbSetState({ panX: bx + (ev.clientX - sx), panY: by + (ev.clientY - sy) });
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', mv);
+    window.addEventListener('mouseup', up);
+  }
+
+  _wbTidy() {
+    const fs = this.state.wbs.frames;
+    if (!fs.length) { this._wbToast('정렬할 프레임이 없어요'); return; }
+    const cols = fs.length >= 9 ? 4 : 3;
+    const cw = Math.max.apply(null, fs.map(f => f.w));
+    const ch = Math.max.apply(null, fs.map(f => f.h));
+    const gapX = 44, gapY = 54, ox = 60, oy = 108;
+    const sorted = [...fs].sort((a, b) => (a.y - b.y) || (a.x - b.x));
+    const pos = {};
+    sorted.forEach((f, i) => { const r = Math.floor(i / cols), c = i % cols; pos[f.id] = { x: ox + c * (cw + gapX), y: oy + r * (ch + gapY) }; });
+    this._wbSetState(st => ({ frames: st.frames.map(f => ({ ...f, x: pos[f.id].x, y: pos[f.id].y, anim: true })) }));
+    this._wbToast(fs.length + '개 프레임을 격자로 정렬했어요');
+    this._wbAfter(650, () => this._wbSetState(st => ({ frames: st.frames.map(f => ({ ...f, anim: false })) })));
+  }
+
+  _wbCluster() {
+    const labels = { '#FFE380': '성과 · Keep', '#B8E6C1': '개선점 · Try', '#F5B8C4': '문제 · Problem', '#BBD9F5': '아이디어', '#E4C7F5': '기타' };
+    const groups = {};
+    this.state.wbs.notes.forEach(n => { (groups[n.color] = groups[n.color] || []).push(n); });
+    const colors = Object.keys(groups);
+    const baseX = 230, gapX = 250, topY = 150, gapY = 44;
+    const newFrames = [];
+    const posById = {};
+    colors.forEach((col, ci) => {
+      const cx = baseX + ci * gapX;
+      groups[col].forEach((n, ni) => { posById[n.id] = { x: cx, y: topY + ni * gapY }; });
+      newFrames.push({ id: 900 + ci, x: cx - 16, y: 92, w: 190, h: topY - 92 + groups[col].length * gapY + 130, title: labels[col] || '그룹' });
+    });
+    this._wbSetState(st => ({
+      agentOpen: false,
+      frames: newFrames,
+      notes: st.notes.map(n => ({ ...n, x: posById[n.id].x, y: posById[n.id].y, anim: true }))
+    }));
+    this._wbToast(colors.length + '개 클러스터로 자동 그룹화했어요');
+    this._wbAfter(650, () => this._wbSetState(st => ({ notes: st.notes.map(n => ({ ...n, anim: false })) })));
+  }
+
+  _wbSpin(id) {
+    const opts = ['Analytics', 'Blueprint', 'Beta', 'Dynamic', 'Automation'];
+    const pick = Math.floor(Math.random() * opts.length);
+    this._wbSetState(st => ({
+      wheels: st.wheels.map(w => {
+        if (w.id !== id) return w;
+        const base = w.rest || 0;
+        const end = base + 360 * 4 + (360 - (pick * 72 + 36)) - (base % 360);
+        return { ...w, spinning: true, rest: end, result: '' };
+      })
+    }));
+    this._wbAfter(2650, () => this._wbSetState(st => ({ wheels: st.wheels.map(w => w.id === id ? { ...w, spinning: false, result: '→ ' + opts[pick] } : w) })));
+  }
+
+  _wbRender() {
+    const s = this.state.wbs;
+    const TOOLS = [
+      { id: 'select', icon: 'arrow_selector_tool', label: '선택' },
+      { id: 'note', icon: 'sticky_note_2', label: '포스트잇 (클릭 후 캔버스 클릭)' },
+      { id: 'text', icon: 'title', label: '텍스트' },
+      { id: 'shape', icon: 'category', label: '도형' },
+      { id: 'pen', icon: 'edit', label: '펜' },
+      { id: 'connector', icon: 'polyline', label: '연결선 (포스트잇 → 포스트잇)' },
+      { id: 'comment', icon: 'chat_bubble', label: '댓글' }
+    ];
+    const wheelGrad = 'conic-gradient(#E4C7F5 0 72deg,#BBD9F5 72deg 144deg,#B8E6C1 144deg 216deg,#FFE380 216deg 288deg,#F5B8C4 288deg 360deg)';
+    const MM = 0.1075;
+    const noteDark = (c) => false;
+    return {
+      boardTitle: s.boardTitle,
+      onTitle: (e) => this._wbSetState({ boardTitle: e.target.value }),
+      canvasRef: (el) => { this._wbCanvas = el; },
+      onCanvasDown: (e) => this._wbPanDrag(e),
+      canvasCursor: s.tool === 'note' ? 'copy' : (s.tool === 'pen' ? 'crosshair' : (s.tool === 'connector' ? 'crosshair' : (s.tool === 'select' ? 'grab' : 'crosshair'))),
+      connectorLines: (() => {
+        const by = {}; s.notes.forEach(n => { by[n.id] = n; });
+        return s.connectors.filter(c => by[c.from] && by[c.to]).map(c => { const a = by[c.from], b = by[c.to]; return { x1: a.x + 79, y1: a.y + 79, x2: b.x + 79, y2: b.y + 79, del: (e) => { e.stopPropagation(); this._wbSetState(st => ({ connectors: st.connectors.filter(z => z.id !== c.id) })); this._wbToast('연결선을 삭제했어요'); } }; });
+      })(),
+      penOpen: s.tool === 'pen',
+      closePen: () => this._wbSetState({ tool: 'select' }),
+      penSize: s.penSize,
+      onPenSize: (e) => this._wbSetState({ penSize: +e.target.value }),
+      penOpacity: s.penOpacity,
+      onPenOpacity: (e) => this._wbSetState({ penOpacity: +e.target.value }),
+      penSwatches: ['#1A1A1A', '#F5C518', '#F59E0B', '#EA580C', '#DC2626', '#DB2777', '#EC4899', '#7C3AED', '#8B5CF6', '#38BDF8', '#2563EB', '#0EA5A5', '#16A34A', '#9CA3AF', '#FFFFFF'].map(hex => ({
+        hex,
+        border: hex === '#FFFFFF' ? '1px solid #D4D4CE' : '1px solid rgba(0,0,0,.08)',
+        ring: s.penColor === hex ? '0 0 0 2px #FFFFFF,0 0 0 4px #1A1A1A' : 'none',
+        pick: () => this._wbSetState({ penColor: hex })
+      })),
+      penTypes: [
+        { id: 'pen', icon: 'edit', label: '펜' },
+        { id: 'marker', icon: 'brush', label: '마커' },
+        { id: 'highlighter', icon: 'ink_highlighter', label: '형광펜' },
+        { id: 'pencil', icon: 'draw', label: '연필' },
+        { id: 'eraser', icon: 'ink_eraser', label: '지우개' }
+      ].map(p => ({
+        icon: p.icon, label: p.label,
+        bg: s.penType === p.id ? '#1A1A1A' : '#FFFFFF',
+        color: s.penType === p.id ? '#FFFFFF' : '#4A4A45',
+        border: s.penType === p.id ? '#1A1A1A' : '#E4E4E0',
+        pick: () => this._wbSetState({ penType: p.id })
+      })),
+      strokePaths: (() => {
+        const all = s.drawing ? [...s.strokes, s.drawing] : s.strokes;
+        return all.map(st => { const sty = this._wbStrokeStyle(st); return { d: this._wbPathD(st.pts), color: st.color, w: sty.w, opacity: sty.opacity, blend: sty.blend }; });
+      })(),
+      clearInk: () => { this._wbSetState({ strokes: [] }); this._wbToast('잉크를 모두 지웠어요'); },
+      images: s.images.map(im => ({ bg: 'url("' + im.src + '")', x: im.x + 'px', y: im.y + 'px', w: im.w + 'px', h: im.h + 'px', down: this._wbImgDrag(im.id), resize: this._wbImgResize(im.id) })),
+      onCanvasDragOver: (e) => { e.preventDefault(); },
+      onCanvasDrop: (e) => {
+        e.preventDefault();
+        const files = (e.dataTransfer && e.dataTransfer.files) || [];
+        if (!files.length) return;
+        const r = this._wbCanvas.getBoundingClientRect();
+        const wx = (e.clientX - r.left - s.panX) / s.zoom, wy = (e.clientY - r.top - s.panY) / s.zoom;
+        for (const f of files) { if (f.type.indexOf('image') === 0) { this._wbAddImage(f, wx, wy); break; } }
+      },
+      minimapRef: (el) => { this._wbMinimap = el; },
+      minimapOpen: s.minimapOpen !== false,
+      minimapClosed: s.minimapOpen === false,
+      toggleMinimap: (e) => { if (e) e.stopPropagation(); this._wbSetState(st => ({ minimapOpen: st.minimapOpen === false })); },
+      mmFrames: s.frames.map(f => ({ x: (f.x * MM).toFixed(1) + 'px', y: (f.y * MM).toFixed(1) + 'px', w: Math.max(3, f.w * MM).toFixed(1) + 'px', h: Math.max(3, f.h * MM).toFixed(1) + 'px' })),
+      mmNotes: s.notes.map(n => ({ x: ((n.x + 79) * MM).toFixed(1) + 'px', y: ((n.y + 79) * MM).toFixed(1) + 'px', color: n.color })),
+      mmView: {
+        x: (Math.max(0, -s.panX / s.zoom) * MM).toFixed(1) + 'px',
+        y: (Math.max(0, -s.panY / s.zoom) * MM).toFixed(1) + 'px',
+        w: Math.min(172, (s.canvasW / s.zoom) * MM).toFixed(1) + 'px',
+        h: Math.min(112, (s.canvasH / s.zoom) * MM).toFixed(1) + 'px'
+      },
+      minimapClick: (e) => {
+        if (!this._wbMinimap) return;
+        const r = this._wbMinimap.getBoundingClientRect();
+        const wx = (e.clientX - r.left) / MM, wy = (e.clientY - r.top) / MM;
+        this._wbSetState({ panX: this.state.wbs.canvasW / 2 - wx * this.state.wbs.zoom, panY: this.state.wbs.canvasH / 2 - wy * this.state.wbs.zoom });
+      },
+      panX: s.panX + 'px', panY: s.panY + 'px', zoom: s.zoom,
+      zoomPct: Math.round(s.zoom * 100) + '%',
+      zoomIn: () => this._wbSetState(st => ({ zoom: Math.min(2, +(st.zoom + 0.1).toFixed(2)) })),
+      zoomOut: () => this._wbSetState(st => ({ zoom: Math.max(0.4, +(st.zoom - 0.1).toFixed(2)) })),
+      fitView: () => this._wbSetState({ zoom: 1, panX: 40, panY: 24 }),
+      tools: TOOLS.map(t => ({
+        icon: t.icon, label: t.label,
+        bg: s.tool === t.id ? '#1A1A1A' : 'transparent',
+        color: s.tool === t.id ? '#FFFFFF' : '#4A4A45',
+        pick: () => this._wbSetState({ tool: t.id })
+      })),
+      peers: [
+        { name: 'Adria Weinert', initial: 'A', color: '#7A5AF8' },
+        { name: 'Hiroku Mostajo', initial: 'H', color: '#0EA5A5' },
+        { name: 'Rubin Kotowicz', initial: 'R', color: '#55554F' },
+        { name: '우진 (나)', initial: '우', color: '#1A1A1A' }
+      ],
+      frames: s.frames.map(f => ({ x: f.x + 'px', y: f.y + 'px', w: f.w + 'px', h: f.h + 'px', title: f.title, isSlide: !!f.slide, layout: f.layout || 'slide', bg: f.slide ? '#FBFBFA' : 'rgba(255,255,255,.45)', bodyH: (f.h - 58) + 'px', trans: f.anim ? 'left .5s cubic-bezier(.2,.8,.3,1),top .5s cubic-bezier(.2,.8,.3,1)' : 'none' })),
+      tidyFrames: () => this._wbTidy(),
+      notes: s.notes.map(n => ({
+        x: n.x + 'px', y: n.y + 'px', color: n.color, text: n.text, author: n.author,
+        textColor: '#1A1A1A',
+        editing: !!n.editing, notEditing: !n.editing,
+        trans: n.anim ? 'left .5s cubic-bezier(.2,.8,.3,1),top .5s cubic-bezier(.2,.8,.3,1)' : 'none',
+        shadow: s.sel === n.id ? '0 8px 22px rgba(0,0,0,.20)' : '0 2px 6px rgba(0,0,0,.12)',
+        outline: (s.sel === n.id || s.connectFrom === n.id) ? '2px solid #1A1A1A' : 'none',
+        votes: String(n.votes || 0),
+        voteIcon: (n.votes || 0) > 0 ? 'how_to_vote' : 'add',
+        voteColor: (n.votes || 0) > 0 ? '#1A1A1A' : '#8A8A84',
+        stop: (e) => e.stopPropagation(),
+        vote: (e) => { e.stopPropagation(); this._wbSetState(st => ({ notes: st.notes.map(x => x.id === n.id ? { ...x, votes: (x.votes || 0) + 1 } : x) })); },
+        down: this._wbNoteDrag(n.id),
+        edit: (e) => { e.stopPropagation(); this._wbSetState(st => ({ notes: st.notes.map(x => x.id === n.id ? { ...x, editing: true } : x), sel: n.id })); },
+        onText: (e) => { const v = e.target.value; this._wbSetState(st => ({ notes: st.notes.map(x => x.id === n.id ? { ...x, text: v } : x) })); },
+        blur: () => this._wbSetState(st => ({ notes: st.notes.map(x => x.id === n.id ? { ...x, editing: false } : x) }))
+      })),
+      polls: s.polls.map(p => {
+        const total = p.opts.reduce((a, o) => a + o.count, 0) || 1;
+        return {
+          x: p.x + 'px', y: p.y + 'px', total: String(total - (p.opts.length ? 0 : 0)),
+          opts: p.opts.map((o, oi) => ({
+            label: o.label, count: String(o.count), pct: Math.round(o.count / total * 100) + '%',
+            vote: () => this._wbSetState(st => ({ polls: st.polls.map(pp => pp.id === p.id ? { ...pp, opts: pp.opts.map((x, xi) => xi === oi ? { ...x, count: x.count + 1 } : x) } : pp) }))
+          }))
+        };
+      }),
+      wheels: s.wheels.map(w => ({
+        x: w.x + 'px', y: w.y + 'px', gradient: wheelGrad,
+        rot: 'rotate(' + (w.rest || 0) + 'deg)',
+        trans: w.spinning ? 'transform 2.6s cubic-bezier(.2,.7,.2,1)' : 'none',
+        result: w.result || '',
+        spin: () => this._wbSpin(w.id)
+      })),
+      stamps: s.stamps.map(st => ({ x: st.x + 'px', y: st.y + 'px', emoji: st.emoji, label: st.label })),
+      cursors: s.cursors.map(c => ({ x: c.x + 'px', y: c.y + 'px', name: c.name, color: c.color })),
+      reactions: [
+        { emoji: '👍', label: '좋아요' }, { emoji: '❤️', label: '하트' }, { emoji: '🔥', label: '불' }, { emoji: '🎉', label: '축하' }, { emoji: '👏', label: '박수' }
+      ].map(r => ({
+        emoji: r.emoji, label: r.label,
+        fire: () => {
+          const id = ++this._wbNid;
+          const x = 380 + Math.random() * 340, y = 200 + Math.random() * 220;
+          this._wbSetState(st => ({ stamps: [...st.stamps, { id, emoji: r.emoji, label: r.label, x, y }] }));
+          this._wbAfter(2600, () => this._wbSetState(st => ({ stamps: st.stamps.filter(z => z.id !== id) })));
+        }
+      })),
+      privateMode: s.privateMode,
+      togglePrivate: () => { const v = !s.privateMode; this._wbSetState({ privateMode: v }); this._wbToast(v ? '비공개 모드 — 내 포스트잇이 나에게만 보입니다' : '비공개 모드 해제'); },
+      privBg: s.privateMode ? '#1A1A1A' : '#F0F0EE',
+      privColor: s.privateMode ? '#FFFFFF' : '#1A1A1A',
+      timerText: Math.floor(s.timer / 60) + ':' + String(s.timer % 60).padStart(2, '0'),
+      timerIcon: s.timerRunning ? 'pause' : 'play_arrow',
+      toggleTimer: () => this._wbSetState(st => ({ timerRunning: !st.timerRunning })),
+      resetTimer: () => this._wbSetState({ timer: 300, timerRunning: false }),
+      addRetro: () => this._wbToast('회고 템플릿이 이미 캔버스에 있습니다 (Keep·Problem·Try)'),
+      addWheel: () => { const id = ++this._wbNid; this._wbSetState(st => ({ wheels: [...st.wheels, { id, x: 780, y: 470, rest: 0, result: '' }] })); this._wbToast('스피너 휠 추가됨'); },
+      agentOpen: s.agentOpen,
+      toggleAgent: () => this._wbSetState(st => ({ agentOpen: !st.agentOpen })),
+      agentCluster: () => this._wbCluster(),
+      agentSummary: () => { this._wbSetState({ agentOpen: false }); this._wbToast('요약: 릴리스 속도 개선이 최다 언급, QA 리소스가 핵심 리스크'); },
+      agentDeck: () => { this._wbSetState({ agentOpen: false }); this._wbToast('보드를 5장 덱 초안으로 변환했어요'); },
+      share: () => this._wbToast('공유 링크가 복사됐어요 — 편집/보기 권한 분리 가능'),
+      exportPdf: () => this._wbExportPdf(),
+      undo: () => this._wbUndo(),
+      redo: () => this._wbRedo(),
+      undoColor: this._wbPast.length ? '#1A1A1A' : '#C9C9C4',
+      redoColor: this._wbFuture.length ? '#1A1A1A' : '#C9C9C4',
+      embedded: !!true,
+      notEmbedded: !true,
+      exitBoard: () => { if (this._wbExit) this._wbExit(); },
+      hasToDeck: typeof this._wbOnToDeck === 'function',
+      toDeck: () => {
+        const frameTitles = s.frames.map(f => (f.title || '').replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+        const noteTexts = s.notes.map(n => (n.text || '').trim()).filter(Boolean);
+        if (this._wbOnToDeck) this._wbOnToDeck({ frameTitles, noteTexts });
+      },
+      hasToast: !!s.toast, toast: s.toast,
+      addPoll: () => { const id = ++this._wbNid; this._wbSetState(st => ({ polls: [...st.polls, { id, x: 780, y: 120, opts: [{ label: '옵션 A', count: 5 }, { label: '옵션 B', count: 9 }, { label: '옵션 C', count: 2 }] }] })); }
+    };
+  }
+
+  _deckRender() {
     const s = this.state;
     const T0 = this.THEMES[s.themeIdx];
     const T = s.brand.accent ? { ...T0, accent: s.brand.accent } : T0;
@@ -4218,7 +5218,9 @@ class Component extends DCLogic {
         };
       }),
       marqueeDown: (e) => {
-        if (e.button !== 0 || s.presenting || s.pinMode || this.state.tool !== 'select') return;
+        if (e.button !== 0 || s.presenting) return;
+        if (this.state.tool === 'pen' && !this._isLocked(this.state.cur)) { this._startInk(e); return; }
+        if (s.pinMode || this.state.tool !== 'select') return;
         if (e.target !== e.currentTarget) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const scale = (this.state.slideScale || 1);
@@ -4415,6 +5417,7 @@ class Component extends DCLogic {
       canvasTools: [
         { id: 'select', icon: 'arrow_selector_tool', tip: '선택' },
         { id: 'pan', icon: 'pan_tool', tip: '화면 이동' },
+        { id: 'pen', icon: 'edit', tip: '펜 · 슬라이드에 그리기' },
         { id: 'comment', icon: 'chat_bubble', tip: '댓글' }
       ].map(t => ({
         icon: t.icon, tip: t.tip,
@@ -4424,6 +5427,9 @@ class Component extends DCLogic {
           if (t.id === 'comment') {
             this.setState({ tool: 'comment', pinMode: true, tab: 'cmts', selEl: null, selInsId: null });
             this._showToast('댓글 모드 — 슬라이드의 원하는 지점을 클릭하면 핀이 찍혀요');
+          } else if (t.id === 'pen') {
+            this.setState({ tool: 'pen', pinMode: false, penOpen: true, selEl: null, selInsId: null });
+            this._showToast('펜 모드 — 슬라이드에 드래그해서 그리세요');
           } else {
             this.setState({ tool: t.id, pinMode: false });
             if (t.id === 'pan') this._showToast('화면 이동 모드 (시뮬레이션)');
@@ -5022,9 +6028,9 @@ class Component extends DCLogic {
       wireLibGroups: (() => {
         const CATS = [
           { key: '기본 · 텍스트', ids: ['cover', 'section', 'bullets', 'agenda', 'closing'] },
-          { key: '차트 · 데이터', ids: ['bar', 'stackbar', 'pie', 'kpi', 'table', 'bignum', 'gantt', 'calendar'] },
-          { key: '다이어그램 · 관계', ids: ['process', 'chevron3', 'cycle', 'hub', 'triad', 'compare', 'flow3', 'grid9', 'swot', 'phasematrix', 'asistobe'] },
-          { key: '조직 · 타임라인', ids: ['org', 'timeline', 'milestone', 'vsteps', 'consortium'] },
+          { key: '차트 · 데이터', ids: ['bar', 'stackbar', 'pie', 'kpi', 'table', 'bignum', 'gantt', 'calendar', 'funnel', 'geoheat', 'radar', 'gauge', 'waterfall'] },
+          { key: '다이어그램 · 관계', ids: ['process', 'chevron3', 'cycle', 'hub', 'triad', 'compare', 'flow3', 'grid9', 'swot', 'phasematrix', 'asistobe', 'kanban'] },
+          { key: '조직 · 타임라인', ids: ['org', 'orgtree', 'timeline', 'milestone', 'vsteps', 'consortium'] },
           { key: '콘텐츠 · 미디어', ids: ['image', 'iconrow', 'beforeafter', 'persona', 'news'] }
         ];
         const idxOf = {};
@@ -5036,6 +6042,7 @@ class Component extends DCLogic {
           const w = this.WIRE_LIB[i];
           return {
             name: w.name,
+            uses: this._wfUses(id),
             blocks: this._wfBlocks(w),
             fav: !!favs[id],
             favIcon: favs[id] ? 'star' : 'star_border',
@@ -5046,6 +6053,19 @@ class Component extends DCLogic {
           };
         };
         const groups = [];
+        const q = (s.wfSearch || '').trim().toLowerCase();
+        if (q) {
+          const hits = this.WIRE_LIB.filter(w => w.name.toLowerCase().includes(q));
+          return [{ cat: '검색 결과', count: String(hits.length), items: hits.map(w => mkItem(w.id)), empty: hits.length === 0 }];
+        }
+        if ((s.wfSort || 'default') === 'popular') {
+          const ranked = this.WIRE_LIB
+            .filter(w => sel === 'all' || (CATS.find(c => c.key === sel) || { ids: [] }).ids.includes(w.id))
+            .map(w => mkItem(w.id))
+            .sort((a, b) => b.uses - a.uses)
+            .map((it, i) => ({ ...it, rank: String(i + 1) }));
+          return [{ cat: '인기순 (사용 횟수)', count: String(ranked.length), items: ranked }];
+        }
         const favIds = this.WIRE_LIB.map(w => w.id).filter(id => favs[id]);
         if (favIds.length && sel === 'all') {
           groups.push({ cat: '★ 즐겨찾기', count: String(favIds.length), items: favIds.map(mkItem) });
@@ -5055,6 +6075,16 @@ class Component extends DCLogic {
         });
         return groups;
       })(),
+      wfSearch: s.wfSearch,
+      onWfSearch: (e) => this.setState({ wfSearch: e.target.value }),
+      clearWfSearch: () => this.setState({ wfSearch: '' }),
+      hasWfSearch: !!(s.wfSearch || '').trim(),
+      wfSortPopular: (s.wfSort || 'default') === 'popular',
+      wfSortBg: (s.wfSort || 'default') === 'popular' ? '#1A1A1A' : '#FFFFFF',
+      wfSortColor: (s.wfSort || 'default') === 'popular' ? '#FFFFFF' : '#4A4A45',
+      wfSortBorder: (s.wfSort || 'default') === 'popular' ? '#1A1A1A' : '#E4E4E0',
+      toggleWfSort: () => this.setState(st => ({ wfSort: (st.wfSort || 'default') === 'popular' ? 'default' : 'popular' })),
+      wfSortLabel: (s.wfSort || 'default') === 'popular' ? '인기순' : '기본순',
       wfCatTabs: ['all', '기본 · 텍스트', '차트 · 데이터', '다이어그램 · 관계', '조직 · 타임라인', '콘텐츠 · 미디어'].map(k => ({
         label: k === 'all' ? '전체' : k,
         bg: (s.wfCat || 'all') === k ? '#1A1A1A' : '#FFFFFF',
@@ -5117,6 +6147,15 @@ class Component extends DCLogic {
       presentKnobLeft: s.sharePresent ? '18px' : '2px',
       startPresent: () => this.setState({ presenting: true, selEl: null, editingTitle: false, exportOpen: false, gridView: false }),
       gridView: s.gridView,
+      whiteboardOn: s.whiteboardOn,
+      deckTitle: '경영바우처 지원 제안서',
+      wbSlides: (s.outline.length ? s.outline : this.OUTLINE_DATA).map((o, i) => ({ title: o.title || ('슬라이드 ' + (i + 1)), layout: layoutOf(i) })),
+      toggleWhiteboard: () => { const opening = !this.state.whiteboardOn; this.setState(st => ({ whiteboardOn: !st.whiteboardOn, selEl: null, editingTitle: false, exportOpen: false, gridView: false })); if (opening) this._wbSeed(); },
+      wbToDeck: (payload) => this._boardToDeck(payload || {}),
+      wbEmbedded: true,
+      wbBtnBg: s.whiteboardOn ? '#1A1A1A' : '#FFFFFF',
+      wbBtnColor: s.whiteboardOn ? '#FFFFFF' : '#1A1A1A',
+      wbBtnBorder: s.whiteboardOn ? '#1A1A1A' : '#E4E4E0',
       toggleGrid: () => this.setState(st => ({ gridView: !st.gridView, selEl: null, editingTitle: false })),
       gridBtnBg: s.gridView ? '#F0F0EE' : '#FFFFFF',
       gridBtnColor: s.gridView ? '#1A1A1A' : '#1A1A1A',
