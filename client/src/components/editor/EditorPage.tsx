@@ -98,6 +98,69 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
         w: 1000,
         h: 400,
       };
+    case "w-poll":
+    case "w-dotvote":
+      return {
+        id: uid(),
+        type: "widget",
+        widget: kind === "w-poll" ? "poll" : "dotvote",
+        title: kind === "w-poll" ? "투표" : "닷 보팅",
+        options: [
+          { id: uid(), label: "선택지 A", votes: 0 },
+          { id: uid(), label: "선택지 B", votes: 0 },
+          { id: uid(), label: "선택지 C", votes: 0 },
+        ],
+        x: cx - 360,
+        y: cy - 220,
+        w: 720,
+        h: 440,
+      };
+    case "w-timer":
+      return {
+        id: uid(),
+        type: "widget",
+        widget: "timer",
+        title: "타이머",
+        seconds: 300,
+        endsAt: null,
+        remainingMs: 300000,
+        x: cx - 280,
+        y: cy - 190,
+        w: 560,
+        h: 380,
+      };
+    case "w-spinner":
+      return {
+        id: uid(),
+        type: "widget",
+        widget: "spinner",
+        title: "돌림판",
+        options: [
+          { id: uid(), label: "분석", votes: 0 },
+          { id: uid(), label: "디자인", votes: 0 },
+          { id: uid(), label: "개발", votes: 0 },
+          { id: uid(), label: "리뷰", votes: 0 },
+        ],
+        result: null,
+        x: cx - 340,
+        y: cy - 220,
+        w: 680,
+        h: 440,
+      };
+    case "w-alignment":
+      return {
+        id: uid(),
+        type: "widget",
+        widget: "alignment",
+        title: "정렬 스케일",
+        scaleValue: 50,
+        scaleLeft: "동의 안 함",
+        scaleRight: "매우 동의",
+        x: cx - 400,
+        y: cy - 150,
+        w: 800,
+        h: 300,
+      };
     default:
       return {
         id: uid(),
@@ -1543,6 +1606,22 @@ export function EditorPage() {
                   title="도형"
                 >
                   <span className="mi text-[17px]">square</span><span className="mi text-[13px]">keyboard_arrow_up</span>
+                </Dropdown>
+                {/* 인터랙티브 위젯 드롭다운 (워크숍 도구) */}
+                <Dropdown
+                  direction="up"
+                  items={[
+                    { key: "w-poll", name: "투표(Poll)", icon: <span className="mi text-[16px]">bar_chart</span> },
+                    { key: "w-dotvote", name: "닷 보팅", icon: <span className="mi text-[16px]">scatter_plot</span> },
+                    { key: "w-timer", name: "타이머", icon: <span className="mi text-[16px]">timer</span> },
+                    { key: "w-spinner", name: "돌림판", icon: <span className="mi text-[16px]">casino</span> },
+                    { key: "w-alignment", name: "정렬 스케일", icon: <span className="mi text-[16px]">linear_scale</span> },
+                  ]}
+                  onSelect={(key) => insertElement(key)}
+                  triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"
+                  title="인터랙티브 위젯"
+                >
+                  <span className="mi text-[17px]">widgets</span><span className="mi text-[13px]">keyboard_arrow_up</span>
                 </Dropdown>
                 {/* 정렬·분배 드롭다운 (위로 열림) */}
                 <Dropdown

@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
 import { attachSync, consumeInternalUpdate } from "../../engine/fabricSync";
-import type { Slide, SlideDims, SlideElement } from "../../engine/schema";
+import type { Slide, SlideDims, SlideElement, WidgetElement } from "../../engine/schema";
 import { SLIDE_H, SLIDE_W, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { useDeckStore } from "../../store/deckStore";
 import { useUiStore } from "../../store/uiStore";
 import { showToast } from "../ui/toast";
 import { registerCanvasApi } from "./canvasApi";
+import { WidgetOverlay } from "./WidgetLayer";
 
 const FIT_PADDING = 120;
 const MIN_ZOOM = 0.05;
@@ -231,6 +232,7 @@ export function SlideCanvas({
     fc.on("object:moving", (opt) => {
       const obj = opt.target;
       if (!obj) return;
+      setVptTick((t) => t + 1); // 위젯 오버레이가 드래그를 따라오도록
       clearGuides();
       const w = obj.getScaledWidth();
       const h = obj.getScaledHeight();
@@ -258,6 +260,7 @@ export function SlideCanvas({
     });
     fc.on("mouse:up", clearGuides);
     fc.on("object:modified", clearGuides);
+    fc.on("object:scaling", () => setVptTick((t) => t + 1)); // 리사이즈 시 위젯 오버레이 추종
 
     // --- Space+드래그 팬 ---
     let spaceDown = false;
@@ -753,6 +756,53 @@ export function SlideCanvas({
     });
   })();
 
+  // 인터랙티브 위젯 오버레이 — Fabric 정적 렌더 위에 실동작 컨트롤. 드래그 중엔 라이브 객체 위치를 따라감
+  const widgetEls = (() => {
+    const fc = fcRef.current;
+    if (!fc) return null;
+    void vptTick;
+    const vpt = fc.viewportTransform;
+    const widgets = slide.elements.filter((e): e is WidgetElement => e.type === "widget");
+    if (!widgets.length) return null;
+    const objById = new Map(
+      fc.getObjects().map((o) => [getElementData(o)?.elementId, o] as const),
+    );
+    return widgets.map((wg) => {
+      const obj = objById.get(wg.id);
+      const sceneX = obj?.left ?? wg.x;
+      const sceneY = obj?.top ?? wg.y;
+      const sw = obj ? obj.getScaledWidth() : wg.w;
+      const sh = obj ? obj.getScaledHeight() : wg.h;
+      const rect = {
+        l: sceneX * vpt[0] + vpt[4],
+        t: sceneY * vpt[3] + vpt[5],
+        w: sw * vpt[0],
+        h: sh * vpt[3],
+      };
+      return (
+        <WidgetOverlay
+          key={wg.id}
+          widget={wg}
+          rect={rect}
+          readOnly={readOnly}
+          onUpdate={(patch) => {
+            const st = useDeckStore.getState();
+            // 함수형 업데이트는 최신 스키마 상태를 읽어 계산(빠른 연속 투표 누적)
+            const resolved =
+              typeof patch === "function"
+                ? patch(
+                    st.deck?.slides
+                      .find((s) => s.id === slideRef.current.id)
+                      ?.elements.find((e) => e.id === wg.id) as WidgetElement,
+                  )
+                : patch;
+            st.updateElement(slideRef.current.id, wg.id, resolved);
+          }}
+        />
+      );
+    });
+  })();
+
   return (
     <div
       ref={hostRef}
@@ -760,6 +810,7 @@ export function SlideCanvas({
     >
       <canvas ref={canvasElRef} />
       {selectionLabels}
+      <div className="pointer-events-none absolute inset-0 z-10">{widgetEls}</div>
       {pinEls}
       {cursorEls}
       {ctxMenu && ctxItems.length > 0 && (

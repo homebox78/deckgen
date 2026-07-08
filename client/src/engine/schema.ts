@@ -61,7 +61,8 @@ export type SlideElement =
   | ChartElement
   | ImageElement
   | TableElement
-  | PathElement;
+  | PathElement
+  | WidgetElement;
 
 export interface ElementBase {
   id: string;
@@ -156,6 +157,28 @@ export interface PathElement extends ElementBase {
   d: string; // SVG path 데이터 (절대 좌표, 1920×1080 기준)
   stroke: string; // 선 색 (hex 또는 테마 토큰)
   strokeWidth: number;
+}
+
+// 인터랙티브 워크숍 위젯 (Miro식) — 캔버스 위 HTML 오버레이로 실동작, 상태는 스키마에 저장돼 협업 동기화.
+export type WidgetKind = "poll" | "dotvote" | "timer" | "spinner" | "alignment";
+export interface WidgetOption {
+  id: string;
+  label: string;
+  votes: number;
+  color?: string;
+}
+export interface WidgetElement extends ElementBase {
+  type: "widget";
+  widget: WidgetKind;
+  title: string;
+  options?: WidgetOption[]; // poll · dotvote · spinner
+  seconds?: number; // timer 총 시간(초)
+  endsAt?: number | null; // timer 실행 중 종료 epoch(ms), 정지면 null
+  remainingMs?: number | null; // timer 일시정지 시 남은 ms
+  scaleValue?: number; // alignment 0~100 (마커 위치)
+  scaleLeft?: string; // alignment 좌측 라벨
+  scaleRight?: string; // alignment 우측 라벨
+  result?: string | null; // spinner 결과 option id
 }
 
 // ===== 레이아웃 엔진 입력 (§5, §8.2) =====

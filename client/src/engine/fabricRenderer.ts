@@ -24,6 +24,7 @@ import type {
   SlideElement,
   TableElement,
   TextElement,
+  WidgetElement,
 } from "./schema";
 import { SLIDE_H, SLIDE_W } from "./schema";
 import { decomposeChart } from "./chartDecompose";
@@ -319,6 +320,168 @@ function buildTable(el: TableElement, theme: Theme): FabricObject {
   return attach(group, el);
 }
 
+// 인터랙티브 위젯 — 정적 표현(내보내기·발표용). 편집 시 실동작은 HTML 오버레이(WidgetLayer)가 담당.
+function buildWidget(el: WidgetElement, theme: Theme): FabricObject {
+  const parts: FabricObject[] = [];
+  const pad = 24;
+  const accent = theme.accent;
+  parts.push(
+    new Rect({
+      left: 0,
+      top: 0,
+      width: el.w,
+      height: el.h,
+      rx: 18,
+      ry: 18,
+      fill: theme.surface,
+      stroke: mixHex(theme.bg, theme.textSecondary, 0.25),
+      strokeWidth: 1.5,
+    }),
+  );
+  parts.push(
+    new Textbox(el.title || "", {
+      left: pad,
+      top: pad,
+      width: el.w - pad * 2,
+      fontSize: 30,
+      fontWeight: 700,
+      fill: theme.textPrimary,
+      fontFamily: theme.fontFamily,
+    }),
+  );
+  const bodyTop = pad + 48;
+  if (el.widget === "poll" || el.widget === "dotvote") {
+    const opts = el.options ?? [];
+    const max = Math.max(1, ...opts.map((o) => o.votes));
+    const rowH = Math.min(64, (el.h - bodyTop - pad) / Math.max(1, opts.length));
+    opts.forEach((o, i) => {
+      const y = bodyTop + i * rowH;
+      parts.push(
+        new Textbox(o.label, {
+          left: pad,
+          top: y,
+          width: el.w * 0.4,
+          fontSize: 22,
+          fill: theme.textPrimary,
+          fontFamily: theme.fontFamily,
+        }),
+      );
+      const barX = pad + el.w * 0.42;
+      const barMax = el.w - pad - barX - 60;
+      parts.push(
+        new Rect({
+          left: barX,
+          top: y + 2,
+          width: Math.max(4, barMax * (o.votes / max)),
+          height: Math.max(10, rowH - 16),
+          rx: 6,
+          ry: 6,
+          fill: o.color ? resolveColor(theme, o.color) : accent,
+        }),
+      );
+      parts.push(
+        new Textbox(String(o.votes), {
+          left: el.w - pad - 48,
+          top: y,
+          width: 48,
+          fontSize: 22,
+          fontWeight: 700,
+          fill: theme.textSecondary,
+          textAlign: "right",
+          fontFamily: theme.fontFamily,
+        }),
+      );
+    });
+  } else if (el.widget === "timer") {
+    const ms =
+      el.remainingMs != null
+        ? el.remainingMs
+        : el.endsAt != null
+          ? Math.max(0, el.endsAt - Date.now())
+          : (el.seconds ?? 300) * 1000;
+    const s = Math.round(ms / 1000);
+    const t = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+    parts.push(
+      new Textbox(t, {
+        left: 0,
+        top: el.h / 2 - 44,
+        width: el.w,
+        fontSize: 96,
+        fontWeight: 800,
+        fill: theme.textPrimary,
+        textAlign: "center",
+        fontFamily: theme.fontFamily,
+      }),
+    );
+  } else if (el.widget === "spinner") {
+    const opts = el.options ?? [];
+    const r = Math.min(el.w, el.h - bodyTop) / 2 - 12;
+    parts.push(
+      new Ellipse({
+        left: el.w / 2 - r,
+        top: bodyTop,
+        rx: r,
+        ry: r,
+        fill: mixHex(theme.surface, accent, 0.12),
+        stroke: accent,
+        strokeWidth: 3,
+      }),
+    );
+    const picked = opts.find((o) => o.id === el.result);
+    parts.push(
+      new Textbox(picked ? picked.label : `${opts.length}개 항목`, {
+        left: 0,
+        top: bodyTop + r - 12,
+        width: el.w,
+        fontSize: 24,
+        fontWeight: picked ? 800 : 400,
+        textAlign: "center",
+        fill: picked ? accent : theme.textSecondary,
+        fontFamily: theme.fontFamily,
+      }),
+    );
+  } else if (el.widget === "alignment") {
+    const cy = el.h / 2 + 8;
+    parts.push(
+      new Rect({
+        left: pad,
+        top: cy,
+        width: el.w - pad * 2,
+        height: 4,
+        rx: 2,
+        ry: 2,
+        fill: mixHex(theme.bg, theme.textSecondary, 0.3),
+      }),
+    );
+    const v = Math.max(0, Math.min(100, el.scaleValue ?? 50));
+    const mx = pad + (el.w - pad * 2) * (v / 100);
+    parts.push(new Ellipse({ left: mx - 14, top: cy - 12, rx: 14, ry: 14, fill: accent }));
+    parts.push(
+      new Textbox(el.scaleLeft ?? "동의 안 함", {
+        left: pad,
+        top: cy + 22,
+        width: el.w * 0.4,
+        fontSize: 18,
+        fill: theme.textSecondary,
+        fontFamily: theme.fontFamily,
+      }),
+    );
+    parts.push(
+      new Textbox(el.scaleRight ?? "매우 동의", {
+        left: el.w * 0.6 - pad,
+        top: cy + 22,
+        width: el.w * 0.4,
+        fontSize: 18,
+        textAlign: "right",
+        fill: theme.textSecondary,
+        fontFamily: theme.fontFamily,
+      }),
+    );
+  }
+  const group = new Group(parts, { left: el.x, top: el.y, subTargetCheck: false });
+  return attach(group, el);
+}
+
 export async function buildElement(
   el: SlideElement,
   theme: Theme,
@@ -336,6 +499,8 @@ export async function buildElement(
       return buildTable(el, theme);
     case "path":
       return buildPath(el, theme);
+    case "widget":
+      return buildWidget(el, theme);
   }
 }
 

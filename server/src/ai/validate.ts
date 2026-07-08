@@ -150,6 +150,27 @@ const pathElementSchema = z.object({
   strokeWidth: z.number(),
 });
 
+const widgetOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  votes: z.number(),
+  color: z.string().optional(),
+});
+const widgetElementSchema = z.object({
+  ...elementBase,
+  type: z.literal("widget"),
+  widget: z.enum(["poll", "dotvote", "timer", "spinner", "alignment"]),
+  title: z.string(),
+  options: z.array(widgetOptionSchema).optional(),
+  seconds: z.number().optional(),
+  endsAt: z.number().nullable().optional(),
+  remainingMs: z.number().nullable().optional(),
+  scaleValue: z.number().optional(),
+  scaleLeft: z.string().optional(),
+  scaleRight: z.string().optional(),
+  result: z.string().nullable().optional(),
+});
+
 export const slideElementSchema = z.discriminatedUnion("type", [
   textElementSchema,
   shapeElementSchema,
@@ -157,6 +178,7 @@ export const slideElementSchema = z.discriminatedUnion("type", [
   imageElementSchema,
   tableElementSchema,
   pathElementSchema,
+  widgetElementSchema,
 ]);
 
 export const slideSchema = z.object({
