@@ -274,7 +274,7 @@ function DashPage() {
   const avgSec = m.kpis.avgGenMs ? Math.round(m.kpis.avgGenMs / 1000) : 47;
   const kpis = [
     { name: "오늘 생성된 덱", value: String(m.kpis.todayGens || 46), delta: "+21%", up: true, sub: `어제 38 · 실패율 ${m.kpis.failRate ?? 2.2}%` },
-    { name: "DAU", value: String(Math.max(m.kpis.sharedDecks, 312)), delta: "+8%", up: true, sub: "WAU 1,204 · MAU 3,880" },
+    { name: "DAU", value: String(m.kpis.sharedDecks || 312), delta: "+8%", up: true, sub: "WAU 1,204 · MAU 3,880" },
     { name: "PPTX 내보내기", value: String(m.kpis.exportsToday || 128), delta: "+14%", up: true, sub: "이번 주 누적 517" },
     { name: "평균 생성 시간", value: `${avgSec}s`, delta: "-6s", up: true, sub: "아웃라인 8s + 슬라이드 39s" },
   ];

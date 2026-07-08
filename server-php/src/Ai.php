@@ -227,12 +227,14 @@ final class Ai
         $system = Prompts::SLIDES . ($carousel ? "\n\n[4:5 카드뉴스] 세로 캔버스다. title-bullets/kpi-cards/section을 우선하고, 텍스트는 짧게, 페이지 번호·발표자 정보는 절대 넣지 마라. 마지막 장은 section 레이아웃의 CTA로." : '');
         $outlineJson = json_encode($outline, JSON_UNESCAPED_UNICODE);
         $n = count($outline);
+        $emitted = 0;
 
         foreach (array_values($outline) as $i => $item) {
             $item['index'] = $i;
             if ($useMock) {
                 usleep(500000);
                 $emit('slide-spec', self::mockSpec($item, $n));
+                $emitted++;
                 continue;
             }
             try {
@@ -246,6 +248,7 @@ final class Ai
                 if (is_array($spec) && isset($spec['layout'], $spec['content'])) {
                     $spec['index'] = $i;
                     $emit('slide-spec', $spec);
+                    $emitted++;
                 } else {
                     $emit('slide-error', ['index' => $i, 'message' => '이 슬라이드 생성에 실패했습니다.']);
                 }
@@ -253,6 +256,12 @@ final class Ai
                 $emit('slide-error', ['index' => $i, 'message' => '이 슬라이드 생성에 실패했습니다.']);
                 Admin::logError('SlideGenerationError', $e->getMessage());
             }
+        }
+        // Node 서버와 동일: 한 장도 성공 못하면 error 이벤트 + 실패 로깅
+        if ($emitted === 0) {
+            $emit('error', ['message' => '슬라이드를 생성하지 못했습니다. 다시 시도해주세요.']);
+            Admin::logEvent('slides', false, (int) ((microtime(true) - $t0) * 1000), $n . '장', 'SlideGenerationError');
+            return;
         }
         $emit('done', []);
         Admin::logEvent('slides', true, (int) ((microtime(true) - $t0) * 1000), $n . '장' . ($useMock ? ' (mock)' : ''));
@@ -329,6 +338,51 @@ final class Ai
         Admin::logEvent('edit', false, (int) ((microtime(true) - $t0) * 1000), mb_substr($instruction, 0, 50), 'MagicEditError');
         http_response_code(502);
         echo json_encode(['error' => 'AI 수정에 실패했습니다. 다시 시도해주세요.'], JSON_UNESCAPED_UNICODE);
+    }
+
+    // ── POST /ai-image (Demo Act 5.5 AI 이미지) — openai_api_key/openai_model. 키 없거나 실패 시 501/502 → 클라 그라디언트 대체 ──
+    public static function aiImage(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        $b = self::body();
+        $prompt = trim((string) ($b['prompt'] ?? ''));
+        if ($prompt === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'prompt가 필요합니다.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        $key = trim((string) Db::cfg('openai_api_key', ''));
+        $model = trim((string) Db::cfg('openai_model', ''));
+        if ($key === '' || $model === '') {
+            http_response_code(501);
+            echo json_encode(['error' => 'AI 이미지 키가 설정되지 않았습니다.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        $size = is_string($b['size'] ?? null) ? $b['size'] : '1024x1024';
+        try {
+            $ch = curl_init('https://api.openai.com/v1/images/generations');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 120,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Authorization: Bearer ' . $key],
+                // gpt-image 계열은 response_format 미지원(b64_json 기본 반환) → 파라미터 생략
+                CURLOPT_POSTFIELDS => json_encode(['model' => $model, 'prompt' => $prompt, 'n' => 1, 'size' => $size], JSON_UNESCAPED_UNICODE),
+            ]);
+            $res = curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($res === false) throw new RuntimeException('curl: ' . curl_error($ch));
+            if ($code < 200 || $code >= 300) throw new RuntimeException('OpenAI ' . $code . ': ' . substr((string) $res, 0, 300));
+            $j = json_decode((string) $res, true);
+            $item = $j['data'][0] ?? null;
+            $image = !empty($item['b64_json']) ? 'data:image/png;base64,' . $item['b64_json'] : (string) ($item['url'] ?? '');
+            if ($image === '') throw new RuntimeException('이미지 응답이 비었습니다.');
+            Admin::logEvent('regen', true, 0, 'AI 이미지 · ' . mb_substr($prompt, 0, 40));
+            echo json_encode(['image' => $image], JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $e) {
+            http_response_code(502);
+            echo json_encode(['error' => '이미지 생성에 실패했습니다.'], JSON_UNESCAPED_UNICODE);
+        }
     }
 
     private static function mockEdit(array $slide, string $instruction): array

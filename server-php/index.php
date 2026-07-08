@@ -85,6 +85,7 @@ try {
     if ($method === 'POST' && $path === '/outline') { Ai::outline(); exit; }
     if ($method === 'POST' && $path === '/slides') { Ai::slides(); exit; }
     if ($method === 'POST' && $path === '/edit') { Ai::edit(); exit; }
+    if ($method === 'POST' && $path === '/ai-image') { Ai::aiImage(); exit; }
 
     notFound();
 } catch (Throwable $e) {
