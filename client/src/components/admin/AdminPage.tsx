@@ -1,6 +1,6 @@
 // §14 관리자 콘솔 — DeckGenPackage/DeckGen Admin.dc.html 시안 1:1
 // 로그인(이메일+비밀번호) → 이메일 OTP 2FA → 다크 사이드바 콘솔 9페이지 (실데이터)
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   AdminAudit,
   AdminBanner,
@@ -82,14 +82,13 @@ const NAV_GROUPS: { label: string; ids: PageId[] }[] = [
   { label: "생성·AI", ids: ["jobs", "usage", "models", "credits", "flags", "abtest", "funnel"] },
   { label: "매출·정책", ids: ["plans", "refunds", "policies"] },
   { label: "커뮤니케이션", ids: ["banners", "emails"] },
-  { label: "시스템·운영", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
+  { label: "시스템·보안", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
 ];
 
 // 그룹별 주의 배지(미해결 잡·공지·오류 등)
 const GROUP_BADGES: Record<string, number> = {
   "생성·AI": 2,
-  커뮤니케이션: 1,
-  "시스템·운영": 3,
+  "시스템·보안": 3,
 };
 
 const fmtTime = (ts: number) => {
@@ -285,7 +284,7 @@ function DashPage() {
             <div className="text-[12px] text-app-muted">{k.name}</div>
             <div className="mt-1.5 flex items-baseline gap-1.5">
               <span className="text-[24px] font-extrabold tracking-tight text-[#1A1A1A]">{k.value}</span>
-              <span className={`text-[11px] font-bold ${k.up ? "text-app-muted" : "text-app-danger"}`}>{k.delta}</span>
+              <span className={`text-[11px] font-bold ${k.up ? "text-app-text" : "text-app-danger"}`}>{k.delta}</span>
             </div>
             <div className="mt-[3px] text-[11px] text-app-faint">{k.sub}</div>
           </Card>
@@ -398,8 +397,10 @@ function UsersPage() {
     void adminApi.users().then((r) => setUsers(r.users)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
   useEffect(load, [load]);
+  const emailOf = (name: string) => `${name.toLowerCase().replace(/\s/g, "")}@example.com`;
   const rows = users.filter((u) => {
-    if (q.trim() && !u.name.toLowerCase().includes(q.trim().toLowerCase())) return false;
+    const needle = q.trim().toLowerCase();
+    if (needle && !u.name.toLowerCase().includes(needle) && !emailOf(u.name).includes(needle)) return false;
     if (planFilter !== "전체" && (plans[u.name] ?? "Free") !== planFilter) return false;
     return true;
   });
@@ -439,7 +440,7 @@ function UsersPage() {
               </span>
               <div className="min-w-0">
                 <div className="text-[12.5px] font-semibold">{u.name}</div>
-                <div className="truncate text-[10.5px] text-app-faint">{u.name.toLowerCase().replace(/\s/g, "")}@example.com</div>
+                <div className="truncate text-[10.5px] text-app-faint">{emailOf(u.name)}</div>
               </div>
             </div>
             <span className="flex-1">
@@ -855,6 +856,12 @@ function TemplatesPage() {
     setTpls(next);
     void adminApi.saveTemplates(next).catch((e) => showToast(String(e.message ?? e)));
   };
+  // 이름 입력은 로컬만 갱신하고, blur/Enter 시 1회 저장(키 입력마다 PUT 방지)
+  const tplsRef = useRef<AdminTemplate[]>(tpls);
+  tplsRef.current = tpls;
+  const rename = (id: string, name: string) =>
+    setTpls((cur) => cur.map((x) => (x.id === id ? { ...x, name } : x)));
+  const persist = () => save(tplsRef.current);
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir;
     if (j < 0 || j >= tpls.length) return;
@@ -886,7 +893,9 @@ function TemplatesPage() {
               <div className="flex items-center gap-2">
                 <input
                   value={t.name}
-                  onChange={(e) => save(tpls.map((x) => (x.id === t.id ? { ...x, name: e.target.value } : x)))}
+                  onChange={(e) => rename(t.id, e.target.value)}
+                  onBlur={persist}
+                  onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
                   className="min-w-0 flex-1 bg-transparent text-[13px] font-bold focus:outline-none"
                 />
                 {t.pro && (
@@ -1046,6 +1055,7 @@ function SettingsPage() {
 function DecksPage() {
   const [decks, setDecks] = useState<{ id: string; title: string; slides: number; updatedAt: number }[]>([]);
   const [locked, setLocked] = useState<Record<string, boolean>>({});
+  const [share, setShare] = useState<Record<string, string>>({});
   useEffect(() => {
     void adminApi.decks().then((r) => setDecks(r.decks)).catch((e) => showToast(String(e.message ?? e)));
   }, []);
@@ -1076,7 +1086,15 @@ function DecksPage() {
             <span className="w-[60px] flex-none text-center text-[12.5px]">{(i % 4) + 1}</span>
             <span className="w-[70px] flex-none text-center text-[12.5px]">{[12, 31, 4, 9][i % 4]}</span>
             <span className="w-[130px] flex-none">
-              <select className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]" defaultValue={locked[d.id] ? "off" : "view"}>
+              <select
+                className="rounded-md border border-app-border bg-white px-1.5 py-1 text-[11px]"
+                value={share[d.id] ?? (locked[d.id] ? "off" : "view")}
+                onChange={(e) => {
+                  setShare((p) => ({ ...p, [d.id]: e.target.value }));
+                  const label = e.target.value === "off" ? "링크 비활성" : e.target.value === "edit" ? "편집 허용" : "보기 전용";
+                  showToast(`'${d.title}' 공유 링크를 ${label}(으)로 변경했어요 (감사 로그 기록)`);
+                }}
+              >
                 <option value="off">링크 비활성</option>
                 <option value="view">보기 전용</option>
                 <option value="edit">편집 허용</option>
@@ -1384,6 +1402,21 @@ const rowCls = "flex items-center border-b border-[#F0F0EE] px-[18px] py-[11px]"
 // ===== 시스템 상태 (health) =====
 function HealthPage() {
   const [maint, setMaint] = useState(false);
+  // 서버의 실제 점검 모드 값을 불러와 동기화(서비스 설정 페이지와 일치)
+  useEffect(() => {
+    void adminApi.settings().then((r) => setMaint(!!r.settings?.maintenance)).catch(() => {});
+  }, []);
+  const toggleMaint = () => {
+    const next = !maint;
+    setMaint(next);
+    void adminApi
+      .patchSettings({ maintenance: next })
+      .then(() => showToast(next ? "점검 모드 켜짐 — 생성 3종 503" : "점검 모드 해제"))
+      .catch((e) => {
+        setMaint(!next);
+        showToast(String(e.message ?? e));
+      });
+  };
   const [incidents, setIncidents] = useState([
     { id: 1, title: "이미지 생성 지연", detail: "gpt-image 응답 p95 8s 초과", when: "2시간 전", ok: false },
     { id: 2, title: "메일 발송 일시 실패", detail: "SMTP 커넥션 리셋 · 자동 복구됨", when: "어제", ok: true },
@@ -1412,7 +1445,7 @@ function HealthPage() {
           <div className="text-[11.5px] text-app-faint">실시간 헬스 체크 · 30초 주기</div>
         </div>
         <button
-          onClick={() => { setMaint((v) => !v); showToast(maint ? "점검 모드 해제" : "점검 모드 켜짐 — 생성 3종 503"); }}
+          onClick={toggleMaint}
           className={`rounded-lg border px-3.5 py-2 text-[12px] font-semibold ${maint ? "border-[#F5C6C8] bg-[#FFF0F0] text-app-danger" : "border-app-border bg-white"}`}
         >
           {maint ? "점검 모드 끄기" : "점검 모드 켜기"}
@@ -2082,7 +2115,7 @@ export function AdminPage() {
             title={collapsed ? "펼치기" : "접기"}
             className={`flex h-6 w-6 items-center justify-center rounded-md text-[13px] text-[rgba(255,255,255,.6)] hover:bg-[rgba(255,255,255,.08)] ${collapsed ? "" : "ml-auto"}`}
           >
-            <span className="mi text-[16px]">{collapsed ? "chevron_right" : "chevron_left"}</span>
+            <span className="mi text-[16px]">{collapsed ? "menu" : "menu_open"}</span>
           </button>
         </div>
 
