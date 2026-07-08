@@ -19,6 +19,12 @@ export default defineConfig(({ command }) => ({
         changeOrigin: true,
         secure: true,
       },
+      // 이모지 이미지 시리즈 — dev에서도 라이브 매니페스트/이미지 확인용
+      "/emoji": {
+        target: "https://hom2box.com/deckGen",
+        changeOrigin: true,
+        secure: true,
+      },
     },
   },
 }));
