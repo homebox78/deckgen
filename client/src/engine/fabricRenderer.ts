@@ -477,6 +477,50 @@ function buildWidget(el: WidgetElement, theme: Theme): FabricObject {
         fontFamily: theme.fontFamily,
       }),
     );
+  } else if (el.widget === "wordcloud") {
+    // 빈도수 큰 순으로 배치, 폰트 크기=빈도 스케일. 간단한 줄바꿈 흐름 배치.
+    const words = [...(el.words ?? [])].sort((a, b) => b.count - a.count);
+    const maxC = Math.max(1, ...words.map((w) => w.count));
+    const palette = [accent, theme.textPrimary, theme.textSecondary];
+    let x = pad;
+    let y = bodyTop;
+    let rowH = 0;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      const fs = 22 + Math.round((w.count / maxC) * 46); // 22~68
+      const est = w.text.length * fs * 0.6 + 20;
+      if (x + est > el.w - pad && x > pad) {
+        x = pad;
+        y += rowH + 12;
+        rowH = 0;
+      }
+      if (y + fs > el.h - pad) break;
+      parts.push(
+        new Textbox(w.text, {
+          left: x,
+          top: y,
+          fontSize: fs,
+          fontWeight: 700,
+          fill: palette[i % palette.length],
+          fontFamily: theme.fontFamily,
+        }),
+      );
+      x += est + 14;
+      rowH = Math.max(rowH, fs);
+    }
+    if (words.length === 0) {
+      parts.push(
+        new Textbox("단어를 입력해 보세요", {
+          left: pad,
+          top: el.h / 2 - 16,
+          width: el.w - pad * 2,
+          fontSize: 22,
+          textAlign: "center",
+          fill: theme.textSecondary,
+          fontFamily: theme.fontFamily,
+        }),
+      );
+    }
   }
   const group = new Group(parts, { left: el.x, top: el.y, subTargetCheck: false });
   return attach(group, el);

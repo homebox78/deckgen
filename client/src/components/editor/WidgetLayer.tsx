@@ -54,6 +54,95 @@ export function WidgetOverlay({
         {widget.widget === "alignment" && (
           <AlignmentBody widget={widget} s={s} readOnly={readOnly} onUpdate={onUpdate} />
         )}
+        {widget.widget === "wordcloud" && (
+          <WordCloudBody widget={widget} s={s} readOnly={readOnly} onUpdate={onUpdate} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WordCloudBody({
+  widget,
+  s,
+  readOnly,
+  onUpdate,
+}: {
+  widget: WidgetElement;
+  s: number;
+  readOnly?: boolean;
+  onUpdate: (patch: WidgetUpdater) => void;
+}) {
+  const px = (v: number) => `${v * s}px`;
+  const [draft, setDraft] = useState("");
+  const words = [...(widget.words ?? [])].sort((a, b) => b.count - a.count);
+  const maxC = Math.max(1, ...words.map((w) => w.count));
+
+  const add = (raw: string) => {
+    const t = raw.trim().replace(/\s+/g, " ");
+    if (!t) return;
+    onUpdate((el) => {
+      const list = [...(el.words ?? [])];
+      const i = list.findIndex((w) => w.text.toLowerCase() === t.toLowerCase());
+      if (i >= 0) list[i] = { ...list[i], count: list[i].count + 1 };
+      else list.push({ text: t, count: 1 });
+      return { words: list };
+    });
+  };
+  const bump = (text: string) =>
+    onUpdate((el) => ({
+      words: (el.words ?? []).map((w) => (w.text === text ? { ...w, count: w.count + 1 } : w)),
+    }));
+
+  const COLORS = ["#1A1A1A", DOT_COLORS[0], DOT_COLORS[1], DOT_COLORS[2], DOT_COLORS[4]];
+  return (
+    <div className="flex min-h-0 flex-1 flex-col" style={{ gap: px(8) }}>
+      {!readOnly && (
+        <div
+          className="flex items-center rounded-full border border-app-border bg-white"
+          style={{ gap: px(6), padding: `${px(4)} ${px(12)}`, pointerEvents: "auto" }}
+        >
+          <span className="mi text-app-faint" style={{ fontSize: px(18) }}>
+            add
+          </span>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                add(draft);
+                setDraft("");
+              }
+            }}
+            placeholder="단어 입력 후 Enter"
+            className="min-w-0 flex-1 bg-transparent focus:outline-none"
+            style={{ fontSize: px(18) }}
+          />
+        </div>
+      )}
+      <div className="flex min-h-0 flex-1 flex-wrap content-center items-center justify-center overflow-hidden" style={{ gap: `${px(4)} ${px(14)}` }}>
+        {words.length === 0 ? (
+          <span className="text-app-faint" style={{ fontSize: px(20) }}>
+            단어를 입력하면 빈도수만큼 커집니다
+          </span>
+        ) : (
+          words.map((w, i) => (
+            <button
+              key={w.text}
+              disabled={readOnly}
+              onClick={() => !readOnly && bump(w.text)}
+              title={`${w.count}회 · 클릭해서 +1`}
+              className="font-bold leading-none hover:opacity-70 disabled:cursor-default"
+              style={{
+                fontSize: px(22 + (w.count / maxC) * 46),
+                color: COLORS[i % COLORS.length],
+                pointerEvents: readOnly ? "none" : "auto",
+              }}
+            >
+              {w.text}
+            </button>
+          ))
+        )}
       </div>
     </div>
   );

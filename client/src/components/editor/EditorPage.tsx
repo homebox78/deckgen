@@ -235,6 +235,18 @@ function buildInsertElement(kind: string, dims: SlideDims): SlideElement {
         w: 800,
         h: 300,
       };
+    case "w-wordcloud":
+      return {
+        id: uid(),
+        type: "widget",
+        widget: "wordcloud",
+        title: "워드클라우드",
+        words: [],
+        x: cx - 400,
+        y: cy - 240,
+        w: 800,
+        h: 480,
+      };
     default:
       return {
         id: uid(),
@@ -1790,6 +1802,7 @@ export function EditorPage() {
                     { key: "w-timer", name: "타이머", icon: <span className="mi text-[16px]">timer</span> },
                     { key: "w-spinner", name: "돌림판", icon: <span className="mi text-[16px]">casino</span> },
                     { key: "w-alignment", name: "정렬 스케일", icon: <span className="mi text-[16px]">linear_scale</span> },
+                    { key: "w-wordcloud", name: "워드클라우드", icon: <span className="mi text-[16px]">cloud</span> },
                   ]}
                   onSelect={(key) => insertElement(key)}
                   triggerClassName="flex h-8 items-center justify-center gap-0.5 rounded-lg px-2 text-app-muted hover:bg-app-bg hover:text-app-text data-open:bg-app-bg"

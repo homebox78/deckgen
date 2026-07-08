@@ -160,12 +160,16 @@ export interface PathElement extends ElementBase {
 }
 
 // 인터랙티브 워크숍 위젯 (Miro식) — 캔버스 위 HTML 오버레이로 실동작, 상태는 스키마에 저장돼 협업 동기화.
-export type WidgetKind = "poll" | "dotvote" | "timer" | "spinner" | "alignment";
+export type WidgetKind = "poll" | "dotvote" | "timer" | "spinner" | "alignment" | "wordcloud";
 export interface WidgetOption {
   id: string;
   label: string;
   votes: number;
   color?: string;
+}
+export interface WordEntry {
+  text: string;
+  count: number;
 }
 export interface WidgetElement extends ElementBase {
   type: "widget";
@@ -179,6 +183,7 @@ export interface WidgetElement extends ElementBase {
   scaleLeft?: string; // alignment 좌측 라벨
   scaleRight?: string; // alignment 우측 라벨
   result?: string | null; // spinner 결과 option id
+  words?: WordEntry[]; // wordcloud — 단어별 빈도(크기)
 }
 
 // ===== 레이아웃 엔진 입력 (§5, §8.2) =====

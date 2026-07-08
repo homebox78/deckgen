@@ -159,7 +159,7 @@ const widgetOptionSchema = z.object({
 const widgetElementSchema = z.object({
   ...elementBase,
   type: z.literal("widget"),
-  widget: z.enum(["poll", "dotvote", "timer", "spinner", "alignment"]),
+  widget: z.enum(["poll", "dotvote", "timer", "spinner", "alignment", "wordcloud"]),
   title: z.string(),
   options: z.array(widgetOptionSchema).optional(),
   seconds: z.number().optional(),
@@ -169,6 +169,7 @@ const widgetElementSchema = z.object({
   scaleLeft: z.string().optional(),
   scaleRight: z.string().optional(),
   result: z.string().nullable().optional(),
+  words: z.array(z.object({ text: z.string(), count: z.number() })).optional(),
 });
 
 export const slideElementSchema = z.discriminatedUnion("type", [
