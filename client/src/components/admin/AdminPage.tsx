@@ -2279,9 +2279,15 @@ export function AdminPage() {
   const [page, setPage] = useState<PageId>("dash");
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem("dg_admin_sidebar") === "0");
   const [railQuery, setRailQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(NAV_GROUPS.map((g) => [g.label, true])),
-  );
+  // 아코디언 — 현재 보고 있는 페이지가 속한 그룹만 펼침(나머지 접힘)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => ({
+    [PAGE_GROUP["dash"]]: true,
+  }));
+  // 페이지 이동 시 그 페이지의 그룹만 열고 나머지는 닫는다
+  useEffect(() => {
+    const g = PAGE_GROUP[page];
+    if (g) setOpenGroups({ [g]: true });
+  }, [page]);
   // 항목별 실시간 배지 = jobs(실행+대기) · banners(활성) · errors(개수). 그룹 배지 = 소속 항목 배지 합.
   const [itemBadges, setItemBadges] = useState<Record<string, number>>({});
   useEffect(() => {
@@ -2423,7 +2429,7 @@ export function AdminPage() {
                 return (
                   <div key={g.label} className="mb-1">
                     <button
-                      onClick={() => setOpenGroups((s) => ({ ...s, [g.label]: !s[g.label] }))}
+                      onClick={() => setOpenGroups((s) => (s[g.label] ? {} : { [g.label]: true }))}
                       className="flex w-full items-center gap-1.5 px-2.5 py-1.5 text-[10.5px] font-bold tracking-wide text-[rgba(255,255,255,.4)] uppercase"
                     >
                       <span className={`mi text-[14px] transition-transform ${open ? "rotate-90" : ""}`}>chevron_right</span>
