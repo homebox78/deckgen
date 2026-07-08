@@ -13,6 +13,12 @@ export default defineConfig(({ command }) => ({
         target: "http://localhost:3001",
         changeOrigin: true,
       },
+      // powerPlus 자산 라이브러리 연동 — dev에서 동일출처처럼 호출(운영은 hom2box.com 동일출처)
+      "/powerPlus": {
+        target: "https://hom2box.com",
+        changeOrigin: true,
+        secure: true,
+      },
     },
   },
 }));

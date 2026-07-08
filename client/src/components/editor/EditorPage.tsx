@@ -32,6 +32,7 @@ import { showToast } from "../ui/toast";
 import { canvasApi } from "./canvasApi";
 import { ChatPanel } from "./ChatPanel";
 import { CommentsPanel } from "./CommentsPanel";
+import { LibraryPanel } from "./LibraryPanel";
 import { GridOverview } from "./GridOverview";
 import { MediaPicker } from "./MediaPicker";
 import { PresentMode } from "./PresentMode";
@@ -47,7 +48,7 @@ import { SlideThumbnail } from "./SlideThumbnail";
 import { VersionHistory } from "./VersionHistory";
 import { useCollabSync } from "./useCollabSync";
 
-type RightTab = "chat" | "props" | "notes" | "comments";
+type RightTab = "chat" | "props" | "notes" | "comments" | "library";
 
 interface ContextMenuState {
   x: number;
@@ -1636,24 +1637,26 @@ export function EditorPage() {
 
         {/* 우측: 탭 패널 */}
         <aside className="flex w-80 shrink-0 flex-col border-l border-app-border bg-app-surface">
-          <div className="flex shrink-0 gap-1 border-b border-app-border px-3 pt-2">
+          <div className="flex shrink-0 gap-0.5 overflow-x-auto border-b border-app-border px-2 pt-2">
             {(
               [
                 ["chat", "AI 채팅"],
                 ["props", "속성"],
                 ["notes", "노트"],
                 ["comments", "댓글"],
+                ["library", "라이브러리"],
               ] as const
             ).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`flex items-center gap-1 px-3 py-2 text-[13px] font-semibold ${
+                className={`flex shrink-0 items-center gap-1 whitespace-nowrap px-2.5 py-2 text-[12.5px] font-semibold ${
                   tab === key
                     ? "border-b-2 border-app-accent text-app-text"
                     : "border-b-2 border-transparent text-app-faint hover:text-app-text"
                 }`}
               >
+                {key === "library" && <span className="mi text-[15px]">photo_library</span>}
                 {label}
                 {key === "comments" && unresolvedComments > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-app-danger px-1 text-[9px] font-bold text-white">
@@ -1703,6 +1706,16 @@ export function EditorPage() {
                 slideId={slide.id}
                 slideIndex={slideIndex}
                 readOnly={readOnly}
+              />
+            )}
+            {tab === "library" && (
+              <LibraryPanel
+                dims={dims}
+                readOnly={readOnly}
+                onInsert={(el) => {
+                  addElement(slide.id, el);
+                  useUiStore.getState().setSelectedElementId(el.id);
+                }}
               />
             )}
           </div>
