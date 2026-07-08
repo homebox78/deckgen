@@ -312,17 +312,18 @@ export function PropertiesPanel({
         <div className="mb-2 grid grid-cols-4 gap-1.5">
           {(
             [
-              ["back", "맨 뒤"],
-              ["backward", "뒤로"],
-              ["forward", "앞으로"],
-              ["front", "맨 앞"],
+              ["back", "맨 뒤", "flip_to_back"],
+              ["backward", "뒤로", "move_down"],
+              ["forward", "앞으로", "move_up"],
+              ["front", "맨 앞", "flip_to_front"],
             ] as const
-          ).map(([dir, label]) => (
+          ).map(([dir, label, glyph]) => (
             <button
               key={dir}
               onClick={() => useDeckStore.getState().reorderElement(slideId, element.id, dir)}
-              className="rounded-md border border-app-border bg-white py-1.5 text-[11px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
+              className="flex flex-col items-center gap-0.5 rounded-md border border-app-border bg-white py-1.5 text-[10.5px] font-semibold text-app-muted hover:border-app-accent hover:text-app-accent"
             >
+              <span className="mi text-[15px]">{glyph}</span>
               {label}
             </button>
           ))}
@@ -394,17 +395,24 @@ export function PropertiesPanel({
           <SectionLabel>차트</SectionLabel>
           {/* 차트 타입 전환 */}
           <div className="mb-2.5 flex overflow-hidden rounded-lg border border-app-border">
-            {(["bar", "line", "pie"] as const).map((ct, i) => (
+            {(
+              [
+                ["bar", "막대", "bar_chart"],
+                ["line", "선", "show_chart"],
+                ["pie", "파이", "pie_chart"],
+              ] as const
+            ).map(([ct, label, glyph], i) => (
               <button
                 key={ct}
                 onClick={() => patch({ chartType: ct } as Partial<SlideElement>)}
-                className={`flex-1 py-1.5 text-[11.5px] font-semibold ${i > 0 ? "border-l border-app-border" : ""} ${
+                className={`flex flex-1 items-center justify-center gap-1 py-1.5 text-[11.5px] font-semibold ${i > 0 ? "border-l border-app-border" : ""} ${
                   element.chartType === ct
                     ? "bg-app-accent-soft text-app-accent"
                     : "bg-white text-app-faint hover:bg-app-bg"
                 }`}
               >
-                {ct === "bar" ? "막대" : ct === "line" ? "선" : "파이"}
+                <span className="mi text-[14px]">{glyph}</span>
+                {label}
               </button>
             ))}
           </div>
@@ -780,19 +788,20 @@ export function PropertiesPanel({
             <div className="flex flex-[1.3] overflow-hidden rounded-lg border border-app-border">
               {(
                 [
-                  ["left", "왼쪽"],
-                  ["center", "가운데"],
-                  ["right", "오른쪽"],
+                  ["left", "format_align_left"],
+                  ["center", "format_align_center"],
+                  ["right", "format_align_right"],
                 ] as const
-              ).map(([a, label], i) => (
+              ).map(([a, glyph], i) => (
                 <button
                   key={a}
+                  title={a === "left" ? "왼쪽" : a === "center" ? "가운데" : "오른쪽"}
                   onClick={() => patch({ align: a } as Partial<SlideElement>)}
-                  className={`flex-1 py-1.5 text-[11.5px] font-semibold ${
+                  className={`flex flex-1 items-center justify-center py-1.5 ${
                     i === 1 ? "border-x border-app-border" : ""
                   } ${align === a ? "bg-app-accent-soft text-app-accent" : "bg-white text-app-faint hover:bg-app-bg"}`}
                 >
-                  {label}
+                  <span className="mi text-[16px]">{glyph}</span>
                 </button>
               ))}
             </div>

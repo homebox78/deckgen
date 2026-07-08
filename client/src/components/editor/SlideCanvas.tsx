@@ -1,4 +1,5 @@
 import { ActiveSelection, Canvas, FabricObject, Line, PencilBrush, Point } from "fabric";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { decomposeChart } from "../../engine/chartDecompose";
 import { getElementData, renderSlide } from "../../engine/fabricRenderer";
@@ -35,6 +36,7 @@ export function SlideCanvas({
   onPinPlace,
   onPinClick,
   onPinClickAt,
+  onPinMove,
   penMode = false,
   penColor = "#E5484D",
   penWidth = 4,
@@ -51,6 +53,7 @@ export function SlideCanvas({
   onPinPlace?: (x: number, y: number) => void;
   onPinClick?: (id: string) => void;
   onPinClickAt?: (id: string, clientX: number, clientY: number) => void;
+  onPinMove?: (id: string, x: number, y: number) => void;
   penMode?: boolean;
   penColor?: string;
   penWidth?: number;
@@ -700,16 +703,46 @@ export function SlideCanvas({
     return pins.map((pin) => {
       const sx = pin.x * vpt[0] + vpt[4];
       const sy = pin.y * vpt[3] + vpt[5];
+      // 드래그로 이동 + (움직임 없으면) 클릭으로 팝업. 화면 좌표 → 슬라이드 좌표 역변환.
+      const onDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        const host = hostRef.current;
+        const cur = fcRef.current?.viewportTransform;
+        if (!host || !cur) return;
+        const rect = host.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        let moved = false;
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          /* 캡처 실패해도 window 리스너로 드래그·클릭 처리 */
+        }
+        const move = (ev: PointerEvent) => {
+          if (!moved && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 4) return;
+          moved = true;
+          const nx = (ev.clientX - rect.left - cur[4]) / cur[0];
+          const ny = (ev.clientY - rect.top - cur[5]) / cur[3];
+          onPinMove?.(pin.id, Math.round(nx), Math.round(ny));
+        };
+        const up = (ev: PointerEvent) => {
+          window.removeEventListener("pointermove", move);
+          window.removeEventListener("pointerup", up);
+          if (!moved) {
+            // 클릭으로 처리 → 팝업 열기
+            onPinClick?.(pin.id);
+            onPinClickAt?.(pin.id, ev.clientX, ev.clientY);
+          }
+        };
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", up);
+      };
       return (
         <button
           key={pin.id}
-          onClick={(e) => {
-            e.stopPropagation();
-            onPinClick?.(pin.id);
-            onPinClickAt?.(pin.id, e.clientX, e.clientY);
-          }}
-          title={`댓글 핀 ${pin.n}`}
-          className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-full rotate-45 items-center justify-center rounded-full rounded-bl-none border-2 border-white shadow-md ${
+          onPointerDown={onDown}
+          title={`댓글 핀 ${pin.n} — 드래그로 이동, 클릭으로 열기`}
+          className={`absolute z-20 flex h-6 w-6 -translate-x-1/2 -translate-y-full rotate-45 cursor-grab items-center justify-center rounded-full rounded-bl-none border-2 border-white shadow-md active:cursor-grabbing ${
             pin.resolved ? "bg-app-faint" : "bg-app-accent"
           }`}
           style={{ left: sx, top: sy }}

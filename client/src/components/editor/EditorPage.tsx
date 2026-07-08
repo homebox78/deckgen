@@ -12,7 +12,7 @@ import { aspectDims, uid } from "../../engine/schema";
 import type { Theme } from "../../engine/themes";
 import { getTheme, themes } from "../../engine/themes";
 import { addSavedTemplate } from "../../store/savedTemplateStore";
-import { addComment, addReply, deleteComment, toggleResolve, useComments } from "../../store/commentStore";
+import { addComment, addReply, deleteComment, moveComment, toggleResolve, useComments } from "../../store/commentStore";
 import {
   CLIENT_ID,
   MY_COLOR,
@@ -990,10 +990,12 @@ export function EditorPage() {
                     }
                   }
                 }}
-                triggerClassName="flex-1 rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"
+                rootClassName="flex-1"
+                triggerClassName="flex w-full items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-app-border bg-white py-1.5 text-[12px] font-semibold text-app-text hover:border-app-accent"
                 title="새 슬라이드"
               >
-                새 슬라이드 <span className="mi text-[14px] text-app-faint">expand_more</span>
+                <span className="mi text-[16px]">add</span>새 슬라이드{" "}
+                <span className="mi text-[14px] text-app-faint">expand_more</span>
               </Dropdown>
               <button
                 onClick={() => {
@@ -1001,9 +1003,9 @@ export function EditorPage() {
                   setCurrentSlideIndex(slideIndex + 1);
                 }}
                 title="빈 슬라이드 추가"
-                className="w-9 rounded-lg border border-app-border bg-white text-[14px] text-app-muted hover:border-app-accent hover:text-app-accent"
+                className="flex w-9 shrink-0 items-center justify-center rounded-lg border border-app-border bg-white text-app-muted hover:border-app-accent hover:text-app-accent"
               >
-                +
+                <span className="mi text-[18px]">add</span>
               </button>
             </div>
           )}
@@ -1277,6 +1279,7 @@ export function EditorPage() {
               showToast("댓글이 등록됐어요");
             }}
             onPinClickAt={(id, x, y) => setPinPop({ id, x, y })}
+            onPinMove={(id, x, y) => { if (!readOnly) moveComment(deck.id, id, x, y); }}
             penMode={penMode}
             penColor={penColor}
             penWidth={penWidth}

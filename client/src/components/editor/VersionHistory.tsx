@@ -144,8 +144,13 @@ export function VersionHistory({ deck, onClose }: { deck: Deck; onClose: () => v
           <button
             onClick={() => {
               const v = saveVersion(deck.id, deck.slides, `${deck.slides.length}장 · 수동 저장`);
-              setVersions((p) => [v, ...p]);
-              showToast("현재 상태를 버전으로 저장했어요");
+              if (v) {
+                setVersions((p) => [v, ...p]);
+                showToast("현재 상태를 버전으로 저장했어요");
+              } else {
+                setVersions(listVersions(deck.id)); // 밀려난 목록 반영
+                showToast("저장 공간이 부족해요 — 오래된 버전이나 다른 덱을 정리한 뒤 다시 시도하세요");
+              }
             }}
             className="mb-3 w-full rounded-lg bg-app-text py-2.5 text-[12.5px] font-semibold text-white hover:opacity-90"
           >

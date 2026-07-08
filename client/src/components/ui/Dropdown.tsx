@@ -16,6 +16,7 @@ interface Props {
   onSelect: (key: string) => void;
   children: ReactNode; // 트리거 버튼 내용
   triggerClassName: string;
+  rootClassName?: string; // 래퍼 div (flex-1 등으로 폭 제어)
   align?: "left" | "right";
   direction?: "down" | "up"; // 하단 도구는 위로 열림
   title?: string;
@@ -28,6 +29,7 @@ export function Dropdown({
   onSelect,
   children,
   triggerClassName,
+  rootClassName,
   align = "left",
   direction = "down",
   title,
@@ -47,7 +49,7 @@ export function Dropdown({
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className={`relative ${rootClassName ?? ""}`}>
       <button
         type="button"
         title={title}

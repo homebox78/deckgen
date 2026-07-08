@@ -68,6 +68,10 @@ export function toggleResolve(deckId: string, commentId: string): void {
 export function deleteComment(deckId: string, commentId: string): void {
   write(deckId, read(deckId).filter((c) => c.id !== commentId));
 }
+// 핀 위치 이동 (드래그)
+export function moveComment(deckId: string, commentId: string, x: number, y: number): void {
+  write(deckId, read(deckId).map((c) => (c.id === commentId ? { ...c, x, y } : c)));
+}
 
 export function useComments(deckId: string): Comment[] {
   return useSyncExternalStore(
