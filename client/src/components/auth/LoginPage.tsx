@@ -17,16 +17,102 @@ function GoogleG() {
   );
 }
 
+type Mode = "main" | "forgot" | "verify";
+
 export function LoginPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("login");
+  const [mode, setMode] = useState<Mode>("main");
+  const [email, setEmail] = useState("");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast(tab === "login" ? "로그인되었어요" : "가입이 완료됐어요");
+    if (tab === "signup") {
+      setMode("verify"); // 가입 → 이메일 인증 화면
+      return;
+    }
+    showToast("로그인되었어요");
     navigate("/");
   };
   const oauth = (who: string) => showToast(`${who} 계정으로 계속합니다 (데모)`);
+
+  const Shell = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex min-h-screen items-center justify-center bg-app-bg px-4">
+      <div className="w-[460px] max-w-full rounded-2xl border border-app-border bg-app-surface p-8 shadow-[0_10px_40px_rgba(0,0,0,.06)]">
+        <div className="mb-6 flex items-center gap-2.5">
+          <Logo size={26} />
+          <span className="text-[16px] font-bold tracking-tight">DeckGen</span>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+
+  // 비밀번호 재설정 화면
+  if (mode === "forgot") {
+    return (
+      <Shell>
+        <h1 className="text-[18px] font-bold">비밀번호 재설정</h1>
+        <p className="mt-1 mb-5 text-[12.5px] text-app-muted">
+          가입한 이메일로 재설정 링크를 보내드려요.
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            showToast(`${email || "메일함"}으로 재설정 링크를 보냈어요 (데모)`);
+            setMode("main");
+          }}
+          className="flex flex-col gap-2.5"
+        >
+          <input
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="이메일"
+            className="rounded-xl border border-app-border px-3.5 py-2.5 text-[13px] focus:border-app-accent focus:outline-none"
+          />
+          <button type="submit" className="mt-1 rounded-xl bg-app-accent py-2.5 text-[13.5px] font-semibold text-white hover:opacity-90">
+            재설정 링크 보내기
+          </button>
+        </form>
+        <button onClick={() => setMode("main")} className="mt-4 flex w-full items-center justify-center gap-1 text-[12px] text-app-muted hover:text-app-text">
+          <span className="mi text-[15px]">arrow_back</span>로그인으로 돌아가기
+        </button>
+      </Shell>
+    );
+  }
+
+  // 이메일 인증 화면 (가입 후)
+  if (mode === "verify") {
+    return (
+      <Shell>
+        <div className="flex flex-col items-center text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-app-accent-soft">
+            <span className="mi text-[28px] text-app-accent">mark_email_read</span>
+          </span>
+          <h1 className="mt-4 text-[18px] font-bold">메일함을 확인하세요</h1>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-app-muted">
+            <b className="text-app-text">{email || "입력한 이메일"}</b>로 인증 메일을 보냈어요.
+            <br />
+            메일의 링크를 눌러 가입을 완료하세요.
+          </p>
+          <button
+            onClick={() => {
+              showToast("이메일 인증 완료 — 환영합니다!");
+              navigate("/");
+            }}
+            className="mt-5 w-full rounded-xl bg-app-accent py-2.5 text-[13.5px] font-semibold text-white hover:opacity-90"
+          >
+            인증 완료했어요 (시뮬레이션)
+          </button>
+          <button onClick={() => { setMode("main"); setTab("signup"); }} className="mt-3 flex items-center gap-1 text-[12px] text-app-muted hover:text-app-text">
+            <span className="mi text-[15px]">arrow_back</span>다른 이메일로 가입
+          </button>
+        </div>
+      </Shell>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-app-bg px-4">
@@ -68,6 +154,8 @@ export function LoginPage() {
           <input
             required
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="이메일"
             className="rounded-xl border border-app-border px-3.5 py-2.5 text-[13px] focus:border-app-accent focus:outline-none"
           />
@@ -88,7 +176,7 @@ export function LoginPage() {
 
         {tab === "login" && (
           <button
-            onClick={() => showToast("비밀번호 재설정 링크를 보냈어요 (데모)")}
+            onClick={() => setMode("forgot")}
             className="mt-3 w-full text-center text-[12px] text-app-muted hover:text-app-text"
           >
             비밀번호를 잊으셨나요?

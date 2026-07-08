@@ -41,16 +41,20 @@ type PageId =
   | "refunds"
   | "roles"
   | "sbtpl"
+  | "workspaces"
+  | "usage"
   | "funnel";
 
 const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
   { id: "dash", name: "대시보드", desc: "서비스 전체 현황 · 실시간", icon: "dashboard" },
   { id: "users", name: "사용자 관리", desc: "검색·플랜 필터·차단", icon: "group" },
+  { id: "workspaces", name: "워크스페이스", desc: "팀 워크스페이스 · 시트 · 플랜", icon: "workspaces" },
   { id: "decks", name: "덱 · 공유 관리", desc: "공유 링크·멤버 권한·강제 잠금", icon: "folder_shared" },
   { id: "collab", name: "초대 · 댓글", desc: "초대 메일 상태 · 댓글 모더레이션", icon: "forum" },
   { id: "templates", name: "템플릿 관리", desc: "홈 갤러리 노출·순서·PRO 지정", icon: "palette" },
   { id: "sbtpl", name: "스토리보드 템플릿", desc: "와이어프레임 라이브러리 노출·순서", icon: "view_carousel" },
   { id: "jobs", name: "생성 작업 큐", desc: "AI 파이프라인 잡 모니터링", icon: "manage_history" },
+  { id: "usage", name: "사용량 리포트", desc: "생성·토큰·모델별 소비 추이", icon: "monitoring" },
   { id: "models", name: "AI 모델", desc: "플랜별 노출 · 크레딧 비용", icon: "smart_toy" },
   { id: "credits", name: "크레딧 사용 내역", desc: "모델별 소모 · 로그", icon: "toll" },
   { id: "flags", name: "기능 플래그", desc: "롤아웃 % · 타겟 · ON/OFF", icon: "flag" },
@@ -73,8 +77,8 @@ const PAGES: { id: PageId; name: string; desc: string; icon: string }[] = [
 // 그룹형 아코디언 내비 (6그룹)
 const NAV_GROUPS: { label: string; ids: PageId[] }[] = [
   { label: "개요", ids: ["dash"] },
-  { label: "사용자·콘텐츠", ids: ["users", "decks", "collab", "templates", "sbtpl"] },
-  { label: "생성·AI", ids: ["jobs", "models", "credits", "flags", "abtest", "funnel"] },
+  { label: "사용자·콘텐츠", ids: ["users", "workspaces", "decks", "collab", "templates", "sbtpl"] },
+  { label: "생성·AI", ids: ["jobs", "usage", "models", "credits", "flags", "abtest", "funnel"] },
   { label: "매출·정책", ids: ["plans", "refunds", "policies"] },
   { label: "커뮤니케이션", ids: ["banners", "emails"] },
   { label: "시스템·운영", ids: ["health", "errors", "audit", "exports", "apikeys", "roles", "settings"] },
@@ -1905,6 +1909,114 @@ function FunnelPage() {
   );
 }
 
+// ===== 워크스페이스 (팀 워크스페이스 · 시트 · 플랜) =====
+function WorkspacesPage() {
+  const rows = [
+    { name: "우진의 팀", owner: "wds0119@deckgen.app", plan: "Pro", seats: "8 / 10", decks: 142, active: true },
+    { name: "마케팅본부", owner: "kim@deckgen.app", plan: "Plus", seats: "5 / 5", decks: 88, active: true },
+    { name: "제품팀", owner: "lee@deckgen.app", plan: "Plus", seats: "3 / 5", decks: 51, active: true },
+    { name: "디자인 스튜디오", owner: "park@deckgen.app", plan: "Free", seats: "2 / 2", decks: 12, active: false },
+  ];
+  return (
+    <>
+      <KpiGrid
+        items={[
+          { name: "전체 워크스페이스", value: "24", sub: "이번 달 +3" },
+          { name: "유료 워크스페이스", value: "17", sub: "Plus 11 · Pro 6" },
+          { name: "총 시트", value: "112", sub: "사용 89 · 여유 23" },
+          { name: "평균 덱 수", value: "58", sub: "워크스페이스당" },
+        ]}
+      />
+      <Card className="overflow-hidden">
+        <div className={thCls}>
+          <span className="flex-1">워크스페이스</span>
+          <span className="w-[220px] flex-none">소유자</span>
+          <span className="w-[90px] flex-none text-center">플랜</span>
+          <span className="w-[90px] flex-none text-center">시트</span>
+          <span className="w-[80px] flex-none text-right">덱 수</span>
+          <span className="w-[80px] flex-none text-center">상태</span>
+        </div>
+        {rows.map((w) => (
+          <div key={w.name} className={rowCls}>
+            <span className="flex flex-1 items-center gap-2 text-[12.5px] font-semibold">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-app-text text-[10px] font-bold text-white">
+                {w.name.slice(0, 1)}
+              </span>
+              {w.name}
+            </span>
+            <span className="w-[220px] flex-none truncate text-[11.5px] text-app-muted">{w.owner}</span>
+            <span className="w-[90px] flex-none text-center text-[12px] font-semibold">{w.plan}</span>
+            <span className="w-[90px] flex-none text-center text-[12px]">{w.seats}</span>
+            <span className="w-[80px] flex-none text-right text-[12.5px] font-semibold">{w.decks}</span>
+            <span className="flex w-[80px] flex-none justify-center">
+              <StatusPill ok={w.active} label={w.active ? "활성" : "휴면"} />
+            </span>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
+
+// ===== 사용량 리포트 (생성·토큰·모델별 소비 추이) =====
+function UsagePage() {
+  const [period, setPeriod] = useState("30일");
+  const days = [42, 55, 48, 61, 73, 58, 67, 80, 72, 65, 88, 94, 79, 102];
+  const max = Math.max(...days);
+  const models = [
+    { n: "DeckGen 1.1", pct: 46, tok: "1.24M" },
+    { n: "Claude Fable 5", pct: 28, tok: "760K" },
+    { n: "Gemini 3.1 Pro", pct: 18, tok: "490K" },
+    { n: "GPT-5.5", pct: 8, tok: "215K" },
+  ];
+  return (
+    <>
+      <div className="mb-4 flex items-center gap-2">
+        <span className="flex-1 text-[12.5px] text-app-muted">생성 호출·토큰 소비·모델별 비중을 기간별로 추적합니다.</span>
+        <div className="flex overflow-hidden rounded-lg border border-app-border">
+          {["7일", "30일", "90일"].map((p) => (
+            <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 text-[12px] font-semibold ${period === p ? "bg-app-text text-white" : "bg-white text-app-muted"}`}>{p}</button>
+          ))}
+        </div>
+      </div>
+      <KpiGrid
+        items={[
+          { name: "총 생성 호출", value: "18,240", sub: "전일 대비 +6%" },
+          { name: "총 토큰 소비", value: "2.7M", sub: "입력 1.6M · 출력 1.1M" },
+          { name: "평균 생성 시간", value: "8.4초", sub: "p50 · p95 21초" },
+          { name: "실패율", value: "1.9%", sub: "재시도 포함 0.4%" },
+        ]}
+      />
+      <div className="grid grid-cols-[1.6fr_1fr] gap-3.5">
+        <Card className="px-5 py-4">
+          <div className="mb-3 text-[12.5px] font-bold">일별 생성 호출 (최근 14일)</div>
+          <div className="flex h-40 items-end gap-1.5">
+            {days.map((v, i) => (
+              <div key={i} className="flex-1 rounded-t" style={{ height: `${(v / max) * 100}%`, background: i === days.length - 1 ? "#1A1A1A" : "#D4D4CE" }} title={`${v}회`} />
+            ))}
+          </div>
+        </Card>
+        <Card className="px-5 py-4">
+          <div className="mb-3 text-[12.5px] font-bold">모델별 토큰 비중</div>
+          <div className="flex flex-col gap-2.5">
+            {models.map((m) => (
+              <div key={m.n}>
+                <div className="mb-1 flex items-center justify-between text-[11.5px]">
+                  <span className="font-semibold">{m.n}</span>
+                  <span className="text-app-faint">{m.tok} · {m.pct}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded bg-[#F0F0EE]">
+                  <div className="h-full rounded bg-app-text" style={{ width: `${m.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </>
+  );
+}
+
 // ===== 콘솔 셸 =====
 export function AdminPage() {
   const [authed, setAuthed] = useState(() => !!getAdminToken());
@@ -2095,6 +2207,8 @@ export function AdminPage() {
           {page === "roles" && <RolesPage />}
           {page === "sbtpl" && <SbtplPage />}
           {page === "funnel" && <FunnelPage />}
+          {page === "workspaces" && <WorkspacesPage />}
+          {page === "usage" && <UsagePage />}
         </div>
       </div>
     </div>
