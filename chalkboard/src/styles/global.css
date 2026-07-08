@@ -1,0 +1,84 @@
+/* 우리동네 칠판 — 전역 스타일. 손글씨(Nanum Pen Script) + 미니멀 흑백 카페 톤. */
+* {
+  box-sizing: border-box;
+}
+:root {
+  --ink: #1a1a1a;
+  --muted: #6b6b66;
+  --line: #e4e4e0;
+  --paper: #faf8f3;
+  --wood: #c89b6c;
+  --chalk-font: "Nanum Pen Script", "Gaegu", cursive;
+  --accent: #ff5a5a;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: "Gaegu", -apple-system, "Malgun Gothic", sans-serif;
+  background: #ededea;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.st-splash {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--chalk-font);
+  font-size: 28px;
+  color: var(--muted);
+}
+.chalk-font {
+  font-family: var(--chalk-font);
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+.st-btn {
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform 0.08s ease;
+}
+.st-btn:hover {
+  transform: translateY(-1px);
+}
+.st-btn:active {
+  transform: translateY(1px);
+}
+.st-btn--ghost {
+  background: #fff;
+  color: var(--ink);
+}
+.st-btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.st-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.st-card {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+}

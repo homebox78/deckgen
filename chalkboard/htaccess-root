@@ -1,0 +1,7 @@
+# 우리동네 칠판 SPA — /var/www/html/chalk/.htaccess 로 배치
+RewriteEngine On
+RewriteBase /chalk/
+# 정적 파일은 그대로, 나머지는 SPA index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]

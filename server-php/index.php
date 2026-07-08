@@ -14,6 +14,7 @@ require __DIR__ . '/src/Ai.php';
 require __DIR__ . '/src/Mail.php';
 require __DIR__ . '/src/Auth.php';
 require __DIR__ . '/src/Admin.php';
+require __DIR__ . '/src/Street.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '';
@@ -86,6 +87,36 @@ try {
     if ($method === 'POST' && $path === '/slides') { Ai::slides(); exit; }
     if ($method === 'POST' && $path === '/edit') { Ai::edit(); exit; }
     if ($method === 'POST' && $path === '/ai-image') { Ai::aiImage(); exit; }
+
+    // ── 우리동네 칠판 (Street Chalkboard) — /st/* ──
+    if ($method === 'POST' && $path === '/st/auth') { Street::auth(); exit; }
+    if ($method === 'GET' && $path === '/st/me') { Street::me(); exit; }
+    if ($method === 'GET' && $path === '/st/boards') { Street::listBoards(); exit; }
+    if ($method === 'POST' && $path === '/st/boards') { Street::createBoard(); exit; }
+    if ($method === 'GET' && $path === '/st/notifications') { Street::notifications(); exit; }
+    if ($method === 'POST' && $path === '/st/notifications/read') { Street::readNotifications(); exit; }
+    if ($method === 'GET' && preg_match('#^/st/join/([\w-]+)$#', $path, $m)) { Street::resolveInvite($m[1]); exit; }
+    if ($method === 'GET' && $path === '/st/admin/banned-words') { Street::bannedList(); exit; }
+    if ($method === 'POST' && $path === '/st/admin/banned-words') { Street::bannedAdd(); exit; }
+    if ($method === 'DELETE' && preg_match('#^/st/admin/banned-words/(\d+)$#', $path, $m)) { Street::bannedDelete($m[1]); exit; }
+    if (preg_match('#^/st/boards/([\w-]+)/elements/([\w-]+)$#', $path, $m)) {
+        if ($method === 'PATCH') { Street::updateElement($m[1], $m[2]); exit; }
+        if ($method === 'DELETE') { Street::deleteElement($m[1], $m[2]); exit; }
+    }
+    if (preg_match('#^/st/boards/([\w-]+)/(elements|join|clear|cursor|events|invite)$#', $path, $m)) {
+        $bid = $m[1];
+        if ($method === 'POST' && $m[2] === 'elements') { Street::addElement($bid); exit; }
+        if ($method === 'POST' && $m[2] === 'join') { Street::joinBoard($bid); exit; }
+        if ($method === 'POST' && $m[2] === 'clear') { Street::clearBoard($bid); exit; }
+        if ($method === 'POST' && $m[2] === 'cursor') { Street::cursor($bid); exit; }
+        if ($method === 'POST' && $m[2] === 'invite') { Street::invite($bid); exit; }
+        if ($method === 'GET' && $m[2] === 'events') { Street::events($bid); exit; }
+    }
+    if (preg_match('#^/st/boards/([\w-]+)$#', $path, $m)) {
+        if ($method === 'GET') { Street::getBoard($m[1]); exit; }
+        if ($method === 'PATCH') { Street::updateBoard($m[1]); exit; }
+        if ($method === 'DELETE') { Street::deleteBoard($m[1]); exit; }
+    }
 
     notFound();
 } catch (Throwable $e) {
