@@ -125,6 +125,18 @@ final class Street
             created_at BIGINT NOT NULL,
             UNIQUE KEY uq_word (word)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $pdo->exec("CREATE TABLE IF NOT EXISTS st_reports (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            board_id VARCHAR(24) NOT NULL,
+            element_id VARCHAR(24) NULL,
+            reporter_id BIGINT NULL,
+            reason VARCHAR(300) DEFAULT '',
+            status VARCHAR(12) DEFAULT 'open',
+            created_at BIGINT NOT NULL,
+            KEY idx_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        // 차단 컬럼 (기존 테이블이면 ALTER, 없으면 무시)
+        try { $pdo->exec("ALTER TABLE st_users ADD COLUMN is_blocked TINYINT(1) DEFAULT 0"); } catch (Throwable $e) { /* 이미 있음 */ }
         $pdo->exec("CREATE TABLE IF NOT EXISTS st_notifications (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             user_id BIGINT NOT NULL,
@@ -158,6 +170,7 @@ final class Street
     {
         $u = self::userByToken();
         if (!$u) self::json(401, ['error' => '로그인이 필요합니다.']);
+        if (!empty($u['is_blocked'])) self::json(403, ['error' => '차단된 사용자입니다. 관리자에게 문의하세요.']);
         return $u;
     }
     private static function pubUser(array $u): array
@@ -654,6 +667,67 @@ final class Street
         self::requireAdmin();
         Db::pdo()->prepare('DELETE FROM st_banned_words WHERE id = :i')->execute([':i' => (int) $wid]);
         self::$wordCache = null;
+        self::json(200, ['ok' => true]);
+    }
+
+    // ── 신고 / 차단 ──
+    // POST /st/boards/:id/report  {elementId, reason}
+    public static function report(string $id): void
+    {
+        self::ensureSchema();
+        $u = self::requireUser();
+        $b = self::body();
+        $eid = mb_substr((string) ($b['elementId'] ?? ''), 0, 24) ?: null;
+        $reason = mb_substr(trim((string) ($b['reason'] ?? '')), 0, 300);
+        Db::pdo()->prepare('INSERT INTO st_reports (board_id, element_id, reporter_id, reason, status, created_at) VALUES (:b,:e,:r,:rs,\'open\',:t)')
+            ->execute([':b' => $id, ':e' => $eid, ':r' => $u['id'], ':rs' => $reason, ':t' => self::now()]);
+        self::json(200, ['ok' => true]);
+    }
+    // GET /st/admin/reports
+    public static function reportList(): void
+    {
+        self::ensureSchema();
+        self::requireAdmin();
+        $rows = Db::pdo()->query("SELECT r.*, u.nickname reporter, e.type el_type, e.data el_data, e.author_id, e.deleted_at
+            FROM st_reports r
+            LEFT JOIN st_users u ON u.id = r.reporter_id
+            LEFT JOIN st_elements e ON e.id = r.element_id
+            WHERE r.status = 'open' ORDER BY r.id DESC LIMIT 100")->fetchAll();
+        self::json(200, ['reports' => array_map(fn ($r) => [
+            'id' => (int) $r['id'], 'boardId' => $r['board_id'], 'elementId' => $r['element_id'],
+            'reporter' => $r['reporter'] ?? '탈퇴',
+            'reason' => $r['reason'], 'createdAt' => (int) $r['created_at'],
+            'elementType' => $r['el_type'], 'elementData' => $r['el_data'] ? json_decode($r['el_data'], true) : null,
+            'authorId' => $r['author_id'] ? (int) $r['author_id'] : null,
+            'alreadyHidden' => $r['deleted_at'] !== null,
+        ], $rows)]);
+    }
+    // POST /st/admin/reports/:rid/resolve  {action: hide|dismiss|block}
+    public static function reportResolve(string $rid): void
+    {
+        self::ensureSchema();
+        self::requireAdmin();
+        $action = (string) (self::body()['action'] ?? 'dismiss');
+        $pdo = Db::pdo();
+        $rep = $pdo->query('SELECT * FROM st_reports WHERE id = ' . (int) $rid)->fetch();
+        if (!$rep) self::json(404, ['error' => '신고를 찾을 수 없습니다.']);
+        if ($action === 'hide' || $action === 'block') {
+            if ($rep['element_id']) {
+                $el = $pdo->prepare('SELECT board_id FROM st_elements WHERE id = :e');
+                $el->execute([':e' => $rep['element_id']]);
+                $erow = $el->fetch();
+                $pdo->prepare('UPDATE st_elements SET deleted_at = :t WHERE id = :e')->execute([':t' => self::now(), ':e' => $rep['element_id']]);
+                if ($erow) self::logEvent($erow['board_id'], 'delete', '', ['id' => $rep['element_id']]);
+            }
+        }
+        if ($action === 'block' && $rep['element_id']) {
+            $au = $pdo->prepare('SELECT author_id FROM st_elements WHERE id = :e');
+            $au->execute([':e' => $rep['element_id']]);
+            $arow = $au->fetch();
+            if ($arow) $pdo->prepare('UPDATE st_users SET is_blocked = 1 WHERE id = :u')->execute([':u' => $arow['author_id']]);
+        }
+        $pdo->prepare('UPDATE st_reports SET status = :s WHERE id = :i')
+            ->execute([':s' => $action === 'dismiss' ? 'dismissed' : 'resolved', ':i' => (int) $rid]);
         self::json(200, ['ok' => true]);
     }
 }

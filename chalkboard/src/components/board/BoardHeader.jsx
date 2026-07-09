@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../../api/client";
+import { useBoardStore } from "../../store/useBoardStore";
 import { GRADE_INFO } from "../../constants/permissions";
 
 function Avatar({ name, color, me }) {
@@ -37,6 +38,7 @@ export default function BoardHeader({ board, peers = [], self, myRole, myGrade, 
     if (!window.confirm("칠판을 전부 지울까요? 되돌릴 수 없어요.")) return;
     try {
       await api.clearBoard(boardId, self?.clientId);
+      useBoardStore.getState().localClear(); // SSE 자기 에코 억제 → 로컬 즉시 반영 + wipe
     } catch (e) {
       alert("전체 지우기 실패: " + (e.message || ""));
     }

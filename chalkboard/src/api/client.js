@@ -52,6 +52,10 @@ export const api = {
   // 초대
   invite: (id) => req(`/st/boards/${id}/invite`, { method: "POST" }),
   resolveInvite: (code) => req(`/st/join/${code}`, { auth: false }),
+  // 신고 / 관리자 신고 검토
+  report: (id, elementId, reason) => req(`/st/boards/${id}/report`, { method: "POST", body: { elementId, reason } }),
+  reports: () => req("/st/admin/reports"),
+  resolveReport: (rid, action) => req(`/st/admin/reports/${rid}/resolve`, { method: "POST", body: { action } }),
   // 알림
   notifications: () => req("/st/notifications"),
   readNotifications: () => req("/st/notifications/read", { method: "POST" }),

@@ -8,6 +8,7 @@ import BoardDetailPage from "./pages/BoardDetailPage.jsx";
 import BoardDecoratePage from "./pages/BoardDecoratePage.jsx";
 import JoinPage from "./pages/JoinPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import Toaster from "./components/common/Toaster.jsx";
 
 function Protected({ children }) {
   const { user, ready } = useAuthStore();
@@ -26,7 +27,9 @@ export default function App() {
   if (!ready) return <div className="st-splash">🖍️ 우리동네 칠판 불러오는 중…</div>;
 
   return (
-    <Routes>
+    <>
+      <Toaster />
+      <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/boards" element={<Protected><BoardListPage /></Protected>} />
       <Route path="/boards/new" element={<Protected><BoardCreatePage /></Protected>} />
@@ -35,6 +38,7 @@ export default function App() {
       <Route path="/join/:code" element={<Protected><JoinPage /></Protected>} />
       <Route path="/admin" element={<Protected><AdminPage /></Protected>} />
       <Route path="*" element={<Navigate to="/boards" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

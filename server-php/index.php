@@ -99,17 +99,20 @@ try {
     if ($method === 'GET' && $path === '/st/admin/banned-words') { Street::bannedList(); exit; }
     if ($method === 'POST' && $path === '/st/admin/banned-words') { Street::bannedAdd(); exit; }
     if ($method === 'DELETE' && preg_match('#^/st/admin/banned-words/(\d+)$#', $path, $m)) { Street::bannedDelete($m[1]); exit; }
+    if ($method === 'GET' && $path === '/st/admin/reports') { Street::reportList(); exit; }
+    if ($method === 'POST' && preg_match('#^/st/admin/reports/(\d+)/resolve$#', $path, $m)) { Street::reportResolve($m[1]); exit; }
     if (preg_match('#^/st/boards/([\w-]+)/elements/([\w-]+)$#', $path, $m)) {
         if ($method === 'PATCH') { Street::updateElement($m[1], $m[2]); exit; }
         if ($method === 'DELETE') { Street::deleteElement($m[1], $m[2]); exit; }
     }
-    if (preg_match('#^/st/boards/([\w-]+)/(elements|join|clear|cursor|events|invite)$#', $path, $m)) {
+    if (preg_match('#^/st/boards/([\w-]+)/(elements|join|clear|cursor|events|invite|report)$#', $path, $m)) {
         $bid = $m[1];
         if ($method === 'POST' && $m[2] === 'elements') { Street::addElement($bid); exit; }
         if ($method === 'POST' && $m[2] === 'join') { Street::joinBoard($bid); exit; }
         if ($method === 'POST' && $m[2] === 'clear') { Street::clearBoard($bid); exit; }
         if ($method === 'POST' && $m[2] === 'cursor') { Street::cursor($bid); exit; }
         if ($method === 'POST' && $m[2] === 'invite') { Street::invite($bid); exit; }
+        if ($method === 'POST' && $m[2] === 'report') { Street::report($bid); exit; }
         if ($method === 'GET' && $m[2] === 'events') { Street::events($bid); exit; }
     }
     if (preg_match('#^/st/boards/([\w-]+)$#', $path, $m)) {

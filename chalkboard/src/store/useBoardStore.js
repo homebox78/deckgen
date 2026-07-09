@@ -13,6 +13,7 @@ export const useBoardStore = create((set, get) => ({
   caps: null,
   loading: true,
   error: null,
+  clearPulse: 0, // 전체지우기 애니메이션 트리거(값 증가 시 wipe)
   _disconnect: null,
   _cursorSend: null,
 
@@ -62,7 +63,7 @@ export const useBoardStore = create((set, get) => ({
     } else if (kind === "delete") {
       set({ elements: elements.filter((e) => e.id !== payload.id) });
     } else if (kind === "clear") {
-      set({ elements: [] });
+      set({ elements: [], clearPulse: get().clearPulse + 1 });
     } else if (kind === "board") {
       set({ board: { ...get().board, ...payload } });
     } else if (kind === "member") {
@@ -112,6 +113,9 @@ export const useBoardStore = create((set, get) => ({
       set({ elements: prev });
     }
   },
+
+  // 방장 본인 전체지우기 — SSE 에코가 억제되므로 로컬에서 즉시 비움 + wipe
+  localClear: () => set({ elements: [], clearPulse: get().clearPulse + 1 }),
 
   setBoard: (b) => set({ board: b }),
 }));

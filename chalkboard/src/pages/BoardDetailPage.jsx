@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useBoardStore } from "../store/useBoardStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { api } from "../api/client";
+import { toast } from "../store/useToast";
 import { parseYoutubeId } from "../utils/youtube";
 import StreetScene from "../components/street/StreetScene.jsx";
 import BoardHeader from "../components/board/BoardHeader.jsx";
@@ -36,7 +37,17 @@ export default function BoardDetailPage() {
     addElementOptimistic,
     updateElementOptimistic,
     deleteElementOptimistic,
+    clearPulse,
   } = useBoardStore();
+
+  // 전체지우기 분필 슬슬 애니메이션
+  const [wiping, setWiping] = useState(false);
+  useEffect(() => {
+    if (clearPulse === 0) return;
+    setWiping(true);
+    const t = setTimeout(() => setWiping(false), 900);
+    return () => clearTimeout(t);
+  }, [clearPulse]);
 
   const [joining, setJoining] = useState(false);
   const joinTriedRef = useRef(false);
@@ -100,7 +111,11 @@ export default function BoardDetailPage() {
       const z = elements.length;
       const res = await addElementOptimistic(id, clientId, type, data, z);
       if (res && res.rejected) {
-        alert("이 도구를 쓸 권한이 없어요" + (res.reason ? ` (${res.reason})` : ""));
+        toast(res.reason || "금지어가 포함되어 등록할 수 없어요.", "error");
+      } else if (res && res.pending) {
+        toast("검토가 필요한 내용이라 관리자 확인 후 표시돼요.", "warn");
+      } else if (res && res.error) {
+        toast(res.error, "error");
       }
       return res;
     },
@@ -137,6 +152,26 @@ export default function BoardDetailPage() {
   );
 
   const onCursor = useCallback((x, y) => sendCursor(x, y), [sendCursor]);
+
+  // 선택 요소 액션 (z-order / 신고)
+  const selectedEl = elements.find((e) => e.id === selectedId);
+  const bringFront = () => {
+    const maxZ = Math.max(0, ...elements.map((e) => e.zIndex || 0));
+    updateElementOptimistic(id, clientId, selectedId, { zIndex: maxZ + 1 });
+  };
+  const sendBack = () => {
+    const minZ = Math.min(0, ...elements.map((e) => e.zIndex || 0));
+    updateElementOptimistic(id, clientId, selectedId, { zIndex: minZ - 1 });
+  };
+  const reportEl = async () => {
+    try {
+      await api.report(id, selectedId, "부적절한 콘텐츠 신고");
+      toast("신고가 접수됐어요. 관리자가 검토합니다.", "success");
+      setSelectedId(null);
+    } catch (e) {
+      toast(e.message || "신고에 실패했어요.", "error");
+    }
+  };
 
   // 모달 확정 핸들러
   const handleEmoji = (em) => addEl("emoji", { emoji: em, x: boardCenter.x - 32, y: boardCenter.y - 32, size: 64, rotation: 0 });
@@ -205,9 +240,24 @@ export default function BoardDetailPage() {
 
           <Cursors peers={peers} scale={scale} />
 
+          {wiping && <div className="bd-wipe" />}
+
           {playing && <VideoOverlay el={playing} onClose={() => setPlaying(null)} />}
         </div>
       </div>
+
+      {/* 선택 요소 액션 바 (z-order · 신고 · 삭제) */}
+      {selectedEl && tool === "select" && (
+        <div className="bd-actionbar">
+          <button onClick={bringFront} title="맨 앞으로">⬆️ 맨 앞</button>
+          <button onClick={sendBack} title="맨 뒤로">⬇️ 맨 뒤</button>
+          <span className="bd-actionbar-sep" />
+          <button onClick={reportEl} title="신고">🚩 신고</button>
+          {canDeleteEl(selectedEl) && (
+            <button className="bd-actionbar-del" onClick={() => onDelete(selectedEl.id)} title="삭제">🗑️ 삭제</button>
+          )}
+        </div>
+      )}
 
       <Toolbar
         tool={tool}

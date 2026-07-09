@@ -31,6 +31,8 @@ export default function AdminPage() {
   const [adding, setAdding] = useState(false);
   const [formErr, setFormErr] = useState("");
 
+  const [reports, setReports] = useState([]);
+
   async function load() {
     setLoading(true);
     setErr("");
@@ -41,6 +43,21 @@ export default function AdminPage() {
       setErr(e.message || "금칙어 목록을 불러오지 못했어요.");
     } finally {
       setLoading(false);
+    }
+    try {
+      const { reports: rl } = await api.reports();
+      setReports(rl || []);
+    } catch {
+      /* 신고 목록 실패는 무시 */
+    }
+  }
+
+  async function resolveReport(rid, action) {
+    try {
+      await api.resolveReport(rid, action);
+      setReports((rs) => rs.filter((r) => r.id !== rid));
+    } catch (e) {
+      setErr(e.message || "신고 처리 실패");
     }
   }
 
@@ -173,6 +190,34 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* 신고 검토 */}
+      <div className="panel mt" style={{ marginTop: 20 }}>
+        <h3>🚩 신고 검토 <span className="muted" style={{ fontSize: 16 }}>({reports.length})</span></h3>
+        {reports.length === 0 ? (
+          <p className="muted">처리할 신고가 없어요.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {reports.map((r) => (
+              <div key={r.id} className="st-card" style={{ padding: 12, display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700 }}>
+                    {r.elementType ? `${r.elementType} 요소` : "칠판"} · 신고자 {r.reporter}
+                    {r.alreadyHidden && <span className="muted"> · 이미 숨김</span>}
+                  </div>
+                  <div className="muted" style={{ fontSize: 14 }}>
+                    {r.reason || "(사유 없음)"}
+                    {r.elementData?.text ? ` — "${String(r.elementData.text).slice(0, 40)}"` : ""}
+                  </div>
+                </div>
+                <button className="st-btn st-btn--ghost" onClick={() => resolveReport(r.id, "dismiss")}>무시</button>
+                <button className="st-btn st-btn--ghost" onClick={() => resolveReport(r.id, "hide")}>숨기기</button>
+                <button className="st-btn st-btn--accent" onClick={() => resolveReport(r.id, "block")}>작성자 차단</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
