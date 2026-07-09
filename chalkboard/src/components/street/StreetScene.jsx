@@ -17,6 +17,13 @@ export default function StreetScene({ board }) {
       {/* 바닥 */}
       <div className="st-ground" />
 
+      {/* 상단 = 방 제목 간판(가게 간판처럼 걸림) — A형 간판(광고)과는 다른 디자인 */}
+      <div className="st-topsign" style={{ left: BOARD_RECT.x, width: BOARD_RECT.w }}>
+        <span className="st-topsign-rope st-topsign-rope--l" />
+        <span className="st-topsign-rope st-topsign-rope--r" />
+        <div className="st-topsign-plate">{(board && board.title) || "우리동네 칠판"}</div>
+      </div>
+
       {/* 좌측 = 전봇대(넓게, 광고·전단지 부착) */}
       <UtilityPole side="left" />
 
