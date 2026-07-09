@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { Text, Transformer } from "react-konva";
 import { DEFAULT_FONT } from "../../../constants/fonts";
 
-export default function TextElement({ el, isSelected, onSelect, onChange, draggable }) {
+export default function TextElement({ el, isSelected, onSelect, onChange, onLiveMove, draggable }) {
   const { text = "", x = 0, y = 0, color = "#FFFFFF", fontSize = 48, rotation = 0, font = DEFAULT_FONT } = el.data || {};
   const nodeRef = useRef(null);
   const trRef = useRef(null);
@@ -56,6 +56,7 @@ export default function TextElement({ el, isSelected, onSelect, onChange, dragga
         onClick={onSelect}
         onTap={onSelect}
         onMouseDown={onSelect}
+        onDragMove={(e) => onLiveMove && onLiveMove({ x: e.target.x(), y: e.target.y() })}
         onDragEnd={(e) => onChange && onChange({ x: e.target.x(), y: e.target.y() })}
         onTransformEnd={commitTransform}
       />

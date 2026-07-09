@@ -154,6 +154,20 @@ export default function BoardDetailPage() {
 
   const onCursor = useCallback((x, y) => sendCursor(x, y), [sendCursor]);
 
+  // 드래그 중 실시간 위치 스트리밍 — 로컬 상태는 안 건드리고(내 드래그 방해 X) 서버로만 throttle 전송
+  const liveMoveTs = useRef({});
+  const onLiveMove = useCallback(
+    (eid, patchData) => {
+      const now = Date.now();
+      if (now - (liveMoveTs.current[eid] || 0) < 70) return;
+      liveMoveTs.current[eid] = now;
+      const el = useBoardStore.getState().elements.find((e) => e.id === eid);
+      if (!el) return;
+      api.updateElement(id, eid, { data: { ...el.data, ...patchData }, clientId }).catch(() => {});
+    },
+    [id, clientId],
+  );
+
   // 선택 요소 액션 (z-order / 신고)
   const selectedEl = elements.find((e) => e.id === selectedId);
   const bringFront = () => {
@@ -231,6 +245,7 @@ export default function BoardDetailPage() {
               setSelectedId={setSelectedId}
               onDraw={onDraw}
               onUpdate={onUpdate}
+              onLiveMove={onLiveMove}
               onDelete={onDelete}
               onCursor={onCursor}
               onPlayVideo={(el) => setPlaying(el)}

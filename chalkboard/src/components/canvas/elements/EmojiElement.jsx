@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { Text, Transformer } from "react-konva";
 
-export default function EmojiElement({ el, isSelected, onSelect, onChange, draggable }) {
+export default function EmojiElement({ el, isSelected, onSelect, onChange, onLiveMove, draggable }) {
   const { emoji = "❤️", x = 0, y = 0, size = 64, rotation = 0 } = el.data || {};
   const nodeRef = useRef(null);
   const trRef = useRef(null);
@@ -37,6 +37,7 @@ export default function EmojiElement({ el, isSelected, onSelect, onChange, dragg
         onClick={onSelect}
         onTap={onSelect}
         onMouseDown={onSelect}
+        onDragMove={(e) => onLiveMove && onLiveMove({ x: e.target.x(), y: e.target.y() })}
         onDragEnd={(e) => onChange && onChange({ x: e.target.x(), y: e.target.y() })}
         onTransformEnd={commitTransform}
       />

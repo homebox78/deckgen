@@ -3,7 +3,7 @@ import { Image as KImage, Group, Rect, Circle, Text, Transformer } from "react-k
 import useImage from "use-image";
 import { youtubeThumb } from "../../../utils/youtube";
 
-export default function YoutubeElement({ el, isSelected, onSelect, onChange, onPlay, draggable }) {
+export default function YoutubeElement({ el, isSelected, onSelect, onChange, onPlay, onLiveMove, draggable }) {
   const { youtubeId, x = 0, y = 0, w = 320, h = 180, rotation = 0 } = el.data || {};
   const [thumb] = useImage(youtubeId ? youtubeThumb(youtubeId) : "", "anonymous");
   const nodeRef = useRef(null);
@@ -40,6 +40,7 @@ export default function YoutubeElement({ el, isSelected, onSelect, onChange, onP
         onClick={onSelect}
         onTap={onSelect}
         onMouseDown={onSelect}
+        onDragMove={(e) => onLiveMove && onLiveMove({ x: e.target.x(), y: e.target.y() })}
         onDragEnd={(e) => onChange && onChange({ x: e.target.x(), y: e.target.y() })}
         onTransformEnd={commitTransform}
       >

@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { Image as KImage, Rect, Transformer } from "react-konva";
 import useImage from "use-image";
 
-export default function ImageElement({ el, isSelected, onSelect, onChange, draggable }) {
+export default function ImageElement({ el, isSelected, onSelect, onChange, onLiveMove, draggable }) {
   const { url, x = 0, y = 0, w = 240, h = 160, rotation = 0 } = el.data || {};
   const [img] = useImage(url, "anonymous");
   const nodeRef = useRef(null);
@@ -38,6 +38,7 @@ export default function ImageElement({ el, isSelected, onSelect, onChange, dragg
     onClick: onSelect,
     onTap: onSelect,
     onMouseDown: onSelect,
+    onDragMove: (e) => onLiveMove && onLiveMove({ x: e.target.x(), y: e.target.y() }),
     onDragEnd: (e) => onChange && onChange({ x: e.target.x(), y: e.target.y() }),
     onTransformEnd: commitTransform,
     opacity: el._pending ? 0.6 : 1,

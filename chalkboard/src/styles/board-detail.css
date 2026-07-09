@@ -465,7 +465,7 @@
   position: absolute;
   transform-origin: top left;
   will-change: left, top;
-  transition: left 0.06s linear, top 0.06s linear;
+  transition: left 0.12s linear, top 0.12s linear;
 }
 .bd-cursor-arrow {
   display: block;

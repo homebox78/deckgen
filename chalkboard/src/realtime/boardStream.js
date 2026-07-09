@@ -44,14 +44,14 @@ export function makeCursorSender(boardId, clientId) {
   return (x, y) => {
     pending = { x: Math.round(x), y: Math.round(y) };
     const now = Date.now();
-    if (now - last >= 60) {
+    if (now - last >= 40) {
       clearTimeout(timer);
       flush();
     } else if (!timer) {
       timer = setTimeout(() => {
         timer = null;
         flush();
-      }, 60);
+      }, 40);
     }
   };
 }

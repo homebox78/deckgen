@@ -28,6 +28,7 @@ export default function ChalkCanvas({
   setSelectedId,
   onDraw,
   onUpdate,
+  onLiveMove, // (elId, {x,y}) => 드래그 중 실시간 스트리밍
   onDelete,
   onCursor,
   onPlayVideo,
@@ -38,6 +39,10 @@ export default function ChalkCanvas({
   const drawingRef = useRef(false);
 
   const bg = (board && BOARD_BG[board.bgType]) || BOARD_BG.green;
+
+  // 선택 도구를 굳이 안 골라도, 그리기/지우개가 아니면 객체를 바로 클릭·드래그해 이동.
+  const canDrag = tool !== "pen" && tool !== "eraser";
+  const editable = (el) => (canDeleteEl ? canDeleteEl(el) : true); // 본인/방장만 이동
 
   const getPos = (e) => {
     const stage = e.target.getStage();
@@ -137,7 +142,8 @@ export default function ChalkCanvas({
 
       <Layer>
         {ordered.map((el) => {
-          const isSelected = selectedId === el.id && tool === "select";
+          const isSelected = selectedId === el.id && canDrag;
+          const drag = canDrag && editable(el);
           if (el.type === "drawing") {
             return (
               <Line
@@ -153,8 +159,18 @@ export default function ChalkCanvas({
                 shadowBlur={3}
                 shadowOpacity={0.4}
                 hitStrokeWidth={Math.max(14, el.data.width || 6)}
+                draggable={drag}
                 onClick={() => handleElementClick(el)}
                 onTap={() => handleElementClick(el)}
+                onDragStart={() => setSelectedId && setSelectedId(el.id)}
+                onDragEnd={(e) => {
+                  const node = e.target;
+                  const dx = node.x();
+                  const dy = node.y();
+                  const pts = (el.data.points || []).map((v, i) => (i % 2 === 0 ? v + dx : v + dy));
+                  node.position({ x: 0, y: 0 });
+                  onUpdate && onUpdate(el.id, { points: pts });
+                }}
               />
             );
           }
@@ -166,7 +182,8 @@ export default function ChalkCanvas({
                 isSelected={isSelected}
                 onSelect={() => handleElementClick(el)}
                 onChange={(data) => onUpdate && onUpdate(el.id, data)}
-                draggable={isSelected}
+                onLiveMove={(data) => onLiveMove && onLiveMove(el.id, data)}
+                draggable={drag}
               />
             );
           }
@@ -179,7 +196,8 @@ export default function ChalkCanvas({
                 onSelect={() => handleElementClick(el)}
                 onChange={(data) => onUpdate && onUpdate(el.id, data)}
                 onPlay={() => onPlayVideo && onPlayVideo(el)}
-                draggable={isSelected}
+                onLiveMove={(data) => onLiveMove && onLiveMove(el.id, data)}
+                draggable={drag}
               />
             );
           }
@@ -191,7 +209,8 @@ export default function ChalkCanvas({
                 isSelected={isSelected}
                 onSelect={() => handleElementClick(el)}
                 onChange={(data) => onUpdate && onUpdate(el.id, data)}
-                draggable={isSelected}
+                onLiveMove={(data) => onLiveMove && onLiveMove(el.id, data)}
+                draggable={drag}
               />
             );
           }
@@ -203,7 +222,8 @@ export default function ChalkCanvas({
                 isSelected={isSelected}
                 onSelect={() => handleElementClick(el)}
                 onChange={(data) => onUpdate && onUpdate(el.id, data)}
-                draggable={isSelected}
+                onLiveMove={(data) => onLiveMove && onLiveMove(el.id, data)}
+                draggable={drag}
               />
             );
           }

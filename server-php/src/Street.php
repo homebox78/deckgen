@@ -421,8 +421,11 @@ final class Street
         $pdo = Db::pdo();
         $pdo->prepare('INSERT INTO st_events (board_id, kind, origin, payload, created_at) VALUES (:b,:k,:o,:p,:t)')
             ->execute([':b' => $boardId, ':k' => $kind, ':o' => $origin, ':p' => json_encode($payload, JSON_UNESCAPED_UNICODE), ':t' => self::now()]);
-        $pdo->prepare('DELETE FROM st_events WHERE board_id = :b AND id < (SELECT mid FROM (SELECT MIN(id) mid FROM (SELECT id FROM st_events WHERE board_id = :b2 ORDER BY id DESC LIMIT 300) t) t2)')
-            ->execute([':b' => $boardId, ':b2' => $boardId]);
+        // 드래그 실시간 스트리밍으로 이벤트가 잦아짐 → 정리(subquery) 매번 X, 확률적으로만
+        if (mt_rand(1, 12) === 1) {
+            $pdo->prepare('DELETE FROM st_events WHERE board_id = :b AND id < (SELECT mid FROM (SELECT MIN(id) mid FROM (SELECT id FROM st_events WHERE board_id = :b2 ORDER BY id DESC LIMIT 300) t) t2)')
+                ->execute([':b' => $boardId, ':b2' => $boardId]);
+        }
     }
 
     // POST /st/boards/:id/elements  {type, data, zIndex, clientId}
@@ -578,7 +581,7 @@ final class Street
             if ($sig !== $lastPeers) { $lastPeers = $sig; $emit('presence', ['peers' => $peers]); }
             echo ": ping\n\n"; flush();
             if (connection_aborted()) break;
-            usleep(280000);
+            usleep(110000); // 실시간성 ↑ (110ms 폴링 — 커서·요소 반영 지연 축소)
         }
         Db::pdo()->prepare('DELETE FROM st_presence WHERE board_id = :b AND client_id = :c')->execute([':b' => $id, ':c' => $cid]);
         exit;
