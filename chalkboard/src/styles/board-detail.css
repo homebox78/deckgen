@@ -637,3 +637,58 @@
 .bd-stage canvas {
   touch-action: none;
 }
+
+/* 폰트 선택 (텍스트 입력 모달) */
+.bd-fontpick {
+  margin-top: 10px;
+  border-top: 1px solid #f0f0ee;
+  padding-top: 10px;
+}
+.bd-fontcats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.bd-fontcat {
+  border: 1.5px solid #e4e4e0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b6b66;
+}
+.bd-fontcat.on {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+.bd-fontlist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.bd-fontchip {
+  border: 1.5px solid #e4e4e0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 18px;
+  color: #1a1a1a;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: transform 0.08s ease;
+}
+.bd-fontchip:hover {
+  transform: translateY(-1px);
+  border-color: #ffb0b0;
+}
+.bd-fontchip.on {
+  border-color: #ff5a5a;
+  box-shadow: 0 0 0 2px rgba(255, 90, 90, 0.25) inset;
+}

@@ -18,7 +18,7 @@ export const FRAME_WOOD_DARK = "#A97C50";
 // 전봇대 안전 사선띠
 export const HAZARD_YELLOW = "#F5C518";
 
-export const CHALK_FONT = "'Nanum Pen Script', 'Gaegu', cursive";
+export const CHALK_FONT = "'Moneygraphy-Pixel', 'Gaegu', 'Apple SD Gothic Neo', sans-serif";
 
 export const CATEGORIES = [
   { key: "region", label: "우리동네", emoji: "🏘️" },

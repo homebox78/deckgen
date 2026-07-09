@@ -1,0 +1,42 @@
+/* 우리동네 칠판 — 눈누(noonnu) 상업용 무료 폰트 CDN(jsDelivr). font-display:swap 으로 사용 시에만 다운로드. */
+
+/* ★ 전체 기본 디폴트 — 머니그라피 픽셀 (Toss) */
+@font-face {
+  font-family: "Moneygraphy-Pixel";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2411-2@1.0/Moneygraphy-Pixel.woff2") format("woff2");
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 손글씨 */
+@font-face { font-family: "Ownglyph_corncorn"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "KyoboHandwriting2024psw"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2507-1@1.0/KyoboHandwriting2024psw.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Griun_Gellyroll"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2601-1@1.0/Griun_Gellyroll-Rg.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "HSYuji"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/HSYuji-Regular.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "EF_hyunydororong"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2206-01@1.0/EF_hyunydororong.woff2") format("woff2"); font-display: swap; }
+
+/* 둥글둥글 */
+@font-face { font-family: "Cafe24Dongdong"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Dongdong.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "Bazzi"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/Bazzi.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "BinggraeSamanco"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/BinggraeSamanco-Bold.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "HakgyoansimTTeokbokki"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2510-1@1.0/HakgyoansimTTeokbokkiB.woff2") format("woff2"); font-display: swap; }
+
+/* 또박또박 */
+@font-face { font-family: "HakgyoansimNalgae"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/HakgyoansimNalgaeR.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "KOTRAHOPE"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/KOTRAHOPE.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "IM_Hyemin"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2106@1.1/IM_Hyemin-Bold.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "GmarketSans"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "S-CoreDream"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff") format("woff"); font-display: swap; }
+
+/* 굵게·강조 */
+@font-face { font-family: "Jalnan"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "DaeguDongseongro"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/DaeguDongseongro-Bold.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "BMEULJIRO"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/BMEULJIRO.woff") format("woff"); font-display: swap; }
+
+/* 감성·명조 */
+@font-face { font-family: "GriunCherry1Spoon"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2606-1@1.1/GriunCherry1Spoon-Regular.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "YoonChildfundkorea"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/YoonChildfundkorea.woff") format("woff"); font-display: swap; }
+@font-face { font-family: "ChosunGs"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGs.woff") format("woff"); font-display: swap; }
+
+/* 픽셀·레트로 */
+@font-face { font-family: "ChosunGu"; src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGu.woff") format("woff"); font-display: swap; }

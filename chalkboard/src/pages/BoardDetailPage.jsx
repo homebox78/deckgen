@@ -4,6 +4,7 @@ import { useBoardStore } from "../store/useBoardStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { api } from "../api/client";
 import { toast } from "../store/useToast";
+import { DEFAULT_FONT } from "../constants/fonts";
 import { parseYoutubeId } from "../utils/youtube";
 import StreetScene from "../components/street/StreetScene.jsx";
 import BoardHeader from "../components/board/BoardHeader.jsx";
@@ -176,7 +177,7 @@ export default function BoardDetailPage() {
   // 모달 확정 핸들러
   const handleEmoji = (em) => addEl("emoji", { emoji: em, x: boardCenter.x - 32, y: boardCenter.y - 32, size: 64, rotation: 0 });
   const handleImage = (url) => addEl("image", { url, x: boardCenter.x - 120, y: boardCenter.y - 80, w: 240, h: 160, rotation: 0 });
-  const handleText = (text) => addEl("text", { text, x: boardCenter.x - 120, y: boardCenter.y - 30, color: penColor, fontSize: 48, rotation: 0 });
+  const handleText = (text, font) => addEl("text", { text, x: boardCenter.x - 120, y: boardCenter.y - 30, color: penColor, fontSize: 48, rotation: 0, font: font || DEFAULT_FONT });
   const handleVideo = (input) => {
     const yid = parseYoutubeId(input);
     if (!yid) {
@@ -278,6 +279,7 @@ export default function BoardDetailPage() {
           placeholder="분필로 쓸 내용을 입력하세요"
           submitLabel="붙이기"
           multiline
+          fontPicker
           onSubmit={handleText}
           onClose={() => setModal(null)}
         />

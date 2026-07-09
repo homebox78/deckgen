@@ -8,7 +8,9 @@
   --line: #e4e4e0;
   --paper: #faf8f3;
   --wood: #c89b6c;
-  --chalk-font: "Nanum Pen Script", "Gaegu", cursive;
+  /* ★ 전체 기본 디폴트 = 머니그라피 픽셀. 가독성 위해 Gaegu·시스템 고딕 폴백 */
+  --default-font: "Moneygraphy-Pixel", "Gaegu", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --chalk-font: "Moneygraphy-Pixel", "Gaegu", "Apple SD Gothic Neo", sans-serif;
   --accent: #ff5a5a;
 }
 html,
@@ -18,10 +20,12 @@ body,
   margin: 0;
 }
 body {
-  font-family: "Gaegu", -apple-system, "Malgun Gothic", sans-serif;
+  font-family: var(--default-font);
   background: #ededea;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
 }
 .st-splash {
   height: 100%;
