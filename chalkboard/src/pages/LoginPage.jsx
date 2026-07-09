@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import "../styles/pages.css";
 
@@ -18,11 +18,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
-  // 이미 로그인 상태면 목록으로
-  if (user) {
-    navigate("/boards", { replace: true });
-    return null;
-  }
+  // 이미 로그인 상태면 목록으로 (렌더 중 navigate() 금지 → 선언적 Navigate)
+  if (user) return <Navigate to="/boards" replace />;
 
   async function submit(e) {
     e.preventDefault();
