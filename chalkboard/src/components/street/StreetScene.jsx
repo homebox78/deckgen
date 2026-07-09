@@ -17,17 +17,13 @@ export default function StreetScene({ board }) {
       {/* 바닥 */}
       <div className="st-ground" />
 
-      {/* 간판 (칠판 위쪽) */}
-      <div
-        className="st-sign-slot"
-        style={{ left: BOARD_RECT.x, top: 18, width: BOARD_RECT.w }}
-      >
+      {/* 좌측 = 전봇대(넓게, 광고·전단지 부착) */}
+      <UtilityPole side="left" />
+
+      {/* 우측 = A형 간판(바닥에 세움, 지역 광고) */}
+      <div className="st-sign-slot--right">
         <Signboard style={signStyle} />
       </div>
-
-      {/* 전봇대 좌우 */}
-      <UtilityPole side="left" />
-      <UtilityPole side="right" />
 
       {/* 중앙 칠판 나무 프레임 (가운데는 뚫린 구멍 → Stage가 올라옴) */}
       <div

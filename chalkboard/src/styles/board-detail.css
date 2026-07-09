@@ -166,11 +166,15 @@
   box-shadow: inset 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
-/* 간판 */
-.st-sign-slot {
+/* ── 우측 A형 간판 (바닥에 세움) ── */
+.st-sign-slot--right {
   position: absolute;
+  right: 20px;
+  bottom: 26px;
+  width: 208px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   z-index: 2;
 }
 .st-signboard {
@@ -180,13 +184,14 @@
   align-items: center;
 }
 .st-sign-panel {
-  width: 300px;
-  padding: 10px 14px;
-  border-radius: 10px;
+  width: 190px;
+  padding: 14px 16px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 .st-sign--a .st-sign-panel {
   background: #1a1a1a;
@@ -202,95 +207,159 @@
 }
 .st-sign-badge {
   font-family: var(--chalk-font);
-  font-size: 22px;
+  font-size: 20px;
   letter-spacing: 1px;
 }
 .st-sign-ad {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   align-items: center;
 }
 .st-ad-line {
-  height: 6px;
-  width: 80%;
-  border-radius: 3px;
+  height: 8px;
+  width: 82%;
+  border-radius: 4px;
   background: currentColor;
-  opacity: 0.35;
+  opacity: 0.32;
 }
 .st-ad-line.short {
   width: 50%;
 }
-.st-sign--a .st-sign-legs {
-  width: 3px;
-  height: 26px;
-  background: #333;
+/* A자 받침대 */
+.st-aframe {
+  position: relative;
+  width: 150px;
+  height: 74px;
+  margin-top: -2px;
+}
+.st-aleg {
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 82px;
+  background: linear-gradient(#3a3a3a, #222);
+  border-radius: 3px;
+  transform-origin: top center;
+}
+.st-aleg--l {
+  left: 44px;
+  transform: rotate(-15deg);
+}
+.st-aleg--r {
+  right: 44px;
+  transform: rotate(15deg);
+}
+.st-abar {
+  position: absolute;
+  top: 42px;
+  left: 30px;
+  right: 30px;
+  height: 7px;
+  background: #4a4a4a;
+  border-radius: 3px;
 }
 
-/* 전봇대 */
+/* ── 좌측 전봇대 (넓게, 광고·전단지 부착) ── */
 .st-pole {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 90px;
+  width: 210px;
   z-index: 2;
 }
 .st-pole--left {
-  left: 30px;
-}
-.st-pole--right {
-  right: 30px;
+  left: 8px;
 }
 .st-pole-body {
   position: absolute;
-  top: 6%;
+  top: 5%;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 34px;
-  background: linear-gradient(90deg, #cfcabf, #efeae0 40%, #cfcabf);
-  border-radius: 6px 6px 0 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  width: 78px;
+  background: linear-gradient(90deg, #bdb8ac, #efeae0 42%, #bdb8ac);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+}
+.st-pole-arm {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 10px;
+  background: #8a8378;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .st-pole-hazard {
   position: absolute;
   left: 0;
   right: 0;
-  top: 34%;
-  height: 60px;
+  top: 10%;
+  height: 46px;
   border-top: 2px solid rgba(0, 0, 0, 0.2);
   border-bottom: 2px solid rgba(0, 0, 0, 0.2);
 }
-.st-pole-arm {
+/* 광고판 — 기둥에 붙은 큰 포스터(옆으로 살짝 넘침) */
+.st-adboard {
   position: absolute;
-  top: 5%;
+  top: 22%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 66px;
-  height: 8px;
-  background: #8a8378;
+  transform: translateX(-50%) rotate(-1.5deg);
+  width: 132px;
+  min-height: 158px;
+  background: #fffdf6;
+  border: 1px solid #d8d3c8;
   border-radius: 4px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
+.st-adboard-tit {
+  font-family: var(--chalk-font);
+  font-size: 20px;
+  color: #1a1a1a;
+}
+.st-adboard-sub {
+  font-family: var(--chalk-font);
+  font-size: 13px;
+  color: #8a8378;
+}
+.st-adboard-body {
+  margin-top: 4px;
+  width: 100%;
+  flex: 1;
+  min-height: 84px;
+  border: 1.5px dashed #d0cabb;
+  border-radius: 4px;
+  background: repeating-linear-gradient(0deg, transparent 0 18px, #f0ece1 18px 19px);
+}
+/* 전단지(벼룩시장) — 기둥 아래쪽 */
 .st-flyer {
   position: absolute;
-  top: 14%;
+  bottom: 12%;
   left: 50%;
-  transform: translateX(-50%) rotate(-3deg);
-  width: 58px;
+  transform: translateX(-50%) rotate(2.5deg);
+  width: 66px;
   background: #fdfaf2;
   border: 1px solid #d8d3c8;
   border-radius: 3px;
-  padding: 6px 5px 4px;
+  padding: 7px 6px 5px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.14);
 }
 .st-flyer-tit {
   font-family: var(--chalk-font);
-  font-size: 12px;
+  font-size: 13px;
   color: #333;
 }
 .st-flyer-line {
@@ -305,11 +374,11 @@
 .st-flyer-tabs {
   display: flex;
   gap: 2px;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .st-flyer-tabs span {
-  width: 6px;
-  height: 10px;
+  width: 7px;
+  height: 12px;
   background: #eee;
   border: 1px solid #ddd;
 }
