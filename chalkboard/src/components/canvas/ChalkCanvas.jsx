@@ -163,6 +163,13 @@ export default function ChalkCanvas({
                 onClick={() => handleElementClick(el)}
                 onTap={() => handleElementClick(el)}
                 onDragStart={() => setSelectedId && setSelectedId(el.id)}
+                onDragMove={(e) => {
+                  if (!onLiveMove) return;
+                  const dx = e.target.x();
+                  const dy = e.target.y();
+                  const pts = (el.data.points || []).map((v, i) => (i % 2 === 0 ? v + dx : v + dy));
+                  onLiveMove(el.id, { points: pts });
+                }}
                 onDragEnd={(e) => {
                   const node = e.target;
                   const dx = node.x();

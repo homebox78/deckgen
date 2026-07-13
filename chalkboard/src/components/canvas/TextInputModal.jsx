@@ -14,7 +14,10 @@ export default function TextInputModal({
   onClose,
 }) {
   const [val, setVal] = useState(defaultValue);
-  const [cat, setCat] = useState(FONT_CATEGORIES[0].key);
+  // 초기 탭 = 기본 폰트가 속한 카테고리 (열자마자 선택 폰트가 보이게)
+  const [cat, setCat] = useState(
+    () => (FONT_CATEGORIES.find((c) => c.fonts.some((f) => f.family === DEFAULT_FONT)) || FONT_CATEGORIES[0]).key,
+  );
   const [font, setFont] = useState(DEFAULT_FONT);
 
   const submit = () => {

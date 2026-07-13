@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../../api/client";
 import { useBoardStore } from "../../store/useBoardStore";
+import { toast } from "../../store/useToast";
 import { GRADE_INFO } from "../../constants/permissions";
 
 function Avatar({ name, color, me }) {
@@ -30,7 +31,7 @@ export default function BoardHeader({ board, peers = [], self, myRole, myGrade, 
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch (e) {
-      alert("초대 링크를 만들지 못했어요: " + (e.message || ""));
+      toast("초대 링크를 만들지 못했어요: " + (e.message || ""), "error");
     }
   };
 
@@ -40,7 +41,7 @@ export default function BoardHeader({ board, peers = [], self, myRole, myGrade, 
       await api.clearBoard(boardId, self?.clientId);
       useBoardStore.getState().localClear(); // SSE 자기 에코 억제 → 로컬 즉시 반영 + wipe
     } catch (e) {
-      alert("전체 지우기 실패: " + (e.message || ""));
+      toast("전체 지우기 실패: " + (e.message || ""), "error");
     }
   };
 

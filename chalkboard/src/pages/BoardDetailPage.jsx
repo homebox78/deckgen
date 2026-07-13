@@ -195,7 +195,7 @@ export default function BoardDetailPage() {
   const handleVideo = (input) => {
     const yid = parseYoutubeId(input);
     if (!yid) {
-      alert("유튜브 주소를 확인해주세요.");
+      toast("유튜브 주소를 확인해주세요.", "error");
       return;
     }
     addEl("video", { youtubeId: yid, x: boardCenter.x - 160, y: boardCenter.y - 90, w: 320, h: 180, rotation: 0 });
